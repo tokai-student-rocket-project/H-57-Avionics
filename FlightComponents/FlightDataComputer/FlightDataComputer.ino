@@ -1,6 +1,6 @@
 #include <Wire.h>
-#include <MultiUART.h>
-#include <Arduino_JSON.h>
+#include <SoftwareSerial.h>
+#include <MsgPacketizer.h>
 #include "LPS22HB.h"
 #include "PressureToAltitudeConverter.h"
 
@@ -10,13 +10,7 @@ LPS22HB PressureSensor;
 // コンバータのインスタンス
 PressureToAltitudeConverter PressureToAltitudeConverter;
 
-// シリアル通信
-// https://github.com/askn37/MultiUART
-MultiUART PC(Serial);
-MultiUART FMC(2, 3);
-
-// フライトデータをまとめてJSONで出力する
-JSONVar FlightData;
+SoftwareSerial FMC(2, 3);
 
 // フライトデータを構成する数値
 float Pressure;
@@ -25,11 +19,13 @@ float Altitude;
 void setup()
 {
   Wire.begin();
-  PC.begin(9600);
+  Serial.begin(9600);
   FMC.begin(9600);
 
   PressureSensor.initialize();
 
+  // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
+  delay(3000);
   PressureToAltitudeConverter.setConfig(PressureSensor.getPressure(), 24.2);
 }
 
@@ -38,16 +34,5 @@ void loop()
   Pressure = PressureSensor.getPressure();
   Altitude = PressureToAltitudeConverter.getAltitude(Pressure);
 
-  FlightData["pressure"] = Pressure;
-  FlightData["altitude"] = Altitude;
-
-  // PCへデバッグ情報を送信
-  PC.println(FlightData);
-
-  // FlightManegementComputerへフライトデータを送信
-  FMC.println(FlightData);
-
-  // 100Hzで送信
-  // 同期処理なので厳密に100Hzにはならない
-  delay(10);
+  MsgPacketizer::send(FMC, 0x00, Pressure, Altitude);
 }
