@@ -38,12 +38,13 @@ void loop()
   Pressure = PressureSensor.getPressure();
   Altitude = PressureToAltitudeConverter.getAltitude(Pressure);
 
-  // PCへデバッグ情報を送信
-  PC.println(Altitude);
-
-  // FlightManegementComputerへフライトデータを送信
   FlightData["pressure"] = Pressure;
   FlightData["altitude"] = Altitude;
+
+  // PCへデバッグ情報を送信
+  PC.println(FlightData);
+
+  // FlightManegementComputerへフライトデータを送信
   FMC.println(FlightData);
 
   // 100Hzで送信
