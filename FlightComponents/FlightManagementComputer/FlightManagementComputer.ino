@@ -3,10 +3,6 @@
 
 MultiUART FDC(2, 3);
 
-// フライトデータを構成する数値
-float Pressure;
-float Altitude;
-
 void setup()
 {
   Serial.begin(9600);
@@ -14,14 +10,14 @@ void setup()
 
   Serial.println("Start");
 
-  MsgPacketizer::subscribe(FDC, 0x00, Pressure, Altitude);
+  MsgPacketizer::subscribe(FDC, 0x00, [](float pressure, float altitude)
+                           {
+      Serial.print(pressure);
+  Serial.print("\t");
+  Serial.println(altitude); });
 }
 
 void loop()
 {
   MsgPacketizer::parse();
-
-  Serial.print(Pressure);
-  Serial.print("\t");
-  Serial.println(Altitude);
 }
