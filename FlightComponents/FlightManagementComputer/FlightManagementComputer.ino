@@ -1,7 +1,7 @@
-#include <SoftwareSerial.h>
+#include <MultiUART.h>
 #include <MsgPacketizer.h>
 
-SoftwareSerial FDC(2, 3);
+MultiUART FDC(2, 3);
 
 // フライトデータを構成する数値
 float Pressure;

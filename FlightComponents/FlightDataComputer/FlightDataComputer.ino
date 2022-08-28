@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include <SoftwareSerial.h>
+#include <MultiUART.h>
 #include <MsgPacketizer.h>
 #include "LPS22HB.h"
 #include "PressureToAltitudeConverter.h"
@@ -10,7 +10,7 @@ LPS22HB PressureSensor;
 // コンバータのインスタンス
 PressureToAltitudeConverter PressureToAltitudeConverter;
 
-SoftwareSerial FMC(2, 3);
+MultiUART FMC(2, 3);
 
 // フライトデータを構成する数値
 float Pressure;
