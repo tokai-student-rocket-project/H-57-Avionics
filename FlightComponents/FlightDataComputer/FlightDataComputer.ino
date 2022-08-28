@@ -27,6 +27,9 @@ void setup()
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
   PressureToAltitudeConverter.setConfig(PressureSensor.getPressure(), 24.2);
+
+  // 100HzでPressure, Altitudeを発行する
+  MsgPacketizer::publish(FMC, 0x00, Pressure, Altitude)->setFrameRate(100);
 }
 
 void loop()
@@ -34,5 +37,5 @@ void loop()
   Pressure = PressureSensor.getPressure();
   Altitude = PressureToAltitudeConverter.getAltitude(Pressure);
 
-  MsgPacketizer::send(FMC, 0x00, Pressure, Altitude);
+  MsgPacketizer::post();
 }
