@@ -8,6 +8,8 @@ MPU6050 SixAxisSensor;
 MultiUART PC(Serial);
 MultiUART SD(2, 3);
 
+JSONVar Data;
+
 int16_t Ax, Ay, Az;
 int16_t Gx, Gy, Gz;
 
@@ -33,19 +35,15 @@ void loop()
 {
   SixAxisSensor.getMotion6(&Ax, &Ay, &Az, &Gx, &Gy, &Gz);
 
-  SD.print(millis());
-  SD.print("\t");
-  SD.print(Ax / AccelScaleFactor);
-  SD.print("\t");
-  SD.print(Ay / AccelScaleFactor);
-  SD.print("\t");
-  SD.print(Az / AccelScaleFactor);
-  SD.print("\t");
-  SD.print(Gx / GyroScaleFactor);
-  SD.print("\t");
-  SD.print(Gy / GyroScaleFactor);
-  SD.print("\t");
-  SD.println(Gz / GyroScaleFactor);
+  Data["Time"] = millis();
+  Data["AccX"] = Ax / AccelScaleFactor;
+  Data["AccY"] = Ay / AccelScaleFactor;
+  Data["AccZ"] = Az / AccelScaleFactor;
+  Data["GyroX"] = Gx / GyroScaleFactor;
+  Data["GyroY"] = Gy / GyroScaleFactor;
+  Data["GyroZ"] = Gz / GyroScaleFactor;
+
+  SD.println(Data);
 
   delay(10);
 }
