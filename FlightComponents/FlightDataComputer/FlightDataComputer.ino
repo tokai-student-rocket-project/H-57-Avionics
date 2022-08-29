@@ -29,7 +29,7 @@ void setup()
   PressureToAltitudeConverter.setConfig(PressureSensor.getPressure(), 24.2);
 
   // 100HzでPressure, Altitudeを発行する
-  MsgPacketizer::publish(FMC, 0x00, Pressure, Altitude)->setFrameRate(100);
+  MsgPacketizer::publish(FMC, 0x00, Altitude)->setFrameRate(100);
 }
 
 void loop()
