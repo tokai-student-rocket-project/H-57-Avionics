@@ -1,33 +1,14 @@
 #include <Arduino.h>
 #include "MovingAverage.h"
 
-MovingAverage::MovingAverage()
-{
+// weight: 1に近いほど弱い平滑化、0に近いほど強い平滑化
+MovingAverage::MovingAverage(double weight) {
+  weight_ = weight;
 }
 
-void MovingAverage::moveCurrent()
+double MovingAverage::getAverage(double value)
 {
-  current++;
-
-  if (current >= 5)
-  {
-    current = 0;
-  }
-}
-
-void MovingAverage::addData(float data)
-{
-  buffer[current] = data;
-  moveCurrent();
-}
-
-float MovingAverage::getAverage()
-{
-  float average;
-  for (int i = 0; i < 5; i++)
-  {
-    average += buffer[i];
-  }
-
-  return average / 5.0;
+  double average = average_old_ + weight_ * (value - average_old_);
+  average_old_ = average;
+  return average;
 }

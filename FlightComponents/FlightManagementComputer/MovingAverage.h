@@ -1,19 +1,17 @@
-#ifndef MOVING_AVERAGE_H
-#define MOVING_AVERAGE_H
+#ifndef MOVING_AVERAGE_H_
+#define MOVING_AVERAGE_H_
 
+// 指数平滑化移動平均
 class MovingAverage
 {
 public:
-  MovingAverage();
+  MovingAverage(double weight);
 
-  void addData(float data);
-  float getAverage();
+  double getAverage(double value);
 
 private:
-  void moveCurrent();
-
-  float buffer[5];
-  int current = 0;
+  double weight_;
+  double average_old_;
 };
 
 #endif
