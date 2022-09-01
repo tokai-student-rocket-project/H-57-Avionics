@@ -1,6 +1,6 @@
 #include <MultiUART.h>
 #include <MsgPacketizer.h>
-#include "MovingAverage.h"
+#include "DescentDetector.h"
 
 enum FlightMode {
   standby,
@@ -16,62 +16,55 @@ namespace serial {
 }
 
 namespace flightdata {
-  FlightMode flight_mode = FlightMode::standby;
-  float altitude;
+  FlightMode flight_mode;
+  double altitude;
 }
 
-namespace descentdetection {
-  const MovingAverage pressure_average(0.3);
-  float altitude_average_old;
-  int descent_count;
+namespace detector {
+  DescentDetector descent_detector;
 }
 
 void setup() {
   serial::debug.begin(9600);
   serial::flight_data_computer.begin(9600);
 
+  pinMode(9, OUTPUT);
   pinMode(8, OUTPUT);
+
+  changeFlightMode(FlightMode::standby);
 
   MsgPacketizer::subscribe(
     serial::flight_data_computer,
     serial::ALTITUDE_LABEL,
     [](float altitude) {
-      updateAltitude(altitude);
+      flightdata::altitude = altitude;
+      detector::descent_detector.update(altitude);
     });
 }
 
 void loop() {
   MsgPacketizer::parse();
+
+  switch (flightdata::flight_mode) {
+    case FlightMode::standby:
+      if (detector::descent_detector.is_descending_) {
+        changeFlightMode(FlightMode::descent);
+      }
+      break;
+    case FlightMode::descent:
+      break;
+  }
 }
 
-void updateAltitude(float altitude) {
-  flightdata::altitude = altitude;
-
-  if (flightdata::flight_mode == FlightMode::standby && isDescending()) {
-    flightdata::flight_mode = FlightMode::descent;
+void changeFlightMode(FlightMode nextFlightMode) {
+  if (nextFlightMode == FlightMode::standby) {
+    digitalWrite(9, LOW);
     digitalWrite(8, HIGH);
   }
-}
-
-bool isDescending() {
-  float average = descentdetection::pressure_average.getAverage(flightdata::altitude);
-
-  // 高度が連続で減少した回数をdescent_countに加算
-  if (average < descentdetection::altitude_average_old) {
-    ++descentdetection::descent_count;
-  }
   else {
-    descentdetection::descent_count = 0;
+    digitalWrite(9, HIGH);
+    digitalWrite(8, LOW);
   }
 
-  descentdetection::altitude_average_old = average;
-
-  serial::debug.print(flightdata::altitude);
-  serial::debug.print("\t");
-  serial::debug.print(average);
-  serial::debug.print("\t");
-  serial::debug.println(descentdetection::descent_count);
-
-  // 10回以上連続で減少したら降下中と判断する
-  return descentdetection::descent_count >= 10;
+  flightdata::flight_mode = nextFlightMode;
 }
