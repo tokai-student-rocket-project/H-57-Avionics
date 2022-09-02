@@ -21,7 +21,7 @@ namespace flightdata {
 }
 
 namespace detector {
-  DescentDetector descent_detector;
+  DescentDetector descent_detector(0.2);
 }
 
 void setup() {

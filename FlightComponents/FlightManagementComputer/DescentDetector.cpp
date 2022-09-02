@@ -1,26 +1,27 @@
 #include <Arduino.h>
 #include "DescentDetector.h"
 
-DescentDetector::DescentDetector() {
+DescentDetector::DescentDetector(double weight) {
+  weight_ = weight;
 }
 
 void DescentDetector::update(double altitude)
 {
-  float average = altitude_average_.getAverage(altitude);
+  average_ = average_old_ + weight_ * (altitude - average_old_);
 
-  if ((altitude_average_old_ - average) > DESCENT_DIFFERENT_) {
+  if ((average_old_ - average_) > DESCENT_DIFFERENT_) {
     ++descent_count_;
   }
   else {
     descent_count_ = 0;
   }
 
-  altitude_average_old_ = average;
+  average_old_ = average_;
   is_descending_ = descent_count_ >= MINIMUM_DESCENT_COUNT_;
 
   Serial.print(altitude);
   Serial.print("\t");
-  Serial.print(average);
+  Serial.print(average_);
   Serial.print("\t");
   Serial.println(descent_count_);
 }
