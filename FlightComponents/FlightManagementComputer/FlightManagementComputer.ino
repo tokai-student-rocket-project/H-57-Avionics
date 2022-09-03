@@ -2,8 +2,15 @@
 #include <MsgPacketizer.h>
 #include "DescentDetector.h"
 
+namespace pin {
+  constexpr int FLIGHT_PIN = 12;
+  constexpr int CLIMB_INDICATE_PIN = 9;
+  constexpr int DESCENT_INDICATE_PIN = 8;
+}
+
 enum FlightMode {
   standby,
+  climb,
   descent
 };
 
@@ -28,8 +35,9 @@ void setup() {
   serial::debug.begin(9600);
   serial::flight_data_computer.begin(9600);
 
-  pinMode(9, OUTPUT);
-  pinMode(8, OUTPUT);
+  pinMode(pin::FLIGHT_PIN, INPUT_PULLUP);
+  pinMode(pin::CLIMB_INDICATE_PIN, OUTPUT);
+  pinMode(pin::DESCENT_INDICATE_PIN, OUTPUT);
 
   changeFlightMode(FlightMode::standby);
 
@@ -47,23 +55,41 @@ void loop() {
 
   switch (flightdata::flight_mode) {
     case FlightMode::standby:
+      if (digitalRead(12) == HIGH) {
+        changeFlightMode(FlightMode::climb);
+      }
+      break;
+    case FlightMode::climb:
       if (detector::descent_detector.is_descending_) {
         changeFlightMode(FlightMode::descent);
       }
+      if (digitalRead(12) == LOW) {
+        changeFlightMode(FlightMode::standby);
+      }
       break;
     case FlightMode::descent:
+      if (digitalRead(12) == LOW) {
+        changeFlightMode(FlightMode::standby);
+      }
       break;
   }
 }
 
 void changeFlightMode(FlightMode nextFlightMode) {
-  if (nextFlightMode == FlightMode::standby) {
-    digitalWrite(9, LOW);
-    digitalWrite(8, HIGH);
-  }
-  else {
-    digitalWrite(9, HIGH);
-    digitalWrite(8, LOW);
+  switch (nextFlightMode)
+  {
+    case FlightMode::standby:
+      digitalWrite(pin::CLIMB_INDICATE_PIN, LOW);
+      digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
+      break;
+    case FlightMode::climb:
+      digitalWrite(pin::CLIMB_INDICATE_PIN, HIGH);
+      digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
+      break;
+    case FlightMode::descent:
+      digitalWrite(pin::CLIMB_INDICATE_PIN, LOW);
+      digitalWrite(pin::DESCENT_INDICATE_PIN, HIGH);
+      break;
   }
 
   flightdata::flight_mode = nextFlightMode;
