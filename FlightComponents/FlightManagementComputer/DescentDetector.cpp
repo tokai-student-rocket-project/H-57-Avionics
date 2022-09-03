@@ -1,27 +1,37 @@
 #include <Arduino.h>
 #include "DescentDetector.h"
 
-DescentDetector::DescentDetector(double weight) {
-  weight_ = weight;
+/// @brief コンストラクタ
+/// @param sensitivity 大きいほど強い平滑化(0~1)
+DescentDetector::DescentDetector(double sensitivity) {
+  _sensitivity = sensitivity;
 }
-
-void DescentDetector::update(double altitude)
+/// @brief 高度を更新します。値に応じて_isDescendinも更新されます
+/// @param altitude 高度
+void DescentDetector::updateAltitude(double altitude)
 {
-  average_ = average_old_ + weight_ * (altitude - average_old_);
+  // 指数平滑化移動平均
+  _average = _averageOrigin + _sensitivity * (altitude - _averageOrigin);
 
-  if ((average_old_ - average_) > DESCENT_DIFFERENT_) {
-    ++descent_count_;
+  // 平滑化された高度が減少すれば_descentCountをインクリメントする
+  // 減少しなければリセット
+  if ((_averageOrigin - _average) > DESCENT_DIFFERENT) {
+    ++_descentCount;
   }
   else {
-    descent_count_ = 0;
+    _descentCount = 0;
   }
 
-  average_old_ = average_;
-  is_descending_ = descent_count_ >= MINIMUM_DESCENT_COUNT_;
+  // _descentCountが指定回数(MINIMUM_DESCENT_COUNT)より多くなれば(=指定回数以上に連続で高度が減少)降下していると判断する。
+  _isDescending = _descentCount >= MINIMUM_DESCENT_COUNT;
 
+  _averageOrigin = _average;
+
+  // デバッグ用
+  // 後で消す
   Serial.print(altitude);
   Serial.print("\t");
-  Serial.print(average_);
+  Serial.print(_average);
   Serial.print("\t");
-  Serial.println(descent_count_);
+  Serial.println(_descentCount);
 }
