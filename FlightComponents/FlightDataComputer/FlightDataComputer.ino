@@ -2,40 +2,53 @@
 #include <MultiUART.h>
 #include <MsgPacketizer.h>
 #include "LPS22HB.h"
-#include "PressureToAltitudeConverter.h"
 
-// センサのインスタンス
-LPS22HB PressureSensor;
+namespace sensor {
+  // 気圧センサ
+  // https://strawberry-linux.com/support/12122/1812122
+  const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
+}
 
-// コンバータのインスタンス
-PressureToAltitudeConverter PressureToAltitudeConverter;
+namespace serial {
+  const MultiUART _flightManagementComputer(2, 3);
 
-MultiUART FMC(2, 3);
+  // データ種別
+  // これ見て↓
+  // https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
+  constexpr int ALTITUDE_LABEL = 0x00;
+}
+
+namespace flightdata {
+  double _pressure;
+  double _altitude;
+}
 
 // フライトデータを構成する数値
-float Pressure;
-float Altitude;
+double Pressure;
+double Altitude;
 
 void setup()
 {
   Wire.begin();
-  Serial.begin(9600);
-  FMC.begin(9600);
+  serial::_flightManagementComputer.begin(9600);
 
-  PressureSensor.initialize();
+  sensor::_pressureSensor.initialize();
 
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
-  PressureToAltitudeConverter.setConfig(PressureSensor.getPressure(), 24.2);
+  sensor::_pressureSensor.setConfig(sensor::_pressureSensor.getPressure(), 24.2);
 
   // 100HzでPressure, Altitudeを発行する
-  MsgPacketizer::publish(FMC, 0x00, Altitude)->setFrameRate(100);
+  MsgPacketizer::publish(
+    serial::_flightManagementComputer,
+    serial::ALTITUDE_LABEL,
+    flightdata::_altitude)->setFrameRate(100);
 }
 
 void loop()
 {
-  Pressure = PressureSensor.getPressure();
-  Altitude = PressureToAltitudeConverter.getAltitude(Pressure);
+  flightdata::_pressure = sensor::_pressureSensor.getPressure();
+  flightdata::_altitude = sensor::_pressureSensor.getAltitude();
 
   MsgPacketizer::post();
 }

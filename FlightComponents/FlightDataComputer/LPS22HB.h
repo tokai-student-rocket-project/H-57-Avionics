@@ -14,13 +14,30 @@
 class LPS22HB
 {
 public:
-  LPS22HB(int address = LPS22HB_DEFAULT_ADDRESS);
+  /// @brief コンストラクタ
+  /// @param deviceAddress AD0がGNDに接続: LPS22HB_ADDRESS_AD0_LOW, AD0がVDDIOに接続: LPS22HB_ADDRESS_AD0_HIGH
+  LPS22HB(int deviceAddress);
 
+  /// @brief 75Hzで駆動するよ
   void initialize();
-  float getPressure();
+
+  /// @brief 気圧を取得する
+  /// @return 気圧[hPa]
+  double getPressure();
+
+  /// @brief 基準気圧と基準気温を設定する
+  /// @param basePressure 基準気圧。ランチャー付近の気圧でいいと思う。
+  /// @param baseTemperature 基準気温。ランチャー付近の気温でいいと思う。
+  void setConfig(double basePressure, double beseTemperature);
+  /// @brief 高度を取得する
+  /// @return 高度[m]
+  double getAltitude();
 
 private:
-  int DeviceAddress;
+  int _deviceAddress;
+  // 一応初期値として標準大気を入れておく
+  double _basePressure = 1013;
+  double _baseTemperature = 15;
 };
 
 #endif
