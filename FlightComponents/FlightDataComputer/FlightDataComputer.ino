@@ -23,10 +23,6 @@ namespace flightdata {
   double _altitude;
 }
 
-// フライトデータを構成する数値
-double Pressure;
-double Altitude;
-
 void setup()
 {
   Wire.begin();

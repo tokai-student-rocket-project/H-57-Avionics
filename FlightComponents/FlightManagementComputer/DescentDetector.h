@@ -4,7 +4,7 @@
 /// @brief 機体が降下しているかを検出するクラス。updateAltitude()で高度を更新して降下していれば_isDescendingがtrueになる。
 class DescentDetector
 {
-public
+public:
   /// @brief コンストラクタ
   /// @param sensitivity 大きいほど強い平滑化(0~1)
   DescentDetector(double sensitivity);

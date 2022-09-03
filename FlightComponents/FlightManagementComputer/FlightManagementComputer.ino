@@ -72,7 +72,7 @@ void loop() {
       break;
     case FlightMode::CLIMB:
       // DescentDetectorが降下を検出したらDESCENTモードに移行
-      if (detector::_descentDetector.is_descending_) {
+      if (detector::_descentDetector._isDescending) {
         changeFlightMode(FlightMode::DESCENT);
       }
       // フライトピン刺したらリセット
