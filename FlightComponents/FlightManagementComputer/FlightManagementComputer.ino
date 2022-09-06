@@ -5,11 +5,13 @@
 enum FlightMode {
   STANDBY,
   CLIMB,
-  DESCENT
+  DESCENT,
+  MAINCHUTE
 };
 
 namespace pin {
   constexpr int FLIGHT_PIN = 12;
+  constexpr int SHIRANUI_PIN = 10;
   constexpr int CLIMB_INDICATE_PIN = 9;
   constexpr int DESCENT_INDICATE_PIN = 8;
 }
@@ -35,6 +37,14 @@ namespace detector {
   DescentDetector _descentDetector(0.2);
 }
 
+namespace separation {
+  // 強制的に分離する時間を指定[s]
+  constexpr unsigned long SEPARATE_TIME = 30000;
+  constexpr double SEPARATE_ALTITUDE = -0.5;
+
+  unsigned long _launchTime;
+}
+
 void setup() {
   // ボーレートを9600以上にするとうまく動かないらしい
   // これ見て↓
@@ -43,6 +53,7 @@ void setup() {
   serial::_flightDataComputer.begin(9600);
 
   pinMode(pin::FLIGHT_PIN, INPUT_PULLUP);
+  pinMode(pin::SHIRANUI_PIN, OUTPUT);
   pinMode(pin::CLIMB_INDICATE_PIN, OUTPUT);
   pinMode(pin::DESCENT_INDICATE_PIN, OUTPUT);
 
@@ -63,10 +74,22 @@ void setup() {
 void loop() {
   MsgPacketizer::parse();
 
+  // フライトピン刺したらリセット
+  if (digitalRead(pin::FLIGHT_PIN) == LOW) {
+    reset();
+  }
+
+  バックアップタイマー
+  if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
+      if (millis() > separation::_launchTime + separation::SEPARATE_TIME){
+        separate();
+      }
+  }
+
   switch (flightdata::_flightMode) {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行 
-      if (digitalRead(12) == HIGH) {
+      if (digitalRead(pin::FLIGHT_PIN) == HIGH) {
         changeFlightMode(FlightMode::CLIMB);
       }
       break;
@@ -75,23 +98,25 @@ void loop() {
       if (detector::_descentDetector._isDescending) {
         changeFlightMode(FlightMode::DESCENT);
       }
-      // フライトピン刺したらリセット
-      if (digitalRead(12) == LOW) {
-        changeFlightMode(FlightMode::STANDBY);
-      }
       break;
     case FlightMode::DESCENT:
-      // フライトピン刺したらリセット
-      if (digitalRead(12) == LOW) {
-        changeFlightMode(FlightMode::STANDBY);
+      // SEPARATE_ALTITUDE以下になれば分離
+      if (flightdata::_altitude <= separation::SEPARATE_ALTITUDE) {
+        separate();
       }
       break;
   }
 }
 
 void changeFlightMode(FlightMode nextFlightMode) {
-  // モードに応じてLEDを光らせる
+
+  // 変更がなければ何もせずに終わる
+  if (nextFlightMode == flightdata::_flightMode) {
+    return;
+  }
+
   // デバッグ用
+  // 後で消す
   switch (nextFlightMode)
   {
     case FlightMode::STANDBY:
@@ -99,6 +124,7 @@ void changeFlightMode(FlightMode nextFlightMode) {
       digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
       break;
     case FlightMode::CLIMB:
+      separation::_launchTime = millis();
       digitalWrite(pin::CLIMB_INDICATE_PIN, HIGH);
       digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
       break;
@@ -109,4 +135,13 @@ void changeFlightMode(FlightMode nextFlightMode) {
   }
 
   flightdata::_flightMode = nextFlightMode;
+}
+
+void separate() {
+  digitalWrite(pin::SHIRANUI_PIN, HIGH);
+}
+
+void reset() {
+  changeFlightMode(FlightMode::STANDBY);
+  digitalWrite(pin::SHIRANUI_PIN, LOW);
 }
