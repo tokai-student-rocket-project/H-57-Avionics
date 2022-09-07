@@ -5,28 +5,28 @@
 #include "Shiranui.h"
 #include "LED.h"
 
-enum FlightMode {
-  STANDBY,
-  CLIMB,
-  DESCENT,
-  MAINCHUTE
+enum class FlightMode {
+  STANDBY,  // 0x00
+  CLIMB,    // 0x01
+  DESCENT,  // 0x02
+  MAINCHUTE // 0x03
 };
 
-namespace pin {
+// データ種別
+// これ見て↓
+// https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
+enum class DataLabel {
+  ALTITUDE // 0x00
+};
+
+namespace device {
+  const MultiUART _debug(Serial);
+  const MultiUART _flightDataComputer(2, 3);
+
   const FlightPin _flightPin(12);
   const Shiranui _shiranui3(10);
   const LED _climbIndicator(9);
   const LED _descentIndicator(8);
-}
-
-namespace serial {
-  const MultiUART _debug(Serial);
-  const MultiUART _flightDataComputer(2, 3);
-
-  // データ種別
-  // これ見て↓
-  // https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
-  constexpr int ALTITUDE_LABEL = 0x00;
 }
 
 namespace flightdata {
@@ -52,21 +52,21 @@ void setup() {
   // ボーレートを9600以上にするとうまく動かないらしい
   // これ見て↓
   // https://github.com/askn37/MultiUART#指定可能なボーレート
-  serial::_debug.begin(9600);
-  serial::_flightDataComputer.begin(9600);
+  device::_debug.begin(9600);
+  device::_flightDataComputer.begin(9600);
 
-  pin::_flightPin.initialize();
-  pin::_shiranui3.initialize();
-  pin::_climbIndicator.initialize();
-  pin::_descentIndicator.initialize();
+  device::_flightPin.initialize();
+  device::_shiranui3.initialize();
+  device::_climbIndicator.initialize();
+  device::_descentIndicator.initialize();
   flightdata::_flightMode = FlightMode::STANDBY;
 
   // シリアル通信で高度を購読する
   // これ見て↓
   // https://github.com/hideakitai/MsgPacketizer#direct-data-receive--data-publishing
   MsgPacketizer::subscribe(
-    serial::_flightDataComputer,
-    serial::ALTITUDE_LABEL,
+    device::_flightDataComputer,
+    static_cast<int>(DataLabel::ALTITUDE),
     [](float altitude) {
       flightdata::_altitude = altitude;
       detector::_descentDetector.updateAltitude(altitude);
@@ -77,26 +77,26 @@ void loop() {
   MsgPacketizer::parse();
 
   // フライトピン刺したらリセット
-  if (!pin::_flightPin.isReleased()) {
-    pin::_shiranui3.reset();
-    pin::_climbIndicator.off();
-    pin::_descentIndicator.off();
+  if (!device::_flightPin.isReleased()) {
+    device::_shiranui3.reset();
+    device::_climbIndicator.off();
+    device::_descentIndicator.off();
     flightdata::_flightMode = FlightMode::STANDBY;
   }
 
   // バックアップタイマー
   if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
       if (millis() > separation::_launchTime + separation::SEPARATE_TIME){
-        pin::_shiranui3.separate();
+        device::_shiranui3.separate();
       }
   }
 
   switch (flightdata::_flightMode) {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行 
-      if (pin::_flightPin.isReleased()) {
-        pin::_climbIndicator.on();
-        pin::_descentIndicator.off();
+      if (device::_flightPin.isReleased()) {
+        device::_climbIndicator.on();
+        device::_descentIndicator.off();
         flightdata::_flightMode = FlightMode::CLIMB;
         separation::_launchTime = millis();
       }
@@ -104,15 +104,15 @@ void loop() {
     case FlightMode::CLIMB:
       // DescentDetectorが降下を検出したらDESCENTモードに移行
       if (detector::_descentDetector._isDescending) {
-        pin::_climbIndicator.off();
-        pin::_descentIndicator.on();
+        device::_climbIndicator.off();
+        device::_descentIndicator.on();
         flightdata::_flightMode = FlightMode::DESCENT;
       }
       break;
     case FlightMode::DESCENT:
       // SEPARATE_ALTITUDE以下になれば分離
       if (flightdata::_altitude <= separation::SEPARATE_ALTITUDE) {
-        pin::_shiranui3.separate();
+        device::_shiranui3.separate();
       }
       break;
   }
