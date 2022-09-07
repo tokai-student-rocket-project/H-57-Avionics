@@ -3,6 +3,7 @@
 #include "DescentDetector.h"
 #include "FlightPin.h"
 #include "Shiranui.h"
+#include "LED.h"
 
 enum FlightMode {
   STANDBY,
@@ -14,8 +15,8 @@ enum FlightMode {
 namespace pin {
   const FlightPin _flightPin(12);
   const Shiranui _shiranui3(10);
-  constexpr int CLIMB_INDICATE_PIN = 9;
-  constexpr int DESCENT_INDICATE_PIN = 8;
+  const LED _climbIndicator(9);
+  const LED _descentIndicator(8);
 }
 
 namespace serial {
@@ -54,12 +55,11 @@ void setup() {
   serial::_debug.begin(9600);
   serial::_flightDataComputer.begin(9600);
 
-  pinMode(pin::CLIMB_INDICATE_PIN, OUTPUT);
-  pinMode(pin::DESCENT_INDICATE_PIN, OUTPUT);
-
   pin::_flightPin.initialize();
   pin::_shiranui3.initialize();
-  changeFlightMode(FlightMode::STANDBY);
+  pin::_climbIndicator.initialize();
+  pin::_descentIndicator.initialize();
+  flightdata::_flightMode = FlightMode::STANDBY;
 
   // シリアル通信で高度を購読する
   // これ見て↓
@@ -78,8 +78,10 @@ void loop() {
 
   // フライトピン刺したらリセット
   if (!pin::_flightPin.isReleased()) {
-    changeFlightMode(FlightMode::STANDBY);
     pin::_shiranui3.reset();
+    pin::_climbIndicator.off();
+    pin::_descentIndicator.off();
+    flightdata::_flightMode = FlightMode::STANDBY;
   }
 
   // バックアップタイマー
@@ -93,14 +95,18 @@ void loop() {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行 
       if (pin::_flightPin.isReleased()) {
-        changeFlightMode(FlightMode::CLIMB);
+        pin::_climbIndicator.on();
+        pin::_descentIndicator.off();
+        flightdata::_flightMode = FlightMode::CLIMB;
         separation::_launchTime = millis();
       }
       break;
     case FlightMode::CLIMB:
       // DescentDetectorが降下を検出したらDESCENTモードに移行
       if (detector::_descentDetector._isDescending) {
-        changeFlightMode(FlightMode::DESCENT);
+        pin::_climbIndicator.off();
+        pin::_descentIndicator.on();
+        flightdata::_flightMode = FlightMode::DESCENT;
       }
       break;
     case FlightMode::DESCENT:
@@ -110,32 +116,4 @@ void loop() {
       }
       break;
   }
-}
-
-void changeFlightMode(FlightMode nextFlightMode) {
-
-  // 変更がなければ何もせずに終わる
-  if (nextFlightMode == flightdata::_flightMode) {
-    return;
-  }
-
-  // デバッグ用
-  // 後で消す
-  switch (nextFlightMode)
-  {
-    case FlightMode::STANDBY:
-      digitalWrite(pin::CLIMB_INDICATE_PIN, LOW);
-      digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
-      break;
-    case FlightMode::CLIMB:
-      digitalWrite(pin::CLIMB_INDICATE_PIN, HIGH);
-      digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
-      break;
-    case FlightMode::DESCENT:
-      digitalWrite(pin::CLIMB_INDICATE_PIN, LOW);
-      digitalWrite(pin::DESCENT_INDICATE_PIN, HIGH);
-      break;
-  }
-
-  flightdata::_flightMode = nextFlightMode;
 }
