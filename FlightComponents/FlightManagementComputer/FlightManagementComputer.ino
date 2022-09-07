@@ -2,6 +2,7 @@
 #include <MsgPacketizer.h>
 #include "DescentDetector.h"
 #include "FlightPin.h"
+#include "Shiranui.h"
 
 enum FlightMode {
   STANDBY,
@@ -12,7 +13,7 @@ enum FlightMode {
 
 namespace pin {
   const FlightPin _flightPin(12);
-  constexpr int SHIRANUI_PIN = 10;
+  const Shiranui _shiranui3(10);
   constexpr int CLIMB_INDICATE_PIN = 9;
   constexpr int DESCENT_INDICATE_PIN = 8;
 }
@@ -53,12 +54,12 @@ void setup() {
   serial::_debug.begin(9600);
   serial::_flightDataComputer.begin(9600);
 
-  pinMode(pin::SHIRANUI_PIN, OUTPUT);
   pinMode(pin::CLIMB_INDICATE_PIN, OUTPUT);
   pinMode(pin::DESCENT_INDICATE_PIN, OUTPUT);
 
   pin::_flightPin.initialize();
-  reset();
+  pin::_shiranui3.initialize();
+  changeFlightMode(FlightMode::STANDBY);
 
   // シリアル通信で高度を購読する
   // これ見て↓
@@ -77,13 +78,14 @@ void loop() {
 
   // フライトピン刺したらリセット
   if (!pin::_flightPin.isReleased()) {
-    reset();
+    changeFlightMode(FlightMode::STANDBY);
+    pin::_shiranui3.reset();
   }
 
   // バックアップタイマー
   if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
       if (millis() > separation::_launchTime + separation::SEPARATE_TIME){
-        separate();
+        pin::_shiranui3.separate();
       }
   }
 
@@ -104,7 +106,7 @@ void loop() {
     case FlightMode::DESCENT:
       // SEPARATE_ALTITUDE以下になれば分離
       if (flightdata::_altitude <= separation::SEPARATE_ALTITUDE) {
-        separate();
+        pin::_shiranui3.separate();
       }
       break;
   }
@@ -136,13 +138,4 @@ void changeFlightMode(FlightMode nextFlightMode) {
   }
 
   flightdata::_flightMode = nextFlightMode;
-}
-
-void separate() {
-  digitalWrite(pin::SHIRANUI_PIN, HIGH);
-}
-
-void reset() {
-  changeFlightMode(FlightMode::STANDBY);
-  digitalWrite(pin::SHIRANUI_PIN, LOW);
 }
