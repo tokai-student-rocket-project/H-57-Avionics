@@ -32,7 +32,7 @@ void setup()
 
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
-  sensor::_pressureSensor.setConfig(sensor::_pressureSensor.getPressure(), 24.2);
+  sensor::_pressureSensor.setConfig(sensor::_pressureSensor.getPressure(), 15);
 
   // 100HzでPressure, Altitudeを発行する
   MsgPacketizer::publish(

@@ -41,7 +41,9 @@ namespace detector {
 }
 
 namespace separation {
-  // 強制的に分離する時間を指定[s]
+  // 燃焼中に分離しないために保護する時間を指定[ms]
+  constexpr unsigned long BURN_TIME = 5000;
+  // 強制的に分離する時間を指定[ms]
   constexpr unsigned long SEPARATE_TIME = 30000;
   constexpr double SEPARATE_ALTITUDE = -0.5;
 
@@ -112,7 +114,9 @@ void loop() {
     case FlightMode::DESCENT:
       // SEPARATE_ALTITUDE以下になれば分離
       if (flightdata::_altitude <= separation::SEPARATE_ALTITUDE) {
-        device::_shiranui3.separate();
+        if (millis() > separation::_launchTime + separation::BURN_TIME) {
+          device::_shiranui3.separate();
+        }
       }
       break;
   }
