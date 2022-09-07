@@ -15,8 +15,8 @@ enum class FlightMode {
 // データ種別
 // これ見て↓
 // https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
-enum class DataLabel {
-  ALTITUDE // 0x00
+enum class Ident {
+  FLIGHT_DATA // 0x00
 };
 
 namespace device {
@@ -31,6 +31,7 @@ namespace device {
 
 namespace flightdata {
   FlightMode _flightMode;
+  double _pressure;
   double _altitude;
 }
 
@@ -68,8 +69,9 @@ void setup() {
   // https://github.com/hideakitai/MsgPacketizer#direct-data-receive--data-publishing
   MsgPacketizer::subscribe(
     device::_flightDataComputer,
-    static_cast<int>(DataLabel::ALTITUDE),
-    [](float altitude) {
+    static_cast<int>(Ident::FLIGHT_DATA),
+    [](double pressure, double altitude) {
+      flightdata::_pressure = pressure;
       flightdata::_altitude = altitude;
       detector::_descentDetector.updateAltitude(altitude);
     });
