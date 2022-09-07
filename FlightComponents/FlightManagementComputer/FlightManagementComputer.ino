@@ -1,6 +1,7 @@
 #include <MultiUART.h>
 #include <MsgPacketizer.h>
 #include "DescentDetector.h"
+#include "FlightPin.h"
 
 enum FlightMode {
   STANDBY,
@@ -10,7 +11,7 @@ enum FlightMode {
 };
 
 namespace pin {
-  constexpr int FLIGHT_PIN = 12;
+  const FlightPin _flightPin(12);
   constexpr int SHIRANUI_PIN = 10;
   constexpr int CLIMB_INDICATE_PIN = 9;
   constexpr int DESCENT_INDICATE_PIN = 8;
@@ -52,12 +53,12 @@ void setup() {
   serial::_debug.begin(9600);
   serial::_flightDataComputer.begin(9600);
 
-  pinMode(pin::FLIGHT_PIN, INPUT_PULLUP);
   pinMode(pin::SHIRANUI_PIN, OUTPUT);
   pinMode(pin::CLIMB_INDICATE_PIN, OUTPUT);
   pinMode(pin::DESCENT_INDICATE_PIN, OUTPUT);
 
-  changeFlightMode(FlightMode::STANDBY);
+  pin::_flightPin.initialize();
+  reset();
 
   // シリアル通信で高度を購読する
   // これ見て↓
@@ -75,11 +76,11 @@ void loop() {
   MsgPacketizer::parse();
 
   // フライトピン刺したらリセット
-  if (digitalRead(pin::FLIGHT_PIN) == LOW) {
+  if (!pin::_flightPin.isReleased()) {
     reset();
   }
 
-  バックアップタイマー
+  // バックアップタイマー
   if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
       if (millis() > separation::_launchTime + separation::SEPARATE_TIME){
         separate();
@@ -89,8 +90,9 @@ void loop() {
   switch (flightdata::_flightMode) {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行 
-      if (digitalRead(pin::FLIGHT_PIN) == HIGH) {
+      if (pin::_flightPin.isReleased()) {
         changeFlightMode(FlightMode::CLIMB);
+        separation::_launchTime = millis();
       }
       break;
     case FlightMode::CLIMB:
@@ -124,7 +126,6 @@ void changeFlightMode(FlightMode nextFlightMode) {
       digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
       break;
     case FlightMode::CLIMB:
-      separation::_launchTime = millis();
       digitalWrite(pin::CLIMB_INDICATE_PIN, HIGH);
       digitalWrite(pin::DESCENT_INDICATE_PIN, LOW);
       break;
