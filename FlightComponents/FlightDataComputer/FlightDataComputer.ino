@@ -34,7 +34,6 @@ void setup()
   delay(3000);
   device::_pressureSensor.setConfig(device::_pressureSensor.getPressure(), 15);
 
-
   // 100Hzでフライトデータを発行する
   MsgPacketizer::publish(
     device::_flightManagementComputer,

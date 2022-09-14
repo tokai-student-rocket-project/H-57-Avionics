@@ -16,12 +16,14 @@ enum class FlightMode {
 // これ見て↓
 // https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
 enum class Ident {
-  FLIGHT_DATA // 0x00
+  FLIGHT_DATA, // 0x00
+  COMMAND      // 0x01
 };
 
 namespace device {
   const MultiUART _debug(Serial);
   const MultiUART _flightDataComputer(2, 3);
+  const MultiUART _commandReciver(4, 5);
 
   const FlightPin _flightPin(12);
   const Shiranui _shiranui3(10);
@@ -57,6 +59,7 @@ void setup() {
   // https://github.com/askn37/MultiUART#指定可能なボーレート
   device::_debug.begin(9600);
   device::_flightDataComputer.begin(9600);
+  device::_commandReciver.begin(9600);
 
   device::_flightPin.initialize();
   device::_shiranui3.initialize();
@@ -71,9 +74,19 @@ void setup() {
     device::_flightDataComputer,
     static_cast<int>(Ident::FLIGHT_DATA),
     [](double pressure, double altitude) {
+      device::_debug.println("get");
       flightdata::_pressure = pressure;
       flightdata::_altitude = altitude;
       detector::_descentDetector.updateAltitude(altitude);
+    });
+
+  MsgPacketizer::subscribe(
+    device::_commandReciver,
+    static_cast<int>(Ident::COMMAND),
+    [](){
+      if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
+        device::_shiranui3.separate();
+      }
     });
 }
 
@@ -97,7 +110,7 @@ void loop() {
 
   switch (flightdata::_flightMode) {
     case FlightMode::STANDBY:
-      // フライトピンが抜けたらCLIMBモードに移行 
+      // フライトピンが抜けたらCLIMBモードに移行
       if (device::_flightPin.isReleased()) {
         device::_climbIndicator.on();
         device::_descentIndicator.off();
