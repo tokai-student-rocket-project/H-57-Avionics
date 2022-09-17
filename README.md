@@ -70,5 +70,3 @@ MPU6050 を搭載予定
 ---
 
 ©️ 1999 Tokai Student Rocket Project
-
-_＿＿＿図面など存在しない。あったとしてもそれは偽物だ。_
