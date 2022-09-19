@@ -43,7 +43,7 @@ namespace separation {
   // 燃焼中に分離しないために保護する時間を指定
   constexpr unsigned long SEPARATION_MINIMUM = 5000;
   // 強制的に分離する時間を指定
-  constexpr unsigned long SEPARATION_MAXIMUM = 30000;
+  constexpr unsigned long SEPARATION_MAXIMUM = 15000;
   // 分離する高度を指定
   constexpr double SEPARATION_ALTITUDE = -0.5;
 }
@@ -59,7 +59,7 @@ void setup() {
   device::_climbIndicator.initialize();
   device::_descentIndicator.initialize();
 
-  internal::_flightMode = FlightMode::STANDBY;
+  changeFlightMode(FlightMode::STANDBY);
 
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
@@ -75,9 +75,7 @@ void loop() {
   // フライトピン刺したらリセット
   if (!device::_flightPin.isReleased()) {
     device::_shiranui3.reset();
-    device::_climbIndicator.off();
-    device::_descentIndicator.off();
-    internal::_flightMode = FlightMode::STANDBY;
+    changeFlightMode(FlightMode::STANDBY);
   }
 
   // バックアップタイマー
@@ -91,18 +89,14 @@ void loop() {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行
       if (device::_flightPin.isReleased()) {
-        device::_climbIndicator.on();
-        device::_descentIndicator.off();
-        internal::_flightMode = FlightMode::CLIMB;
+        changeFlightMode(FlightMode::CLIMB);
         internal::_launchTime = millis();
       }
       break;
     case FlightMode::CLIMB:
       // DescentDetectorが降下を検出したらDESCENTモードに移行
       if (detector::_descentDetector._isDescending) {
-        device::_climbIndicator.off();
-        device::_descentIndicator.on();
-        internal::_flightMode = FlightMode::DESCENT;
+        changeFlightMode(FlightMode::DESCENT);
       }
       break;
     case FlightMode::DESCENT:
@@ -114,4 +108,11 @@ void loop() {
       }
       break;
   }
+}
+
+void changeFlightMode(FlightMode newFlightMode) {
+  device::_climbIndicator.set(newFlightMode == FlightMode::CLIMB);
+  device::_descentIndicator.set(newFlightMode == FlightMode::DESCENT);
+
+  internal::_flightMode = newFlightMode;
 }

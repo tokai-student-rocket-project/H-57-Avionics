@@ -12,6 +12,10 @@ public:
   /// @brief LEDを初期化する
   void initialize();
 
+  /// @brief 引数に応じて切り替える
+  /// @param state trueで点灯、falseで消灯
+  void set(bool state);
+
   /// @brief LEDを点灯させる
   void on();
 

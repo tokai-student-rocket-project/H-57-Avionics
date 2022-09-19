@@ -7,6 +7,14 @@ LED::LED(int pin) {
   _pin = pin;
 }
 
+void LED::set(bool state) {
+  if (state) {
+    on();
+  } else {
+    off();
+  }
+}
+
 /// @brief LEDを初期化する
 void LED::initialize() {
   pinMode(_pin, OUTPUT);
