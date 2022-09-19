@@ -1,5 +1,5 @@
-#include <MultiUART.h>
-#include <MsgPacketizer.h>
+#include <Wire.h>
+#include "LPS22HB.h"
 #include "DescentDetector.h"
 #include "FlightPin.h"
 #include "Shiranui.h"
@@ -12,18 +12,10 @@ enum class FlightMode {
   MAINCHUTE // 0x03
 };
 
-// データ種別
-// これ見て↓
-// https://github.com/tokai-student-rocket-project/Avionics/tree/main/FlightComponents/FlightDataComputer#フライトデータの形式
-enum class Ident {
-  FLIGHT_DATA, // 0x00
-  COMMAND      // 0x01
-};
-
 namespace device {
-  const MultiUART _debug(Serial);
-  const MultiUART _flightDataComputer(2, 3);
-  const MultiUART _commandReciver(4, 5);
+  // 気圧センサ
+  // https://strawberry-linux.com/support/12122/1812122
+  const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
 
   const FlightPin _flightPin(12);
   const Shiranui _shiranui3(10);
@@ -32,9 +24,13 @@ namespace device {
 }
 
 namespace flightdata {
-  FlightMode _flightMode;
   double _pressure;
   double _altitude;
+}
+
+namespace internal {
+  FlightMode _flightMode;
+  unsigned long _launchTime;
 }
 
 namespace detector {
@@ -44,78 +40,61 @@ namespace detector {
 }
 
 namespace separation {
-  // 燃焼中に分離しないために保護する時間を指定[ms]
-  constexpr unsigned long BURN_TIME = 5000;
-  // 強制的に分離する時間を指定[ms]
-  constexpr unsigned long SEPARATE_TIME = 30000;
-  constexpr double SEPARATE_ALTITUDE = -0.5;
-
-  unsigned long _launchTime;
+  // 燃焼中に分離しないために保護する時間を指定
+  constexpr unsigned long SEPARATION_MINIMUM = 5000;
+  // 強制的に分離する時間を指定
+  constexpr unsigned long SEPARATION_MAXIMUM = 30000;
+  // 分離する高度を指定
+  constexpr double SEPARATION_ALTITUDE = -0.5;
 }
 
 void setup() {
-  // ボーレートを9600以上にするとうまく動かないらしい
-  // これ見て↓
-  // https://github.com/askn37/MultiUART#指定可能なボーレート
-  device::_debug.begin(9600);
-  device::_flightDataComputer.begin(9600);
-  device::_commandReciver.begin(9600);
+  Wire.begin();
+  Serial.begin(9600);
+
+  device::_pressureSensor.initialize();
 
   device::_flightPin.initialize();
   device::_shiranui3.initialize();
   device::_climbIndicator.initialize();
   device::_descentIndicator.initialize();
-  flightdata::_flightMode = FlightMode::STANDBY;
 
-  // シリアル通信で高度を購読する
-  // これ見て↓
-  // https://github.com/hideakitai/MsgPacketizer#direct-data-receive--data-publishing
-  MsgPacketizer::subscribe(
-    device::_flightDataComputer,
-    static_cast<int>(Ident::FLIGHT_DATA),
-    [](double pressure, double altitude) {
-      device::_debug.println("get");
-      flightdata::_pressure = pressure;
-      flightdata::_altitude = altitude;
-      detector::_descentDetector.updateAltitude(altitude);
-    });
+  internal::_flightMode = FlightMode::STANDBY;
 
-  MsgPacketizer::subscribe(
-    device::_commandReciver,
-    static_cast<int>(Ident::COMMAND),
-    [](){
-      if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
-        device::_shiranui3.separate();
-      }
-    });
+  // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
+  delay(3000);
+  device::_pressureSensor.setConfig(device::_pressureSensor.getPressure(), 15);
 }
 
 void loop() {
-  MsgPacketizer::parse();
+  flightdata::_pressure = device::_pressureSensor.getPressure();
+  flightdata::_altitude = device::_pressureSensor.getAltitude();
+
+  detector::_descentDetector.updateAltitude(flightdata::_altitude);
 
   // フライトピン刺したらリセット
   if (!device::_flightPin.isReleased()) {
     device::_shiranui3.reset();
     device::_climbIndicator.off();
     device::_descentIndicator.off();
-    flightdata::_flightMode = FlightMode::STANDBY;
+    internal::_flightMode = FlightMode::STANDBY;
   }
 
   // バックアップタイマー
-  if (flightdata::_flightMode == FlightMode::CLIMB || flightdata::_flightMode == FlightMode::DESCENT) {
-      if (millis() > separation::_launchTime + separation::SEPARATE_TIME){
+  if (internal::_flightMode == FlightMode::CLIMB || internal::_flightMode == FlightMode::DESCENT) {
+      if (millis() > internal::_launchTime + separation::SEPARATION_MAXIMUM){
         device::_shiranui3.separate();
       }
   }
 
-  switch (flightdata::_flightMode) {
+  switch (internal::_flightMode) {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行
       if (device::_flightPin.isReleased()) {
         device::_climbIndicator.on();
         device::_descentIndicator.off();
-        flightdata::_flightMode = FlightMode::CLIMB;
-        separation::_launchTime = millis();
+        internal::_flightMode = FlightMode::CLIMB;
+        internal::_launchTime = millis();
       }
       break;
     case FlightMode::CLIMB:
@@ -123,13 +102,13 @@ void loop() {
       if (detector::_descentDetector._isDescending) {
         device::_climbIndicator.off();
         device::_descentIndicator.on();
-        flightdata::_flightMode = FlightMode::DESCENT;
+        internal::_flightMode = FlightMode::DESCENT;
       }
       break;
     case FlightMode::DESCENT:
       // SEPARATE_ALTITUDE以下になれば分離
-      if (flightdata::_altitude <= separation::SEPARATE_ALTITUDE) {
-        if (millis() > separation::_launchTime + separation::BURN_TIME) {
+      if (flightdata::_altitude <= separation::SEPARATION_ALTITUDE) {
+        if (millis() > internal::_launchTime + separation::SEPARATION_MINIMUM) {
           device::_shiranui3.separate();
         }
       }
