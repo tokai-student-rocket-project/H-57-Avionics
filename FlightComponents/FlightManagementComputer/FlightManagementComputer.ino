@@ -13,40 +13,40 @@ enum class FlightMode {
 };
 
 namespace device {
-// 気圧センサ
-// https://strawberry-linux.com/support/12122/1812122
-const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
+  // 気圧センサ
+  // https://strawberry-linux.com/support/12122/1812122
+  const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
 
-const FlightPin _flightPin(12);
-const Shiranui _shiranui3(10);
-const LED _climbIndicator(9);
-const LED _descentIndicator(8);
-} // namespace device
+  const FlightPin _flightPin(12);
+  const Shiranui _shiranui3(10);
+  const LED _climbIndicator(9);
+  const LED _descentIndicator(8);
+}
 
 namespace flightData {
-double _pressure;
-double _altitude;
-} // namespace flightData
+  double _pressure;
+  double _altitude;
+}
 
 namespace internal {
-FlightMode _flightMode;
-unsigned long _launchTime;
-} // namespace internal
+  FlightMode _flightMode;
+  unsigned long _launchTime;
+}
 
 namespace detector {
-// 引数には平滑化の感度を指定する
-// ブレッドボードを自由落下させるには0.2くらいがちょうどよかった(適当)
-DescentDetector _descentDetector(0.2);
-} // namespace detector
+  // 引数には平滑化の感度を指定する
+  // ブレッドボードを自由落下させるには0.2くらいがちょうどよかった(適当)
+  DescentDetector _descentDetector(0.2);
+}
 
 namespace separationConfig {
-// 燃焼中に分離しないために保護する時間を指定
-constexpr unsigned long SEPARATION_MINIMUM = 5000;
-// 強制的に分離する時間を指定
-constexpr unsigned long SEPARATION_MAXIMUM = 15000;
-// 分離する高度を指定
-constexpr double SEPARATION_ALTITUDE = -0.5;
-} // namespace separation
+  // 燃焼中に分離しないために保護する時間を指定
+  constexpr unsigned long SEPARATION_MINIMUM = 5000;
+  // 強制的に分離する時間を指定
+  constexpr unsigned long SEPARATION_MAXIMUM = 15000;
+  // 分離する高度を指定
+  constexpr double SEPARATION_ALTITUDE = -0.5;
+}
 
 void setup() {
   Wire.begin();
@@ -59,7 +59,7 @@ void setup() {
   device::_climbIndicator.initialize();
   device::_descentIndicator.initialize();
 
-  ::changeFlightMode(FlightMode::STANDBY);
+  changeFlightMode(FlightMode::STANDBY);
 
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
