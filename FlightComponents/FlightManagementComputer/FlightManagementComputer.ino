@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <MultiUART.h>
 #include "LPS22HB.h"
 #include "DescentDetector.h"
 #include "FlightPin.h"
@@ -7,20 +8,25 @@
 
 enum class FlightMode {
   STANDBY,  // 0x00
-  CLIMB,    // 0x01
-  DESCENT,  // 0x02
-  MAINCHUTE // 0x03
+  THRUST,   // 0x01
+  CLIMB,    // 0x02
+  DESCENT,  // 0x03
+  MAINCHUTE // 0x04
 };
 
 namespace device {
   // 気圧センサ
   // https://strawberry-linux.com/support/12122/1812122
-  const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
+  // const LPS22HB _pressureSensor(LPS22HB_DEFAULT_ADDRESS);
 
-  const FlightPin _flightPin(12);
-  const Shiranui _shiranui3(10);
+  const LED _thrustIndicator(8);
   const LED _climbIndicator(9);
-  const LED _descentIndicator(8);
+  const LED _descentIndicator(10);
+  const Shiranui _shiranui3(11);
+  const LED _buzzer(12);
+  const FlightPin _flightPin(13);
+
+  // const MultiUART _openLog(-1, 4);
 }
 
 namespace flightData {
@@ -41,9 +47,9 @@ namespace detector {
 
 namespace separationConfig {
   // 燃焼中に分離しないために保護する時間を指定
-  constexpr unsigned long SEPARATION_MINIMUM = 5000;
+  constexpr unsigned long SEPARATION_MINIMUM = 3000;
   // 強制的に分離する時間を指定
-  constexpr unsigned long SEPARATION_MAXIMUM = 15000;
+  constexpr unsigned long SEPARATION_MAXIMUM = 8000;
   // 分離する高度を指定
   constexpr double SEPARATION_ALTITUDE = -0.5;
 }
@@ -51,26 +57,34 @@ namespace separationConfig {
 void setup() {
   Wire.begin();
   Serial.begin(9600);
+  // device::_openLog.begin(9600);
 
-  device::_pressureSensor.initialize();
+  // device::_pressureSensor.initialize();
 
   device::_flightPin.initialize();
   device::_shiranui3.initialize();
+  device::_buzzer.initialize();
+  device::_thrustIndicator.initialize();
   device::_climbIndicator.initialize();
   device::_descentIndicator.initialize();
 
-  changeFlightMode(FlightMode::STANDBY);
-
   // 初期化直後の外れ値を除くために3秒遅らせる（ローパスフィルタが使えればそっち）
   delay(3000);
-  device::_pressureSensor.setConfig(device::_pressureSensor.getPressure(), 15);
+  // device::_pressureSensor.setConfig(device::_pressureSensor.getPressure(), 15);
 }
 
 void loop() {
   // センサーを読んでフライトデータを更新する
-  flightData::_pressure = device::_pressureSensor.getPressure();
-  flightData::_altitude = device::_pressureSensor.getAltitude();
-  detector::_descentDetector.updateAltitude(flightData::_altitude);
+  // flightData::_pressure = device::_pressureSensor.getPressure();
+  // flightData::_altitude = device::_pressureSensor.getAltitude();
+  // detector::_descentDetector.updateAltitude(flightData::_altitude);
+
+  // フライトピンが抜けている間はログをとる
+  // if (device::_flightPin.isReleased()) {
+  //   device::_openLog.print(millis());
+  //   device::_openLog.print("\t");
+  //   device::_openLog.println(static_cast<int>(internal::_flightMode));
+  // }
 
   // フライトピン刺したらリセット
   if (!device::_flightPin.isReleased()) changeFlightMode(FlightMode::STANDBY);
@@ -81,7 +95,10 @@ void loop() {
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
       // フライトピンが抜けたらCLIMBモードに移行
-      if (device::_flightPin.isReleased()) changeFlightMode(FlightMode::CLIMB);
+      if (device::_flightPin.isReleased()) changeFlightMode(FlightMode::THRUST);
+      break;
+    case FlightMode::THRUST:
+      if (millis() > internal::_launchTime + separationConfig::SEPARATION_MINIMUM) changeFlightMode(FlightMode::CLIMB);
       break;
     case FlightMode::CLIMB:
       // 降下が始まったらDESCENTモードに移行
@@ -100,6 +117,7 @@ void changeFlightMode(FlightMode newFlightMode) {
 
   // デバッグ用
   // フライトモードに応じてLEDを切り替える
+  device::_thrustIndicator.set(newFlightMode == FlightMode::THRUST);
   device::_climbIndicator.set(newFlightMode == FlightMode::CLIMB);
   device::_descentIndicator.set(newFlightMode == FlightMode::DESCENT);
 
@@ -107,13 +125,17 @@ void changeFlightMode(FlightMode newFlightMode) {
   {
     case FlightMode::STANDBY:
       device::_shiranui3.reset();
+      device::_buzzer.off();
       break;
-    case FlightMode::CLIMB:
+    case FlightMode::THRUST:
       // 上昇開始時間を記録しておく
       internal::_launchTime = millis();
       break;
+    case FlightMode::CLIMB:
+      break;
     case FlightMode::MAINCHUTE:
       device::_shiranui3.separate();
+      device::_buzzer.on();
       break;
   }
 
