@@ -8,9 +8,18 @@ void setup() {
 }
 
 void loop() {
-  while(Serial.available()) {
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');
     LoRa.beginPacket();
-    LoRa.println(Serial.readStringUntil('\n'));
+    LoRa.write(0x01);
     LoRa.endPacket();
+  }
+
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    if (LoRa.available() > 0) {
+      String result = LoRa.readStringUntil('\n');
+      Serial.println(result);
+    }
   }
 }
