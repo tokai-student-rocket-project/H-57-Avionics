@@ -11,11 +11,8 @@
 #include "LED.h"
 
 enum class FlightMode {
-  STANDBY,  // 0x00
-  THRUST,   // 0x01
-  CLIMB,    // 0x02
-  DESCENT,  // 0x03
-  MAINCHUTE // 0x04
+  STANDBY, // 0x00
+  FLIGHT   // 0x01
 };
 
 namespace device {
@@ -24,14 +21,10 @@ namespace device {
   // // 6軸センサ
   // const MPU6050 _mpu6050;
 
-  const LED _thrustIndicator(8);
-  const LED _climbIndicator(9);
-  const LED _descentIndicator(10);
+  const LED _flightIndicator(10);
   const Shiranui _shiranui3(11);
   const LED _buzzer(12);
   const FlightPin _flightPin(13);
-
-  // const MultiUART _openLog(-1, 4);
 
   const SoftwareSerial _commandReceiver(2, 3);
 }
@@ -67,12 +60,8 @@ namespace processor {
 }
 
 namespace separationConfig {
-  // 燃焼中に分離しないために保護する時間を指定
-  constexpr unsigned long SEPARATION_MINIMUM = 3000;
-  // 強制的に分離する時間を指定
-  constexpr unsigned long SEPARATION_MAXIMUM = 20000;
-  // 分離する高度を指定
-  constexpr double SEPARATION_ALTITUDE = -0.5;
+  constexpr unsigned long SEPARATION_MINIMUM = 5000;
+  constexpr unsigned long SEPARATION_MAXIMUM = 15000;
 }
 
 void setup() {
@@ -80,21 +69,19 @@ void setup() {
   Serial.begin(9600);
   device::_commandReceiver.begin(9600);
 
-  // device::_openLog.begin(9600);
-
   device::_bme280.beginI2C();
   // device::_mpu6050.initialize();
   // processor::_madgwickFilter.begin(100);
 
-  device::_flightPin.initialize();
+  device::_flightIndicator.initialize();
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
-  device::_thrustIndicator.initialize();
-  device::_climbIndicator.initialize();
-  device::_descentIndicator.initialize();
+  device::_flightPin.initialize();
 }
 
 void loop() {
+  flightData::_lifeTime = millis();
+
   // コマンドを受信する
   if (device::_commandReceiver.available() > 0) {
     int command = device::_commandReceiver.read();
@@ -103,15 +90,13 @@ void loop() {
     // }
   }
 
-  flightData::_lifeTime = millis();
-
   // 温度, 気圧を取得して高度を計算する
   flightData::_temperature = device::_bme280.readTempC();
   flightData::_pressure = device::_bme280.readFloatPressure() / 100.0;
   flightData::_altitude = device::_bme280.readFloatAltitudeMeters();
   processor::_descentDetector.updateAltitude(flightData::_altitude);
 
-  Serial.println(flightData::_altitude);
+  // Serial.println(flightData::_altitude);
 
   // // スケーリング前の6軸を取得する
   // int ax, ay, az, gx, gy, gz;
@@ -148,76 +133,54 @@ void loop() {
   //   device::_openLog.println(static_cast<int>(internal::_flightMode));
   // }
 
+  // フライトモードに応じてLEDを切り替える
+  device::_flightIndicator.set(internal::_flightMode == FlightMode::FLIGHT);
+
   // フライトピン刺したらリセット
-  if (!device::_flightPin.isReleased()) changeFlightMode(FlightMode::STANDBY);
+  if (!device::_flightPin.isReleased()) {
+    internal::_flightMode = FlightMode::STANDBY;
+    reset();
+  }
 
   // 強制分離
-  if (canSeparateForce()) changeFlightMode(FlightMode::MAINCHUTE);
+  if (canSeparateForce()) {
+    separate();
+  }
 
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
-      // フライトピンが抜けたらCLIMBモードに移行
-      if (device::_flightPin.isReleased()) changeFlightMode(FlightMode::THRUST);
+      // フライトピンが抜けたらFLIGHTモードに移行
+      if (device::_flightPin.isReleased()) {
+        internal::_flightMode = FlightMode::FLIGHT;
+        internal::_launchTime = flightData::_lifeTime;
+      }
       break;
-    case FlightMode::THRUST:
-      if (flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MINIMUM) changeFlightMode(FlightMode::CLIMB);
-      break;
-    case FlightMode::CLIMB:
-      // 降下が始まったらDESCENTモードに移行
-      if (processor::_descentDetector._isDescending) changeFlightMode(FlightMode::DESCENT);
-      break;
-    case FlightMode::DESCENT:
-      // 条件が揃えば分離
-      if (canSeparate()) changeFlightMode(FlightMode::MAINCHUTE);
+    case FlightMode::FLIGHT:
+      // 燃焼終了時間を超えたらCLIMBモードに移行
+      if (canSeparate()) {
+        separate();
+      }
       break;
   }
-}
-
-void changeFlightMode(FlightMode newFlightMode) {
-  // フライトモードに変更がなければ早期リターン
-  if (newFlightMode == internal::_flightMode) return;
-
-  // デバッグ用
-  // フライトモードに応じてLEDを切り替える
-  device::_thrustIndicator.set(newFlightMode == FlightMode::THRUST);
-  device::_climbIndicator.set(newFlightMode == FlightMode::CLIMB);
-  device::_descentIndicator.set(newFlightMode == FlightMode::DESCENT);
-
-  switch (newFlightMode)
-  {
-    case FlightMode::STANDBY:
-      device::_shiranui3.reset();
-      device::_buzzer.off();
-      break;
-    case FlightMode::THRUST:
-      // 上昇開始時間を記録しておく
-      internal::_launchTime = flightData::_lifeTime;
-      break;
-    case FlightMode::CLIMB:
-      break;
-    case FlightMode::MAINCHUTE:
-      device::_shiranui3.separate();
-      device::_buzzer.on();
-      break;
-  }
-
-  internal::_flightMode = newFlightMode;
 }
 
 bool canSeparate() {
-  // 飛行時間がSEPARATION_MINIMUMを超えているか
-  bool isPassedSeparationMinimum = flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MINIMUM;
-  // 高度がSEPARATION_ALTITUDE以下か
-  bool isPassedSeparationAltitude = flightData::_altitude <= separationConfig::SEPARATION_ALTITUDE;
-
-  return isPassedSeparationMinimum && isPassedSeparationAltitude;
+  return (internal::_flightMode == FlightMode::FLIGHT)
+    && (flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MINIMUM)
+    && (processor::_descentDetector._isDescending);
 }
 
 bool canSeparateForce() {
-  // 上昇中か下降中
-  bool isInFlight = internal::_flightMode == FlightMode::CLIMB || internal::_flightMode == FlightMode::DESCENT;
-  // 飛行時間がSEPARATION_MAXIMUMを超えているか
-  bool isPassedSeparationMaximum = flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MAXIMUM;
+  return (internal::_flightMode == FlightMode::FLIGHT)
+    && (flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MAXIMUM);
+}
 
-  return isInFlight && isPassedSeparationMaximum;
+void separate() {
+  device::_shiranui3.separate();
+  device::_buzzer.on();
+}
+
+void reset() {
+  device::_shiranui3.reset();
+  device::_buzzer.off();
 }
