@@ -4,7 +4,7 @@
 
 void setup() {
   Serial.begin(9600);
-  LoRa.begin(920E6);
+  LoRa.begin(923E6);
 }
 
 void loop() {
