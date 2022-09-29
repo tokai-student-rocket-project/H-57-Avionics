@@ -33,5 +33,7 @@ void DescentDetector::updateAltitude(double altitude)
   Serial.print("\t");
   Serial.print(_average);
   Serial.print("\t");
-  Serial.println(_descentCount);
+  Serial.print(_descentCount);
+  Serial.print("\t");
+  Serial.println(10);
 }

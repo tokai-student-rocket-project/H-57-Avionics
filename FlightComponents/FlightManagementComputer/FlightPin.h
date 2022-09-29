@@ -1,23 +1,16 @@
 #ifndef FLIGHT_PIN_H_
 #define FLIGHT_PIN_H_
 
-/// @brief フライトピンの抽象化クラス
-class FlightPin
-{
-public:
-  /// @brief コンストラクタ
-  /// @param pin Arduinoのデジタルピン
-  FlightPin(int pin);
 
-  /// @brief フライトピンを初期化する
-  void initialize();
-
-  /// @brief フライトピンが抜けているかを返す
-  /// @return 抜けていればtrue
-  bool isReleased();
-  
+class FlightPin {
 private:
-  int _pin;
+  uint8_t _pinNumber;
+
+public:
+  FlightPin(uint8_t pinNumber);
+
+  bool isReleased();
 };
+
 
 #endif

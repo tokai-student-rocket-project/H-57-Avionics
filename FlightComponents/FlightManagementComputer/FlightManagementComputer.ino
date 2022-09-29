@@ -1,186 +1,129 @@
 #include <Wire.h>
-// #include <MultiUART.h>
-#include <SoftwareSerial.h>
-#include <MsgPacketizer.h>
+#include <SPI.h>
+#include <LoRa.h>
 #include <SparkFunBME280.h>
-// #include <MPU6050_6Axis_MotionApps20.h>
-// #include <MadgwickAHRS.h>
+#include "PressureSensor.h"
 #include "DescentDetector.h"
 #include "FlightPin.h"
-#include "Shiranui.h"
 #include "LED.h"
 
+
 enum class FlightMode {
-  STANDBY, // 0x00
-  FLIGHT   // 0x01
+  STANDBY,
+  FLIGHT,
+  PARACHUTE
 };
 
+
 namespace device {
-  // 気圧センサ
-  const BME280 _bme280;
-  // // 6軸センサ
-  // const MPU6050 _mpu6050;
+  PressureSensor _pressureSensor;
 
-  const LED _flightIndicator(10);
-  const Shiranui _shiranui3(11);
-  const LED _buzzer(12);
-  const FlightPin _flightPin(13);
-
-  const SoftwareSerial _commandReceiver(2, 3);
+  FlightPin _flightPin(0);
+  LED _protectionIndicator(1);
+  LED _flightIndicator(2);
+  LED _separationIndicator(3);
 }
 
-namespace flightData {
-  unsigned long _lifeTime;
-  double _temperature;
-  double _pressure;
-  double _altitude;
-  // double _acceralationX;
-  // double _acceralationY;
-  // double _acceralationZ;
-  // double _gyroX;
-  // double _gyroY;
-  // double _gyroZ;
-  // double _yaw;
-  // double _pitch;
-  // double _roll;
+namespace separationConfig {
+  constexpr unsigned long SEPARATION_MINIMUM_TIME = 5000;
+  constexpr unsigned long SEPARATION_MAXIMUM_TIME = 10000;
 }
 
 namespace internal {
   FlightMode _flightMode;
   unsigned long _launchTime;
+
+  DescentDetector _descentDetector(0.2);
 }
 
-namespace processor {
-  // 引数には平滑化の感度を指定する
-  // ブレッドボードを自由落下させるには0.2くらいがちょうどよかった(適当)
-  const DescentDetector _descentDetector(0.2);
-
-  // // 6軸から姿勢角を計算するやつ
-  // const MadgwickFilter _madgwickFilter;
+namespace flightData {
+  float _altitude;
 }
 
-namespace separationConfig {
-  constexpr unsigned long SEPARATION_MINIMUM = 5000;
-  constexpr unsigned long SEPARATION_MAXIMUM = 15000;
-}
 
 void setup() {
   Wire.begin();
   Serial.begin(9600);
-  device::_commandReceiver.begin(9600);
+  LoRa.begin(923E6);
 
-  device::_bme280.beginI2C();
-  // device::_mpu6050.initialize();
-  // processor::_madgwickFilter.begin(100);
-
-  device::_flightIndicator.initialize();
-  device::_shiranui3.initialize();
-  device::_buzzer.initialize();
-  device::_flightPin.initialize();
+  device::_pressureSensor.initialize();
+  device::_pressureSensor.setReferencePressure(device::_pressureSensor.getPressure());
 }
 
 void loop() {
-  flightData::_lifeTime = millis();
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    byte command = LoRa.read();
 
-  // コマンドを受信する
-  if (device::_commandReceiver.available() > 0) {
-    int command = device::_commandReceiver.read();
-    // if (command == 0x01) {
-    device::_commandReceiver.println("COMMAND RECEIVED.");
-    // }
+    LoRa.beginPacket();
+    LoRa.print("[0x");
+    LoRa.print(command, HEX);
+    LoRa.print("] ");
+    switch (command) {
+      case 0x00:
+        LoRa.print(device::_pressureSensor.getReferencePressure() / 100.0);
+        LoRa.println(" hPa");
+        break;
+      case 0x01:
+        device::_pressureSensor.setReferencePressure(device::_pressureSensor.getPressure());
+        LoRa.println("Success.");
+        break;
+      default:
+        LoRa.println("Failure receiving command. Ignored this operation.");
+        break;
+    }
+    LoRa.endPacket();
   }
 
-  // 温度, 気圧を取得して高度を計算する
-  flightData::_temperature = device::_bme280.readTempC();
-  flightData::_pressure = device::_bme280.readFloatPressure() / 100.0;
-  flightData::_altitude = device::_bme280.readFloatAltitudeMeters();
-  processor::_descentDetector.updateAltitude(flightData::_altitude);
+  updateFlightData();
+  updateLED();
 
-  // Serial.println(flightData::_altitude);
+  if (internal::_flightMode == FlightMode::FLIGHT && canSeparateForce()) separate();
 
-  // // スケーリング前の6軸を取得する
-  // int ax, ay, az, gx, gy, gz;
-  // device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-  // // スケーリングする
-  // flightData::_acceralationX = ax / 2048.0;
-  // flightData::_acceralationY = ay / 2048.0;
-  // flightData::_acceralationZ = az / 2048.0;
-  // flightData::_gyroX = gx / 16.4;
-  // flightData::_gyroY = gy / 16.4;
-  // flightData::_gyroZ = gz / 16.4;
-
-  // // 姿勢角を計算する
-  // processor::_madgwickFilter.updateIMU(
-  //   flightData::_gyroX,
-  //   flightData::_gyroY,
-  //   flightData::_gyroZ,
-  //   flightData::_acceralationX,
-  //   flightData::_acceralationY,
-  //   flightData::_acceralationZ);
-
-  // flightData::_yaw = processor::_madgwickFilter.getYaw();
-  // flightData::_pitch = processor::_madgwickFilter.getPitch();
-  // flightData::_roll = processor::_madgwickFilter.getRoll();
-
-  // Serial.println(flightData::_pitch);
-  
-
-  // フライトピンが抜けている間はログをとる
-  // if (device::_flightPin.isReleased()) {
-  //   device::_openLog.print(millis());
-  //   device::_openLog.print("\t");
-  //   device::_openLog.println(static_cast<int>(internal::_flightMode));
-  // }
-
-  // フライトモードに応じてLEDを切り替える
-  device::_flightIndicator.set(internal::_flightMode == FlightMode::FLIGHT);
-
-  // フライトピン刺したらリセット
-  if (!device::_flightPin.isReleased()) {
-    internal::_flightMode = FlightMode::STANDBY;
-    reset();
-  }
-
-  // 強制分離
-  if (canSeparateForce()) {
-    separate();
-  }
+  if (!device::_flightPin.isReleased()) reset();
 
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
-      // フライトピンが抜けたらFLIGHTモードに移行
-      if (device::_flightPin.isReleased()) {
-        internal::_flightMode = FlightMode::FLIGHT;
-        internal::_launchTime = flightData::_lifeTime;
-      }
+      if (device::_flightPin.isReleased()) onLaunched();
       break;
     case FlightMode::FLIGHT:
-      // 燃焼終了時間を超えたらCLIMBモードに移行
-      if (canSeparate()) {
-        separate();
-      }
+      if (internal::_descentDetector._isDescending && canSeparate()) separate();
+      break;
+    case FlightMode::PARACHUTE:
       break;
   }
+
+  delay(10);
+}
+
+void updateFlightData() {
+  flightData::_altitude = device::_pressureSensor.getAltitude();
+  internal::_descentDetector.updateAltitude(flightData::_altitude);
+}
+
+void updateLED() {
+  device::_protectionIndicator.set(internal::_flightMode == FlightMode::FLIGHT && !canSeparate());
+  device::_flightIndicator.set(internal::_flightMode == FlightMode::FLIGHT);
+  device::_separationIndicator.set(internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 bool canSeparate() {
-  return (internal::_flightMode == FlightMode::FLIGHT)
-    && (flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MINIMUM)
-    && (processor::_descentDetector._isDescending);
+  return millis() > internal::_launchTime + separationConfig::SEPARATION_MINIMUM_TIME;
 }
 
 bool canSeparateForce() {
-  return (internal::_flightMode == FlightMode::FLIGHT)
-    && (flightData::_lifeTime > internal::_launchTime + separationConfig::SEPARATION_MAXIMUM);
+  return millis() > internal::_launchTime + separationConfig::SEPARATION_MAXIMUM_TIME;
+}
+
+void onLaunched() {
+  internal::_flightMode = FlightMode::FLIGHT;
+  internal::_launchTime = millis();
 }
 
 void separate() {
-  device::_shiranui3.separate();
-  device::_buzzer.on();
+  internal::_flightMode = FlightMode::PARACHUTE;
 }
 
 void reset() {
-  device::_shiranui3.reset();
-  device::_buzzer.off();
+  internal::_flightMode = FlightMode::STANDBY;
 }
