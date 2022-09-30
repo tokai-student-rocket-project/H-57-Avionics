@@ -4,9 +4,6 @@
 #include <SparkFunBME280.h>
 #include "PressureSensor.h"
 #include "DescentDetector.h"
-#include "FlightPin.h"
-#include "LED.h"
-
 
 enum class FlightMode {
   STANDBY,
@@ -18,10 +15,10 @@ enum class FlightMode {
 namespace device {
   PressureSensor _pressureSensor;
 
-  FlightPin _flightPin(0);
-  LED _protectionIndicator(1);
-  LED _flightIndicator(2);
-  LED _separationIndicator(3);
+  constexpr int FLIGHT_PIN = 0;
+  constexpr int PROTECTION_INDICATOR = 1;
+  constexpr int FLIGHT_INDICATOR = 2;
+  constexpr int SEPARATION_INDICATOR = 3;
 }
 
 namespace separationConfig {
@@ -44,7 +41,13 @@ namespace flightData {
 void setup() {
   Wire.begin();
   Serial.begin(9600);
+  Serial1.begin(9600);
   LoRa.begin(923E6);
+
+  pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
+  pinMode(device::PROTECTION_INDICATOR, OUTPUT);
+  pinMode(device::FLIGHT_INDICATOR, OUTPUT);
+  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
 
   device::_pressureSensor.initialize();
   device::_pressureSensor.setReferencePressure(device::_pressureSensor.getPressure());
@@ -78,13 +81,17 @@ void loop() {
   updateFlightData();
   updateLED();
 
+  if (internal::_flightMode != FlightMode::STANDBY) {
+    logSdCard();
+  }
+
   if (internal::_flightMode == FlightMode::FLIGHT && canSeparateForce()) separate();
 
-  if (!device::_flightPin.isReleased()) reset();
+  if (digitalRead(device::FLIGHT_PIN) == LOW) reset();
 
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
-      if (device::_flightPin.isReleased()) onLaunched();
+      if (digitalRead(device::FLIGHT_PIN) == HIGH) onLaunched();
       break;
     case FlightMode::FLIGHT:
       if (internal::_descentDetector._isDescending && canSeparate()) separate();
@@ -102,9 +109,15 @@ void updateFlightData() {
 }
 
 void updateLED() {
-  device::_protectionIndicator.set(internal::_flightMode == FlightMode::FLIGHT && !canSeparate());
-  device::_flightIndicator.set(internal::_flightMode == FlightMode::FLIGHT);
-  device::_separationIndicator.set(internal::_flightMode == FlightMode::PARACHUTE);
+  digitalWrite(device::PROTECTION_INDICATOR, internal::_flightMode == FlightMode::FLIGHT && !canSeparate());
+  digitalWrite(device::FLIGHT_INDICATOR, internal::_flightMode == FlightMode::FLIGHT);
+  digitalWrite(device::SEPARATION_INDICATOR, internal::_flightMode == FlightMode::PARACHUTE);
+}
+
+void logSdCard() {
+  Serial1.print(millis()); Serial1.print("\t");
+  Serial1.print(static_cast<int>(internal::_flightMode)); Serial1.print("\t");
+  Serial1.println(flightData::_altitude);
 }
 
 bool canSeparate() {

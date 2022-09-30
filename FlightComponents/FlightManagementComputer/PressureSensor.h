@@ -17,6 +17,8 @@ public:
   void setReferencePressure(float referencePressure);
   float getReferencePressure();
   float getAltitude();
+  float getHumidity();
+  float getTemperature();
 };
 
 

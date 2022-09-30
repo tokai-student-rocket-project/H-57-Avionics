@@ -24,3 +24,11 @@ float PressureSensor::getReferencePressure() {
 float PressureSensor::getAltitude() {
   return _bme280.readFloatAltitudeMeters();
 }
+
+float PressureSensor::getHumidity() {
+  return _bme280.readFloatHumidity();
+}
+
+float PressureSensor::getTemperature() {
+  return _bme280.readTempC();
+}
