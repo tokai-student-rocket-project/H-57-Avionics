@@ -3,8 +3,7 @@
 #include <LoRa.h>
 #include <SparkFunBME280.h>
 #include "PressureSensor.h"
-#include "DescentDetector.h"
-#include "Frequency.h"
+#include "DescentDetector.h
 
 enum class FlightMode {
   STANDBY,
@@ -32,7 +31,6 @@ namespace internal {
   unsigned long _launchTime;
 
   DescentDetector _descentDetector(0.35);
-  // Frequency _frequency(10);
 }
 
 namespace flightData {
