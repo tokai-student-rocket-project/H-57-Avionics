@@ -4,6 +4,7 @@
 #include <SparkFunBME280.h>
 #include "PressureSensor.h"
 #include "DescentDetector.h"
+#include "Frequency.h"
 
 enum class FlightMode {
   STANDBY,
@@ -31,6 +32,7 @@ namespace internal {
   unsigned long _launchTime;
 
   DescentDetector _descentDetector(0.35);
+  // Frequency _frequency(10);
 }
 
 namespace flightData {
@@ -54,6 +56,8 @@ void setup() {
 }
 
 void loop() {
+  unsigned long startTime_us = micros();
+
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     byte command = LoRa.read();
@@ -110,7 +114,8 @@ void loop() {
       break;
   }
 
-  delay(10);
+  unsigned long delayTime_us = 10000 - (micros() - startTime_us);
+  if (delayTime_us <= 10000) delayMicroseconds(delayTime_us);
 }
 
 void updateFlightData() {
