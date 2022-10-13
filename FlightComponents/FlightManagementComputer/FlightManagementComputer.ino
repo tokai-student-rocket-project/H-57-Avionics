@@ -22,15 +22,15 @@ namespace device {
 }
 
 namespace separationConfig {
-  constexpr unsigned long SEPARATION_MINIMUM_TIME = 5000;
-  constexpr unsigned long SEPARATION_MAXIMUM_TIME = 10000;
+  constexpr unsigned long SEPARATION_MINIMUM_TIME = 3000;
+  constexpr unsigned long SEPARATION_MAXIMUM_TIME = 20000;
 }
 
 namespace internal {
   FlightMode _flightMode;
   unsigned long _launchTime;
 
-  DescentDetector _descentDetector(0.2);
+  DescentDetector _descentDetector(0.35);
 }
 
 namespace flightData {
@@ -85,7 +85,12 @@ void loop() {
     logSdCard();
   }
 
-  if (internal::_flightMode == FlightMode::FLIGHT && canSeparateForce()) separate();
+  if (internal::_flightMode == FlightMode::FLIGHT && canSeparateForce()) {
+    separate();
+    LoRa.beginPacket();
+    LoRa.println("Separated by timer.");
+    LoRa.endPacket();
+  }
 
   if (digitalRead(device::FLIGHT_PIN) == LOW) reset();
 
@@ -94,7 +99,12 @@ void loop() {
       if (digitalRead(device::FLIGHT_PIN) == HIGH) onLaunched();
       break;
     case FlightMode::FLIGHT:
-      if (internal::_descentDetector._isDescending && canSeparate()) separate();
+      if (internal::_descentDetector._isDescending && canSeparate()) {
+        separate();
+        LoRa.beginPacket();
+        LoRa.println("Separated by altitude.");
+        LoRa.endPacket();
+      }
       break;
     case FlightMode::PARACHUTE:
       break;
