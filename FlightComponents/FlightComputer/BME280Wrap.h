@@ -1,11 +1,11 @@
-#ifndef PRESSURE_SENSOR_H_
-#define PRESSURE_SENSOR_H_
+#ifndef BME280_Wrap_H_
+#define BME280_Wrap_H_
 
 
 #include <SparkFunBME280.h>
 
 
-class PressureSensor {
+class BME280Wrap {
 private:
   BME280 _bme280;
 

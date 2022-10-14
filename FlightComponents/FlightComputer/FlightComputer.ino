@@ -1,9 +1,10 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <LoRa.h>
-#include <SparkFunBME280.h>
-#include "PressureSensor.h"
-#include "DescentDetector.h
+#include "BME280Wrap.h"
+#include "DescentDetector.h"
+#include "FrequencyTimer.h"
+
 
 enum class FlightMode {
   STANDBY,
@@ -13,8 +14,10 @@ enum class FlightMode {
 
 
 namespace device {
-  PressureSensor _pressureSensor;
+  // 気圧, 気温, 湿度センサ
+  BME280Wrap _bme280;
 
+  // BBMのピン番号
   constexpr int FLIGHT_PIN = 0;
   constexpr int PROTECTION_INDICATOR = 1;
   constexpr int FLIGHT_INDICATOR = 2;
@@ -22,23 +25,56 @@ namespace device {
 }
 
 namespace separationConfig {
-  constexpr unsigned long SEPARATION_MINIMUM_TIME = 3000;
-  constexpr unsigned long SEPARATION_MAXIMUM_TIME = 20000;
+  // 最小分離時間 [ms]
+  constexpr unsigned long SEPARATION_MINIMUM_TIME_MS = 3000;
+  // 最大分離時間 [ms]
+  constexpr unsigned long SEPARATION_MAXIMUM_TIME_MS = 20000;
 }
 
 namespace internal {
   FlightMode _flightMode;
-  unsigned long _launchTime;
+  unsigned long _launchTime_ms;
 
   DescentDetector _descentDetector(0.35);
+  FrequencyTimer _frequencyTimer;
 }
 
 namespace flightData {
-  float _altitude;
+  // 高度 [m]
+  float _altitude_m;
 }
 
 
 void setup() {
+  initializeDevices();
+}
+
+
+void loop() {
+  receiveCommand();
+
+  updateFlightData();
+  updateIndicators();
+  updateFlightMode();
+
+  if (isInFlight()) {
+    writeLog();
+
+    if (canSeparateForce()) {
+      internal::_flightMode = FlightMode::PARACHUTE;
+      downlinkLog("Separated by timer.");
+    }
+
+    if (digitalRead(device::FLIGHT_PIN) == LOW) {
+      internal::_flightMode = FlightMode::STANDBY;  
+    }
+  }
+
+  internal::_frequencyTimer.delay();
+}
+
+
+void initializeDevices() {
   Wire.begin();
   Serial.begin(9600);
   Serial1.begin(9600);
@@ -49,107 +85,92 @@ void setup() {
   pinMode(device::FLIGHT_INDICATOR, OUTPUT);
   pinMode(device::SEPARATION_INDICATOR, OUTPUT);
 
-  device::_pressureSensor.initialize();
-  device::_pressureSensor.setReferencePressure(device::_pressureSensor.getPressure());
+  device::_bme280.initialize();
+  device::_bme280.setReferencePressure(device::_bme280.getPressure());
 }
 
-void loop() {
-  unsigned long startTime_us = micros();
 
+void receiveCommand() {
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     byte command = LoRa.read();
 
-    LoRa.beginPacket();
-    LoRa.print("[0x");
-    LoRa.print(command, HEX);
-    LoRa.print("] ");
+    char message[64];
     switch (command) {
       case 0x00:
-        LoRa.print(device::_pressureSensor.getReferencePressure() / 100.0);
-        LoRa.println(" hPa");
+        sprintf(message, "[0x00] %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
         break;
       case 0x01:
-        device::_pressureSensor.setReferencePressure(device::_pressureSensor.getPressure());
-        LoRa.println("Success.");
+        device::_bme280.setReferencePressure(device::_bme280.getPressure());
+        sprintf(message, "Success.");
         break;
       default:
-        LoRa.println("Failure receiving command. Ignored this operation.");
+        sprintf(message, "Failure receiving command. Ignored this operation.");
         break;
     }
-    LoRa.endPacket();
+    downlinkLog(message);
   }
-
-  updateFlightData();
-  updateLED();
-
-  if (internal::_flightMode != FlightMode::STANDBY) {
-    logSdCard();
-  }
-
-  if (internal::_flightMode == FlightMode::FLIGHT && canSeparateForce()) {
-    separate();
-    LoRa.beginPacket();
-    LoRa.println("Separated by timer.");
-    LoRa.endPacket();
-  }
-
-  if (digitalRead(device::FLIGHT_PIN) == LOW) reset();
-
-  switch (internal::_flightMode) {
-    case FlightMode::STANDBY:
-      if (digitalRead(device::FLIGHT_PIN) == HIGH) onLaunched();
-      break;
-    case FlightMode::FLIGHT:
-      if (internal::_descentDetector._isDescending && canSeparate()) {
-        separate();
-        LoRa.beginPacket();
-        LoRa.println("Separated by altitude.");
-        LoRa.endPacket();
-      }
-      break;
-    case FlightMode::PARACHUTE:
-      break;
-  }
-
-  unsigned long delayTime_us = 10000 - (micros() - startTime_us);
-  if (delayTime_us <= 10000) delayMicroseconds(delayTime_us);
 }
+
 
 void updateFlightData() {
-  flightData::_altitude = device::_pressureSensor.getAltitude();
-  internal::_descentDetector.updateAltitude(flightData::_altitude);
+  flightData::_altitude_m = device::_bme280.getAltitude();
+  internal::_descentDetector.updateAltitude(flightData::_altitude_m);
 }
 
-void updateLED() {
+
+void updateIndicators() {
   digitalWrite(device::PROTECTION_INDICATOR, internal::_flightMode == FlightMode::FLIGHT && !canSeparate());
   digitalWrite(device::FLIGHT_INDICATOR, internal::_flightMode == FlightMode::FLIGHT);
   digitalWrite(device::SEPARATION_INDICATOR, internal::_flightMode == FlightMode::PARACHUTE);
 }
 
-void logSdCard() {
-  Serial1.print(millis()); Serial1.print("\t");
-  Serial1.print(static_cast<int>(internal::_flightMode)); Serial1.print("\t");
-  Serial1.println(flightData::_altitude);
+
+bool isInFlight() {
+  return internal::_flightMode == FlightMode::FLIGHT
+    || internal::_flightMode == FlightMode::PARACHUTE;
 }
 
+
+void writeLog() {
+  Serial1.print(millis()); Serial1.print("\t");
+  Serial1.print(static_cast<int>(internal::_flightMode)); Serial1.print("\t");
+  Serial1.println(flightData::_altitude_m);
+}
+
+
+void downlinkLog(char message[]) {
+  LoRa.beginPacket();
+  LoRa.println(message);
+  LoRa.endPacket();
+}
+
+
 bool canSeparate() {
-  return millis() > internal::_launchTime + separationConfig::SEPARATION_MINIMUM_TIME;
+  return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
 }
 
 bool canSeparateForce() {
-  return millis() > internal::_launchTime + separationConfig::SEPARATION_MAXIMUM_TIME;
+  return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
 }
 
-void onLaunched() {
-  internal::_flightMode = FlightMode::FLIGHT;
-  internal::_launchTime = millis();
-}
 
-void separate() {
-  internal::_flightMode = FlightMode::PARACHUTE;
-}
+void updateFlightMode() {
+  switch (internal::_flightMode) {
+    case FlightMode::STANDBY:
+      if (digitalRead(device::FLIGHT_PIN) == HIGH) {
+        internal::_flightMode = FlightMode::FLIGHT;
+      };
+      break;
 
-void reset() {
-  internal::_flightMode = FlightMode::STANDBY;
+    case FlightMode::FLIGHT:
+      if (internal::_descentDetector._isDescending && canSeparate()) {
+        internal::_flightMode = FlightMode::PARACHUTE;
+        downlinkLog("Separated by altitude.");
+      }
+      break;
+
+    case FlightMode::PARACHUTE:
+      break;
+  }
 }
