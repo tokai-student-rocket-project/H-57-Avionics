@@ -40,13 +40,25 @@ namespace internal {
 }
 
 namespace flightData {
-  // 高度 [m]
+  float _temperature_degT;
+  float _pressure_Pa;
   float _altitude_m;
 }
 
 
 void setup() {
-  initializeDevices();
+  Wire.begin();
+  Serial.begin(9600);
+  Serial1.begin(9600);
+  LoRa.begin(923E6);
+
+  pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
+  pinMode(device::PROTECTION_INDICATOR, OUTPUT);
+  pinMode(device::FLIGHT_INDICATOR, OUTPUT);
+  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
+
+  device::_bme280.initialize();
+  device::_bme280.setReferencePressure(device::_bme280.getPressure());
 }
 
 
@@ -64,29 +76,9 @@ void loop() {
       internal::_flightMode = FlightMode::PARACHUTE;
       downlinkLog("Separated by timer.");
     }
-
-    if (digitalRead(device::FLIGHT_PIN) == LOW) {
-      internal::_flightMode = FlightMode::STANDBY;  
-    }
   }
 
   internal::_frequencyTimer.delay();
-}
-
-
-void initializeDevices() {
-  Wire.begin();
-  Serial.begin(9600);
-  Serial1.begin(9600);
-  LoRa.begin(923E6);
-
-  pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
-  pinMode(device::PROTECTION_INDICATOR, OUTPUT);
-  pinMode(device::FLIGHT_INDICATOR, OUTPUT);
-  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
-
-  device::_bme280.initialize();
-  device::_bme280.setReferencePressure(device::_bme280.getPressure());
 }
 
 
@@ -114,8 +106,13 @@ void receiveCommand() {
 
 
 void updateFlightData() {
-  flightData::_altitude_m = device::_bme280.getAltitude();
+  flightData::_temperature_degT = device::_bme280.getTemperature();
+  flightData::_pressure_Pa      = device::_bme280.getPressure();
+  flightData::_altitude_m       = device::_bme280.getAltitude();
+
   internal::_descentDetector.updateAltitude(flightData::_altitude_m);
+
+  Serial.println(static_cast<int>(internal::_flightMode));
 }
 
 
@@ -128,14 +125,20 @@ void updateIndicators() {
 
 bool isInFlight() {
   return internal::_flightMode == FlightMode::FLIGHT
-    || internal::_flightMode == FlightMode::PARACHUTE;
+      || internal::_flightMode == FlightMode::PARACHUTE;
 }
 
 
 void writeLog() {
-  Serial1.print(millis()); Serial1.print("\t");
-  Serial1.print(static_cast<int>(internal::_flightMode)); Serial1.print("\t");
-  Serial1.println(flightData::_altitude_m);
+  Serial1.print(millis());
+  Serial1.print("\t");
+  Serial1.print(static_cast<int>(internal::_flightMode));
+  Serial1.print("\t");
+  Serial1.print(flightData::_altitude_m);
+  Serial1.print("\t");
+  Serial1.print(flightData::_pressure_Pa);
+  Serial1.print("\t");
+  Serial1.println(flightData::_temperature_degT);
 }
 
 
@@ -156,10 +159,16 @@ bool canSeparateForce() {
 
 
 void updateFlightMode() {
+  if (digitalRead(device::FLIGHT_PIN) == LOW) {
+    internal::_flightMode = FlightMode::STANDBY;  
+  }
+
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
       if (digitalRead(device::FLIGHT_PIN) == HIGH) {
         internal::_flightMode = FlightMode::FLIGHT;
+        internal::_launchTime_ms = millis();
+        downlinkLog("Launched.");
       };
       break;
 

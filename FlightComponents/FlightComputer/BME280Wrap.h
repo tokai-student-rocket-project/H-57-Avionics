@@ -13,12 +13,12 @@ public:
   void initialize();
 
   float getPressure();
-
-  void setReferencePressure(float referencePressure);
-  float getReferencePressure();
   float getAltitude();
   float getHumidity();
   float getTemperature();
+
+  void setReferencePressure(float referencePressure);
+  float getReferencePressure();
 };
 
 
