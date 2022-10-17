@@ -36,7 +36,7 @@ namespace internal {
   unsigned long _launchTime_ms;
 
   DescentDetector _descentDetector(0.35);
-  FrequencyTimer _frequencyTimer;
+  FrequencyTimer _frequencyTimer(100);
 }
 
 namespace flightData {
