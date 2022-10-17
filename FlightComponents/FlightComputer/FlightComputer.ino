@@ -49,7 +49,8 @@ namespace flightData {
 void setup() {
   Wire.begin();
   Serial.begin(9600);
-  Serial1.begin(9600);
+  // 9600だとロギングが遅すぎてloopの100Hzを維持できなかった
+  Serial1.begin(115200);
   LoRa.begin(923E6);
 
   pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
@@ -111,8 +112,6 @@ void updateFlightData() {
   flightData::_altitude_m       = device::_bme280.getAltitude();
 
   internal::_descentDetector.updateAltitude(flightData::_altitude_m);
-
-  Serial.println(static_cast<int>(internal::_flightMode));
 }
 
 

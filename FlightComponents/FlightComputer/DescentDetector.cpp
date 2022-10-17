@@ -29,11 +29,11 @@ void DescentDetector::updateAltitude(double altitude)
 
   // デバッグ用
   // 後で消す
-  // Serial.print(altitude);
-  // Serial.print("\t");
-  // Serial.print(_average);
-  // Serial.print("\t");
-  // Serial.print(_descentCount);
-  // Serial.print("\t");
-  // Serial.println(10);
+  Serial.print(altitude);
+  Serial.print("\t");
+  Serial.print(_average);
+  Serial.print("\t");
+  Serial.print(_descentCount);
+  Serial.print("\t");
+  Serial.println(10);
 }
