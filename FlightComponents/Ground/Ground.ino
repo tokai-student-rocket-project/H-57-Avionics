@@ -12,10 +12,14 @@ void loop() {
 
     if (command == "INITIALIZE") {
       sendCommand(0x01);
-    } else if (command == "GET_REFERENCE_PRESSURE") {
-      sendCommand(0xF3);
+    } else if (command == "HEALTH_CHECK") {
+      sendCommand(0x02);
     } else if (command == "SET_REFERENCE_PRESSURE") {
       sendCommand(0x03);
+    } else if (command == "SEPARATE") {
+      sendCommand(0x04);
+    } else if (command == "GET_REFERENCE_PRESSURE") {
+      sendCommand(0xF3);
     } else {
       Serial.println("Unknown command. Ignored this operation.");
     }

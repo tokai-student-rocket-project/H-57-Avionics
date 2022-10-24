@@ -108,19 +108,34 @@ void receiveCommand() {
 
     char message[64];
     switch (command) {
+
       // 初期化
       case 0x01:
         sprintf(message, "Initialized.");
         break;
-      // 基準気圧 取得
-      case 0xF3:
+
+      // ヘルスチェック
+      case 0x02:
+        sprintf(message, "All systems ready to launch.");
+        break;
+
+      // 基準気圧取得
+      case 0x03:
         sprintf(message, "[0x00] %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
         break;
-      // 基準気圧 設定
-      case 0x03:
+
+      // 手動分離
+      case 0x04:
+        internal::_flightMode = FlightMode::PARACHUTE;
+        downlinkLog("Separated by manual.");
+        break;
+
+      // 基準気圧設定
+      case 0xF3:
         device::_bme280.setReferencePressure(device::_bme280.getPressure());
         sprintf(message, "Success.");
         break;
+
       default:
         sprintf(message, "Failure receiving command. Ignored this operation.");
         break;
