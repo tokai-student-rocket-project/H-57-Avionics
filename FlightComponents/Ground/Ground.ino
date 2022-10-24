@@ -10,10 +10,12 @@ void loop() {
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
 
-    if (command == "GET_REFERENCE_PRESSURE") {
-      sendCommand(0x00);
-    } else if (command == "SET_REFERENCE_PRESSURE") {
+    if (command == "INITIALIZE") {
       sendCommand(0x01);
+    } else if (command == "GET_REFERENCE_PRESSURE") {
+      sendCommand(0xF3);
+    } else if (command == "SET_REFERENCE_PRESSURE") {
+      sendCommand(0x03);
     } else {
       Serial.println("Unknown command. Ignored this operation.");
     }
