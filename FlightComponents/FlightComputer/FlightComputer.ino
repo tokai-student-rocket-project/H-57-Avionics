@@ -26,14 +26,15 @@ namespace device {
   constexpr int FLIGHT_PIN = 0;
   constexpr int PROTECTION_INDICATOR = 1;
   constexpr int FLIGHT_INDICATOR = 2;
-  constexpr int SEPARATION_INDICATOR = 3;
+  constexpr int SHIRANUI3 = 3;
+  constexpr int BUZZER = 4;
 }
 
 namespace separationConfig {
   // 最小分離時間 [ms]
-  constexpr unsigned long SEPARATION_MINIMUM_TIME_MS = 3000;
+  constexpr unsigned long SEPARATION_MINIMUM_TIME_MS = 4000;
   // 最大分離時間 [ms]
-  constexpr unsigned long SEPARATION_MAXIMUM_TIME_MS = 20000;
+  constexpr unsigned long SEPARATION_MAXIMUM_TIME_MS = 10000;
 }
 
 namespace internal {
@@ -63,20 +64,20 @@ namespace flightData {
 void setup() {
   Wire.begin();
   Serial.begin(9600);
-  // 9600だとロギングが遅すぎてloopの100Hzを維持できなかった
   Serial1.begin(115200);
   LoRa.begin(923E6);
 
   pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
   pinMode(device::PROTECTION_INDICATOR, OUTPUT);
   pinMode(device::FLIGHT_INDICATOR, OUTPUT);
-  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
+  pinMode(device::SHIRANUI3, OUTPUT);
+  pinMode(device::BUZZER, OUTPUT);
 
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
 
   device::_mpu6050.initialize();
-  // 加速度計測の分解能を指定。 FS16の場合は、出力を2048で割るとGになる
+  // 加速度計測の分解能を指定。 FS16の場合は、出力を2048で割ると[G]になる
   device::_mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
 }
 
@@ -91,8 +92,8 @@ void loop() {
   if (isInFlight()) {
     writeLog();
 
-    if (internal::_flightMode != FlightMode::PARACHUTE && canSeparateForce()) {
-      internal::_flightMode = FlightMode::PARACHUTE;
+    if (canSeparateForce()) {
+      separate();
       downlinkLog("Separated by timer.");
     }
   }
@@ -126,7 +127,7 @@ void receiveCommand() {
 
       // 手動分離
       case 0x04:
-        internal::_flightMode = FlightMode::PARACHUTE;
+        separate();
         downlinkLog("Separated by manual.");
         break;
 
@@ -166,7 +167,6 @@ void updateFlightData() {
 void updateIndicators() {
   digitalWrite(device::PROTECTION_INDICATOR, isInFlight() && !canSeparate());
   digitalWrite(device::FLIGHT_INDICATOR, isInFlight());
-  digitalWrite(device::SEPARATION_INDICATOR, internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 
@@ -210,18 +210,40 @@ void downlinkLog(char message[]) {
 
 
 bool canSeparate() {
+  if (internal::_flightMode == FlightMode::PARACHUTE) {
+    return false;
+  }
+
   return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
 }
 
 
 bool canSeparateForce() {
+  if (internal::_flightMode == FlightMode::PARACHUTE) {
+    return false;
+  }
+
   return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
+}
+
+
+separate() {
+  digitalWrite(device::SHIRANUI3, true);
+  delay(500);
+  digitalWrite(device::SHIRANUI3, false);
+  delay(100);
+  digitalWrite(device::BUZZER, true);
+
+  internal::_flightMode = FlightMode::PARACHUTE;
 }
 
 
 void updateFlightMode() {
   if (digitalRead(device::FLIGHT_PIN) == LOW) {
-    internal::_flightMode = FlightMode::STANDBY;  
+    digitalWrite(device::SHIRANUI3, false);
+    digitalWrite(device::BUZZER, false);
+
+    internal::_flightMode = FlightMode::STANDBY;
   }
 
   switch (internal::_flightMode) {
@@ -234,17 +256,16 @@ void updateFlightMode() {
       break;
 
     case FlightMode::CLIMB:
-      if (internal::_descentDetector._isDescending && canSeparate()) {
+      if (internal::_descentDetector._isDescending) {
         internal::_flightMode = FlightMode::DESCENT;
         downlinkLog("Apposee detected.");
       }
       break;
     
     case FlightMode::DESCENT:
-      internal::_flightMode =  FlightMode::PARACHUTE;
-      downlinkLog("Separated by peak.");
-
-    case FlightMode::PARACHUTE:
-      break;
+      if (canSeparate()) {
+        separate();
+        downlinkLog("Separated by peak.");
+      }
   }
 }
