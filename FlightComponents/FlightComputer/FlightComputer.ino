@@ -26,8 +26,9 @@ namespace device {
   constexpr int FLIGHT_PIN = 0;
   constexpr int PROTECTION_INDICATOR = 1;
   constexpr int FLIGHT_INDICATOR = 2;
-  constexpr int SHIRANUI3 = 3;
-  constexpr int BUZZER = 4;
+  constexpr int SEPARATION_INDICATOR = 3;
+  constexpr int SHIRANUI3 = 4;
+  constexpr int BUZZER = 5;
 }
 
 namespace separationConfig {
@@ -70,6 +71,7 @@ void setup() {
   pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
   pinMode(device::PROTECTION_INDICATOR, OUTPUT);
   pinMode(device::FLIGHT_INDICATOR, OUTPUT);
+  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
   pinMode(device::SHIRANUI3, OUTPUT);
   pinMode(device::BUZZER, OUTPUT);
 
@@ -165,7 +167,7 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  digitalWrite(device::PROTECTION_INDICATOR, isInFlight() && !canSeparate());
+  digitalWrite(device::PROTECTION_INDICATOR, isInFlight() && millis() < internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS);
   digitalWrite(device::FLIGHT_INDICATOR, isInFlight());
 }
 
@@ -210,24 +212,20 @@ void downlinkLog(char message[]) {
 
 
 bool canSeparate() {
-  if (internal::_flightMode == FlightMode::PARACHUTE) {
-    return false;
-  }
-
-  return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
+  return internal::_flightMode != FlightMode::PARACHUTE
+      && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
 }
 
 
 bool canSeparateForce() {
-  if (internal::_flightMode == FlightMode::PARACHUTE) {
-    return false;
-  }
-
-  return millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
+  return internal::_flightMode != FlightMode::PARACHUTE
+      && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
 }
 
 
-separate() {
+void separate() {
+  digitalWrite(device::SEPARATION_INDICATOR, true);
+
   digitalWrite(device::SHIRANUI3, true);
   delay(500);
   digitalWrite(device::SHIRANUI3, false);
@@ -240,6 +238,8 @@ separate() {
 
 void updateFlightMode() {
   if (digitalRead(device::FLIGHT_PIN) == LOW) {
+    digitalWrite(device::SEPARATION_INDICATOR, false);
+
     digitalWrite(device::SHIRANUI3, false);
     digitalWrite(device::BUZZER, false);
 
