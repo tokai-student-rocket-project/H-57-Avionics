@@ -39,9 +39,10 @@ namespace device {
 
 namespace separationConfig {
   // 最小分離時間 [ms]
-  constexpr unsigned long SEPARATION_MINIMUM_TIME_MS = 4000;
+  unsigned long separation_minimum_time_ms = 4000;
+
   // 最大分離時間 [ms]
-  constexpr unsigned long SEPARATION_MAXIMUM_TIME_MS = 10000;
+  unsigned long separation_maximum_time_ms = 10000;
 }
 
 namespace internal {
@@ -88,6 +89,8 @@ void setup() {
   device::_mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
 
   device::_flightPin.initialize();
+
+  downlinkLog("start");
 }
 
 
@@ -142,33 +145,26 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  digitalWrite(device::PROTECTION_INDICATOR, isFlying() && millis() < internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS);
+  digitalWrite(device::PROTECTION_INDICATOR, isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
   digitalWrite(device::FLIGHT_INDICATOR, isFlying());
 }
 
 
 void writeLog() {
-  Serial1.print(millis());
-  Serial1.print("\t");
-  Serial1.print(static_cast<int>(internal::_flightMode));
-  Serial1.print("\t");
-  Serial1.print(flightData::_altitude_m);
-  Serial1.print("\t");
-  Serial1.print(flightData::_pressure_Pa);
-  Serial1.print("\t");
-  Serial1.print(flightData::_temperature_degT);
-  Serial1.print("\t");
-  Serial1.print(flightData::_acceleration_x_g);
-  Serial1.print("\t");
-  Serial1.print(flightData::_acceleration_y_g);
-  Serial1.print("\t");
-  Serial1.print(flightData::_acceleration_z_g);
-  Serial1.print("\t");
-  Serial1.print(flightData::_gyro_x_degps);
-  Serial1.print("\t");
-  Serial1.print(flightData::_gyro_y_degps);
-  Serial1.print("\t");
-  Serial1.println(flightData::_gyro_z_degps);
+  char message[64];
+  sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+    millis(),
+    static_cast<int>(internal::_flightMode),
+    flightData::_altitude_m,
+    flightData::_pressure_Pa / 100.0,
+    flightData::_temperature_degT,
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g,
+    flightData::_gyro_x_degps,
+    flightData::_gyro_y_degps,
+    flightData::_gyro_z_degps);
+  Serial1.println(message);
 }
 
 
@@ -187,14 +183,14 @@ bool isFlying() {
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
       && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
+      && millis() > internal::_launchTime_ms + separationConfig::separation_minimum_time_ms;
 }
 
 
 bool canSeparateForce() {
   return isFlying()
       && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
+      && millis() > internal::_launchTime_ms + separationConfig::separation_maximum_time_ms;
 }
 
 
@@ -268,10 +264,55 @@ void receiveCommand() {
   deserializeJson(packet, LoRa);
 
   if (packet["type"] == "command") {
+    char message[64];
     if (packet["request"] == "getRefPress") {
-      char message[64];
-      sprintf(message, "[0x00] %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
-      downlinkLog(message);
+      sprintf(message, "%.2f hPa", device::_bme280.getReferencePressure() / 100.0);
+    } else if (packet["request"] == "getSepaMin") {
+      sprintf(message, "%.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
+    } else if (packet["request"] == "getSepaMax") {
+      sprintf(message, "%.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
+    } else if (packet["request"] == "getFlightData") {
+      sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+        millis(),
+        static_cast<int>(internal::_flightMode),
+        flightData::_altitude_m,
+        flightData::_pressure_Pa / 100.0,
+        flightData::_temperature_degT,
+        flightData::_acceleration_x_g,
+        flightData::_acceleration_y_g,
+        flightData::_acceleration_z_g,
+        flightData::_gyro_x_degps,
+        flightData::_gyro_y_degps,
+        flightData::_gyro_z_degps);
+    } else if (packet["request"] == "setRefPress") {
+      if (packet["value"].is<double>()) {
+        double value = packet["value"];
+        device::_bme280.setReferencePressure(value * 100.0);
+        sprintf(message, "set %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
+      } else {
+        device::_bme280.setReferencePressure(device::_bme280.getPressure());
+        sprintf(message, "invalid value, set current value %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
+      }
+    } else if (packet["request"] == "setSepaMin") {
+      if (packet["value"].is<double>()) {
+        double value = packet["value"];
+        separationConfig::separation_minimum_time_ms = value * 1000.0;
+        sprintf(message, "set %.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
+      } else {
+        separationConfig::separation_minimum_time_ms = 4.0 * 1000.0;
+        sprintf(message, "invalid value, set default value %.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
+      }
+    } else if (packet["request"] == "setSepaMax") {
+      if (packet["value"].is<double>()) {
+        double value = packet["value"];
+        separationConfig::separation_maximum_time_ms = value * 1000.0;
+        sprintf(message, "set %.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
+      } else {
+        separationConfig::separation_maximum_time_ms = 10.0 * 1000.0;
+        sprintf(message, "invalid value, set default value %.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
+      }
     }
+
+    downlinkLog(message);
   }
 }

@@ -1,9 +1,17 @@
 #include <SPI.h>
 #include <LoRa.h>
-#include <ArduinoJson.h>
 
 
-StaticJsonDocument<200> packet;
+/*
+{"type": "command", "request": "getRefPress"}
+{"type": "command", "request": "getSepaMin"}
+{"type": "command", "request": "getSepaMax"}
+{"type": "command", "request": "getFlightData"}
+
+{"type": "command", "request": "setRefPress", "value": 1013.0}
+{"type": "command", "request": "setSepaMin", "value": 4.0}
+{"type": "command", "request": "setSepaMax", "value": 10.0}
+*/
 
 
 void setup() {
@@ -14,26 +22,12 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');
-
-    if (command == "0") {
-      packet["type"] = "command";
-      packet["request"] = "getRefPress";
-      sendPacket(packet);
-    } else {
-      Serial.println("Unknown command. Ignored this operation.");
-    }
+    LoRa.beginPacket();
+    LoRa.print(Serial.readStringUntil('\n'));
+    LoRa.endPacket();
   }
 
-  int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    String message = LoRa.readStringUntil('\n');
-    Serial.println(message);
+  if (LoRa.parsePacket()) {
+    Serial.println(LoRa.readStringUntil('\n'));
   }
-}
-
-void sendPacket(StaticJsonDocument<200> packet) {
-  LoRa.beginPacket();
-  serializeJson(packet, LoRa);
-  LoRa.endPacket();
 }
