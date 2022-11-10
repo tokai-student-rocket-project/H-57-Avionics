@@ -1,25 +1,25 @@
 #include <SPI.h>
 #include <LoRa.h>
+#include <ArduinoJson.h>
+
+
+StaticJsonDocument<200> packet;
+
 
 void setup() {
   Serial.begin(9600);
   LoRa.begin(923E6);
 }
 
+
 void loop() {
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
 
-    if (command == "INITIALIZE") {
-      sendCommand(0x01);
-    } else if (command == "HEALTH_CHECK") {
-      sendCommand(0x02);
-    } else if (command == "SET_REFERENCE_PRESSURE") {
-      sendCommand(0x03);
-    } else if (command == "SEPARATE") {
-      sendCommand(0x04);
-    } else if (command == "GET_REFERENCE_PRESSURE") {
-      sendCommand(0xF3);
+    if (command == "0") {
+      packet["type"] = "command";
+      packet["request"] = "getRefPress";
+      sendPacket(packet);
     } else {
       Serial.println("Unknown command. Ignored this operation.");
     }
@@ -32,8 +32,8 @@ void loop() {
   }
 }
 
-void sendCommand(byte command) {
+void sendPacket(StaticJsonDocument<200> packet) {
   LoRa.beginPacket();
-  LoRa.write(command);
+  serializeJson(packet, LoRa);
   LoRa.endPacket();
 }

@@ -1,10 +1,14 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <LoRa.h>
+#include <ArduinoJson.h>
 #include "BME280Wrap.h"
 #include "MPU6050.h"
 #include "DescentDetector.h"
 #include "FrequencyTimer.h"
+
+
+StaticJsonDocument<200> packet;
 
 
 enum class FlightMode {
@@ -101,50 +105,6 @@ void loop() {
   }
 
   internal::_frequencyTimer.delay();
-}
-
-
-void receiveCommand() {
-  int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    byte command = LoRa.read();
-
-    char message[64];
-    switch (command) {
-
-      // 初期化
-      case 0x01:
-        sprintf(message, "Initialized.");
-        break;
-
-      // ヘルスチェック
-      case 0x02:
-        sprintf(message, "All systems ready to launch.");
-        break;
-
-      // 基準気圧取得
-      case 0x03:
-        sprintf(message, "[0x00] %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
-        break;
-
-      // 手動分離
-      case 0x04:
-        separate();
-        downlinkLog("Separated by manual.");
-        break;
-
-      // 基準気圧設定
-      case 0xF3:
-        device::_bme280.setReferencePressure(device::_bme280.getPressure());
-        sprintf(message, "Success.");
-        break;
-
-      default:
-        sprintf(message, "Failure receiving command. Ignored this operation.");
-        break;
-    }
-    downlinkLog(message);
-  }
 }
 
 
@@ -267,5 +227,22 @@ void updateFlightMode() {
         separate();
         downlinkLog("Separated by peak.");
       }
+  }
+}
+
+
+void receiveCommand() {
+  if (!LoRa.parsePacket()) {
+    return;
+  }
+
+  deserializeJson(packet, LoRa);
+
+  if (packet["type"] == "command") {
+    if (packet["request"] == "getRefPress") {
+      char message[64];
+      sprintf(message, "[0x00] %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
+      downlinkLog(message);
+    }
   }
 }
