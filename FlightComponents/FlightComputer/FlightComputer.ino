@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include "BME280Wrap.h"
 #include "MPU6050.h"
+#include "FlightPin.h"
 #include "DescentDetector.h"
 #include "FrequencyTimer.h"
 
@@ -26,8 +27,9 @@ namespace device {
   // 加速度, 角速度センサ
   MPU6050 _mpu6050;
 
+  FlightPin _flightPin(0);
+
   // BBMのピン番号
-  constexpr int FLIGHT_PIN = 0;
   constexpr int PROTECTION_INDICATOR = 1;
   constexpr int FLIGHT_INDICATOR = 2;
   constexpr int SEPARATION_INDICATOR = 3;
@@ -72,7 +74,6 @@ void setup() {
   Serial1.begin(115200);
   LoRa.begin(923E6);
 
-  pinMode(device::FLIGHT_PIN, INPUT_PULLUP);
   pinMode(device::PROTECTION_INDICATOR, OUTPUT);
   pinMode(device::FLIGHT_INDICATOR, OUTPUT);
   pinMode(device::SEPARATION_INDICATOR, OUTPUT);
@@ -85,22 +86,36 @@ void setup() {
   device::_mpu6050.initialize();
   // 加速度計測の分解能を指定。 FS16の場合は、出力を2048で割ると[G]になる
   device::_mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
+
+  device::_flightPin.initialize();
 }
 
 
 void loop() {
   receiveCommand();
 
+  device::_flightPin.update();
+  
   updateFlightData();
   updateIndicators();
   updateFlightMode();
 
-  if (isInFlight()) {
+  if (isFlying()) {
     writeLog();
+
+    if (!device::_flightPin.isReleased()) {
+      reset();
+      downlinkLog("reset");
+    }
+
+    if (canSeparate()) {
+      separate();
+      downlinkLog("separate by top");
+    }
 
     if (canSeparateForce()) {
       separate();
-      downlinkLog("Separated by timer.");
+      downlinkLog("separate by timer");
     }
   }
 
@@ -127,15 +142,8 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  digitalWrite(device::PROTECTION_INDICATOR, isInFlight() && millis() < internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS);
-  digitalWrite(device::FLIGHT_INDICATOR, isInFlight());
-}
-
-
-bool isInFlight() {
-  return internal::_flightMode == FlightMode::CLIMB
-      || internal::_flightMode == FlightMode::DESCENT
-      || internal::_flightMode == FlightMode::PARACHUTE;
+  digitalWrite(device::PROTECTION_INDICATOR, isFlying() && millis() < internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS);
+  digitalWrite(device::FLIGHT_INDICATOR, isFlying());
 }
 
 
@@ -171,14 +179,21 @@ void downlinkLog(char message[]) {
 }
 
 
+bool isFlying() {
+  return internal::_flightMode != FlightMode::STANDBY;
+}
+
+
 bool canSeparate() {
-  return internal::_flightMode != FlightMode::PARACHUTE
+  return internal::_flightMode == FlightMode::DESCENT
+      && internal::_flightMode != FlightMode::PARACHUTE
       && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MINIMUM_TIME_MS;
 }
 
 
 bool canSeparateForce() {
-  return internal::_flightMode != FlightMode::PARACHUTE
+  return isFlying()
+      && internal::_flightMode != FlightMode::PARACHUTE
       && millis() > internal::_launchTime_ms + separationConfig::SEPARATION_MAXIMUM_TIME_MS;
 }
 
@@ -192,42 +207,56 @@ void separate() {
   delay(100);
   digitalWrite(device::BUZZER, true);
 
-  internal::_flightMode = FlightMode::PARACHUTE;
+  changeFlightMode(FlightMode::PARACHUTE);
+}
+
+
+void reset() {
+  digitalWrite(device::SEPARATION_INDICATOR, false);
+
+  digitalWrite(device::SHIRANUI3, false);
+  digitalWrite(device::BUZZER, false);
+
+  changeFlightMode(FlightMode::STANDBY);
 }
 
 
 void updateFlightMode() {
-  if (digitalRead(device::FLIGHT_PIN) == LOW) {
-    digitalWrite(device::SEPARATION_INDICATOR, false);
-
-    digitalWrite(device::SHIRANUI3, false);
-    digitalWrite(device::BUZZER, false);
-
-    internal::_flightMode = FlightMode::STANDBY;
-  }
-
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
-      if (digitalRead(device::FLIGHT_PIN) == HIGH) {
-        internal::_flightMode = FlightMode::CLIMB;
-        internal::_launchTime_ms = millis();
-        downlinkLog("Launched.");
+      if (device::_flightPin.isReleased()) {
+        changeFlightMode(FlightMode::CLIMB);
+        downlinkLog("launch");
       };
       break;
 
     case FlightMode::CLIMB:
       if (internal::_descentDetector._isDescending) {
-        internal::_flightMode = FlightMode::DESCENT;
-        downlinkLog("Apposee detected.");
+        changeFlightMode(FlightMode::DESCENT);
+        downlinkLog("top");
       }
       break;
     
     case FlightMode::DESCENT:
       if (canSeparate()) {
         separate();
-        downlinkLog("Separated by peak.");
+        downlinkLog("separate by top");
       }
+      break;
   }
+}
+
+
+void changeFlightMode(FlightMode nextMode) {
+  if (internal::_flightMode == nextMode) {
+    return;
+  }
+
+  if (nextMode == FlightMode::CLIMB) {
+    internal::_launchTime_ms = millis();
+  }
+
+  internal::_flightMode = nextMode;
 }
 
 
