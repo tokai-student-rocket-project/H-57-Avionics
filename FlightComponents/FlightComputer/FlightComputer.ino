@@ -5,6 +5,7 @@
 #include "BME280Wrap.h"
 #include "MPU6050.h"
 #include "FlightPin.h"
+#include "TwoStateDevice.h"
 #include "DescentDetector.h"
 #include "FrequencyTimer.h"
 
@@ -28,14 +29,14 @@ namespace device {
   // 加速度, 角速度センサ
   MPU6050 _mpu6050;
 
-  FlightPin _flightPin(0);
+  FlightPin _flightPin(2);
 
-  // BBMのピン番号
-  constexpr int PROTECTION_INDICATOR = 1;
-  constexpr int FLIGHT_INDICATOR = 2;
-  constexpr int SEPARATION_INDICATOR = 3;
-  constexpr int SHIRANUI3 = 4;
-  constexpr int BUZZER = 5;
+  TwoStateDevice _protectionIndicator(3);
+  TwoStateDevice _flightIndicator(4);
+  TwoStateDevice _separationIndicator(5);
+
+  TwoStateDevice _shiranui3(1);
+  TwoStateDevice _buzzer(0);
 }
 
 namespace separationConfig {
@@ -76,12 +77,6 @@ void setup() {
   Serial1.begin(115200);
   LoRa.begin(923E6);
 
-  pinMode(device::PROTECTION_INDICATOR, OUTPUT);
-  pinMode(device::FLIGHT_INDICATOR, OUTPUT);
-  pinMode(device::SEPARATION_INDICATOR, OUTPUT);
-  pinMode(device::SHIRANUI3, OUTPUT);
-  pinMode(device::BUZZER, OUTPUT);
-
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
 
@@ -90,6 +85,11 @@ void setup() {
   device::_mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
 
   device::_flightPin.initialize();
+  device::_protectionIndicator.initialize();
+  device::_flightIndicator.initialize();
+  device::_separationIndicator.initialize();
+  device::_shiranui3.initialize();
+  device::_buzzer.initialize();
 
   downlinkLog("start");
 }
@@ -146,8 +146,9 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  digitalWrite(device::PROTECTION_INDICATOR, isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
-  digitalWrite(device::FLIGHT_INDICATOR, isFlying());
+  device::_protectionIndicator.set(isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
+  device::_flightIndicator.set(isFlying());
+  device::_separationIndicator.set(internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 
@@ -196,23 +197,18 @@ bool canSeparateForce() {
 
 
 void separate() {
-  digitalWrite(device::SEPARATION_INDICATOR, true);
-
-  digitalWrite(device::SHIRANUI3, true);
-  delay(500);
-  digitalWrite(device::SHIRANUI3, false);
-  delay(100);
-  digitalWrite(device::BUZZER, true);
+  device::_shiranui3.on();
+  delay(1000);
+  device::_shiranui3.off();
+  device::_buzzer.on();
 
   changeFlightMode(FlightMode::PARACHUTE);
 }
 
 
 void reset() {
-  digitalWrite(device::SEPARATION_INDICATOR, false);
-
-  digitalWrite(device::SHIRANUI3, false);
-  digitalWrite(device::BUZZER, false);
+  device::_shiranui3.off();
+  device::_buzzer.off();
 
   changeFlightMode(FlightMode::STANDBY);
 }
