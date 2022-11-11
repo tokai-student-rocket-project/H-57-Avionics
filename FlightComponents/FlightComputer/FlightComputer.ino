@@ -9,7 +9,8 @@
 #include "FrequencyTimer.h"
 
 
-StaticJsonDocument<200> packet;
+// StaticJsonDocument<1024> upPacket;
+// StaticJsonDocument<4096> downPacket;
 
 
 enum class FlightMode {
@@ -95,7 +96,7 @@ void setup() {
 
 
 void loop() {
-  receiveCommand();
+  // receiveCommand();
 
   device::_flightPin.update();
   
@@ -256,63 +257,99 @@ void changeFlightMode(FlightMode nextMode) {
 }
 
 
-void receiveCommand() {
-  if (!LoRa.parsePacket()) {
-    return;
-  }
+// void receiveCommand() {
+//   if (!LoRa.parsePacket()) {
+//     return;
+//   }
 
-  deserializeJson(packet, LoRa);
+//   deserializeJson(upPacket, LoRa);
 
-  if (packet["type"] == "command") {
-    char message[64];
-    if (packet["request"] == "getRefPress") {
-      sprintf(message, "%.2f hPa", device::_bme280.getReferencePressure() / 100.0);
-    } else if (packet["request"] == "getSepaMin") {
-      sprintf(message, "%.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
-    } else if (packet["request"] == "getSepaMax") {
-      sprintf(message, "%.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
-    } else if (packet["request"] == "getFlightData") {
-      sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
-        millis(),
-        static_cast<int>(internal::_flightMode),
-        flightData::_altitude_m,
-        flightData::_pressure_Pa / 100.0,
-        flightData::_temperature_degT,
-        flightData::_acceleration_x_g,
-        flightData::_acceleration_y_g,
-        flightData::_acceleration_z_g,
-        flightData::_gyro_x_degps,
-        flightData::_gyro_y_degps,
-        flightData::_gyro_z_degps);
-    } else if (packet["request"] == "setRefPress") {
-      if (packet["value"].is<double>()) {
-        double value = packet["value"];
-        device::_bme280.setReferencePressure(value * 100.0);
-        sprintf(message, "set %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
-      } else {
-        device::_bme280.setReferencePressure(device::_bme280.getPressure());
-        sprintf(message, "invalid value, set current value %.2f hPa", device::_bme280.getReferencePressure() / 100.0);
-      }
-    } else if (packet["request"] == "setSepaMin") {
-      if (packet["value"].is<double>()) {
-        double value = packet["value"];
-        separationConfig::separation_minimum_time_ms = value * 1000.0;
-        sprintf(message, "set %.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
-      } else {
-        separationConfig::separation_minimum_time_ms = 4.0 * 1000.0;
-        sprintf(message, "invalid value, set default value %.1f sec", separationConfig::separation_minimum_time_ms / 1000.0);
-      }
-    } else if (packet["request"] == "setSepaMax") {
-      if (packet["value"].is<double>()) {
-        double value = packet["value"];
-        separationConfig::separation_maximum_time_ms = value * 1000.0;
-        sprintf(message, "set %.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
-      } else {
-        separationConfig::separation_maximum_time_ms = 10.0 * 1000.0;
-        sprintf(message, "invalid value, set default value %.1f sec", separationConfig::separation_maximum_time_ms / 1000.0);
-      }
-    }
+//   if (upPacket["type"] == "req") {
+//     if (upPacket["req"] == "getRefPress") {
+//       downPacket["type"] = "res";
+//       downPacket["res"]["refPress"]["v"] = device::_bme280.getReferencePressure() / 100.0;
+//       downPacket["res"]["refPress"]["u"] = "hPa";
+//     } else if (upPacket["req"] == "getSepaMin") {
+//       downPacket["type"] = "res";
+//       downPacket["res"]["sepaMin"]["v"] = separationConfig::separation_minimum_time_ms / 1000.0;
+//       downPacket["res"]["sepaMin"]["u"] = "s";
+//     } else if (upPacket["req"] == "getSepaMax") {
+//       downPacket["type"] = "res";
+//       downPacket["res"]["sepaMax"]["v"] = separationConfig::separation_maximum_time_ms / 1000.0;
+//       downPacket["res"]["sepaMax"]["u"] = "s";
+//     } else if (upPacket["req"] == "getFlightData") {
+//       downPacket["type"] = "res";
+//       downPacket["res"]["lifeTime"]["v"] = millis();
+//       downPacket["res"]["lifeTime"]["u"] = "ms";
+//       downPacket["res"]["flightMode"]["v"] = static_cast<int>(internal::_flightMode);
+//       downPacket["res"]["flightMode"]["u"] = "flightMode";
+//       downPacket["res"]["alt"]["v"] = flightData::_altitude_m;
+//       downPacket["res"]["alt"]["u"] = "m";
+//       downPacket["res"]["press"]["v"] = flightData::_pressure_Pa / 100.0;
+//       downPacket["res"]["press"]["u"] = "hPa";
+//       downPacket["res"]["temp"]["v"] = flightData::_temperature_degT;
+//       downPacket["res"]["temp"]["u"] = "degC";
+//       downPacket["res"]["accX"]["v"] = flightData::_acceleration_x_g;
+//       downPacket["res"]["accX"]["u"] = "G";
+//       downPacket["res"]["accY"]["v"] = flightData::_acceleration_y_g;
+//       downPacket["res"]["accY"]["u"] = "G";
+//       downPacket["res"]["accZ"]["v"] = flightData::_acceleration_z_g;
+//       downPacket["res"]["accZ"]["u"] = "G";
+//       downPacket["res"]["gyroX"]["v"] = flightData::_gyro_x_degps;
+//       downPacket["res"]["gyroX"]["u"] = "degps";
+//       downPacket["res"]["gyroY"]["v"] = flightData::_gyro_y_degps;
+//       downPacket["res"]["gyroY"]["u"] = "degps";
+//       downPacket["res"]["gyroZ"]["v"] = flightData::_gyro_z_degps;
+//       downPacket["res"]["gyroZ"]["u"] = "degps";
+//     } else if (upPacket["req"] == "setRefPress") {
+//       if (upPacket["v"].is<double>()) {
+//         double v = upPacket["v"];
+//         device::_bme280.setReferencePressure(v * 100.0);
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "set";
+//         downPacket["res"]["refPress"]["v"] = device::_bme280.getReferencePressure() / 100.0;
+//         downPacket["res"]["refPress"]["u"] = "hPa";
+//       } else {
+//         device::_bme280.setReferencePressure(device::_bme280.getPressure());
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "invalid v, set current v";
+//         downPacket["res"]["refPress"]["v"] = device::_bme280.getReferencePressure() / 100.0;
+//         downPacket["res"]["refPress"]["u"] = "hPa";
+//       }
+//     } else if (upPacket["req"] == "setSepaMin") {
+//       if (upPacket["v"].is<double>()) {
+//         double v = upPacket["v"];
+//         separationConfig::separation_minimum_time_ms = v * 1000.0;
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "set";
+//         downPacket["res"]["sepaMin"]["v"] = separationConfig::separation_minimum_time_ms / 1000.0;
+//         downPacket["res"]["sepaMin"]["u"] = "s";
+//       } else {
+//         separationConfig::separation_minimum_time_ms = 4.0 * 1000.0;
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "invalid v, set default v";
+//         downPacket["res"]["sepaMin"]["v"] = separationConfig::separation_minimum_time_ms / 1000.0;
+//         downPacket["res"]["sepaMin"]["u"] = "s";
+//       }
+//     } else if (upPacket["req"] == "setSepaMax") {
+//       if (upPacket["v"].is<double>()) {
+//         double v = upPacket["v"];
+//         separationConfig::separation_maximum_time_ms = v * 1000.0;
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "set";
+//         downPacket["res"]["sepaMax"]["v"] = separationConfig::separation_maximum_time_ms / 1000.0;
+//         downPacket["res"]["sepaMax"]["u"] = "s";
+//       } else {
+//         separationConfig::separation_maximum_time_ms = 10.0 * 1000.0;
+//         downPacket["type"] = "res";
+//         downPacket["res"]["result"] = "invalid v, set default v";
+//         downPacket["res"]["sepaMax"]["v"] = separationConfig::separation_maximum_time_ms / 1000.0;
+//         downPacket["res"]["sepaMax"]["u"] = "s";
+//       }
+//     }
 
-    downlinkLog(message);
-  }
-}
+//       LoRa.beginPacket();
+//       serializeJson(downPacket, LoRa);
+//       LoRa.endPacket();
+//   }
+// }
