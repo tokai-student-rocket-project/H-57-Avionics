@@ -93,7 +93,7 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  downlinkLog("initialized");
+  downlinkEvent("initialized");
 }
 
 
@@ -104,23 +104,23 @@ void loop() {
   updateIndicators();
   updateFlightMode();
 
+  if (canReset()) {
+    reset();
+    downlinkEvent("reset");
+  }
+
+  if (canSeparate()) {
+    separate();
+    downlinkEvent("separate by tod");
+  }
+
+  if (canSeparateForce()) {
+    separate();
+    downlinkEvent("separate by timer");
+  }
+
   if (isFlying()) {
     writeLog();
-
-    if (!device::_flightPin.isReleased()) {
-      reset();
-      downlinkLog("reset");
-    }
-
-    if (canSeparate()) {
-      separate();
-      downlinkLog("separate by top");
-    }
-
-    if (canSeparateForce()) {
-      separate();
-      downlinkLog("separate by timer");
-    }
   } else {
     receiveCommand();
   }
@@ -172,10 +172,17 @@ void writeLog() {
 }
 
 
-void downlinkLog(char message[]) {
+void downlinkEvent(String event) {
+  device::_commandIndicator.on();
+
+  downPacket["type"] = "event";
+  downPacket["event"] = event;
+
   LoRa.beginPacket();
-  LoRa.println(message);
+  serializeJson(downPacket, LoRa);
   LoRa.endPacket();
+
+  device::_commandIndicator.off();
 }
 
 
@@ -184,9 +191,14 @@ bool isFlying() {
 }
 
 
+bool canReset() {
+  return isFlying()
+      && !device::_flightPin.isReleased();
+}
+
+
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && internal::_flightMode != FlightMode::PARACHUTE
       && millis() > internal::_launchTime_ms + separationConfig::separation_minimum_time_ms;
 }
 
@@ -221,21 +233,13 @@ void updateFlightMode() {
     case FlightMode::STANDBY:
       if (device::_flightPin.isReleased()) {
         changeFlightMode(FlightMode::CLIMB);
-        downlinkLog("launch");
+        downlinkEvent("launched");
       };
       break;
 
     case FlightMode::CLIMB:
       if (internal::_descentDetector._isDescending) {
         changeFlightMode(FlightMode::DESCENT);
-        downlinkLog("top");
-      }
-      break;
-    
-    case FlightMode::DESCENT:
-      if (canSeparate()) {
-        separate();
-        downlinkLog("separate by top");
       }
       break;
   }
