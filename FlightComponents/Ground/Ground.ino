@@ -10,7 +10,6 @@ StaticJsonDocument<4096> packet;
 {"type": "req", "req": "getRefPress"}
 {"type": "req", "req": "getSepaMin"}
 {"type": "req", "req": "getSepaMax"}
-{"type": "req", "req": "getFlightData"}
 
 {"type": "req", "req": "setRefPress", "v": 1013.0}
 {"type": "req", "req": "setSepaMin", "v": 4.0}
