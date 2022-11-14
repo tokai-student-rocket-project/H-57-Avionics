@@ -175,6 +175,7 @@ void writeLog() {
 void downlinkEvent(String event) {
   device::_commandIndicator.on();
 
+  downPacket.clear();
   downPacket["type"] = "event";
   downPacket["event"] = event;
 
@@ -269,6 +270,7 @@ void receiveCommand() {
   if (upPacket["type"] == "req") {
     device::_commandIndicator.on();
 
+    downPacket.clear();
     if (upPacket["req"] == "getRefPress") {
       downPacket["type"] = "res";
       downPacket["res"]["refPress"]["v"] = device::_bme280.getReferencePressure() / 100.0;
