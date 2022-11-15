@@ -1,0 +1,35 @@
+body {
+  background-color: #2f3136;
+}
+
+.ant-card {
+  background-color: #36393f !important;
+}
+
+.ant-card-head {
+  color: white !important;
+  border-bottom-color: #202225 !important;
+}
+
+.ant-card-body {
+  color: white !important;
+}
+
+.ant-select-selector {
+  background-color: #202225 !important;
+  border: 0 !important;
+}
+
+.ant-select-selection-placeholder {
+  color: #72767d !important;
+}
+
+.ant-select-arrow {
+  color: white !important;
+}
+
+.ant-input {
+  color: white !important;
+  background-color: #40444b !important;
+  border: 0 !important;
+}

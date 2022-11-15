@@ -1,14 +1,12 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import TopPage from './pages/TopPage';
+import 'antd/dist/antd.css';
+import { Layout } from 'antd';
+import SerialMonitor from './components/SerialMonitor';
+import './App.css';
+
+const { Header, Footer, Sider, Content } = Layout;
 
 const App = () => {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<TopPage />} />
-      </Routes>
-    </Router>
-  );
+  return <SerialMonitor />;
 };
 
 export default App;

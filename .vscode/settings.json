@@ -1,0 +1,25 @@
+{
+  "files.associations": {
+    ".stylelintrc": "json",
+    "array": "cpp",
+    "string": "cpp",
+    "string_view": "cpp",
+    "deque": "cpp",
+    "forward_list": "cpp",
+    "list": "cpp",
+    "unordered_map": "cpp",
+    "unordered_set": "cpp",
+    "vector": "cpp",
+    "initializer_list": "cpp",
+    "functional": "cpp",
+    "memory": "cpp",
+    "optional": "cpp",
+    "cmath": "cpp",
+    "system_error": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp"
+  }
+}
