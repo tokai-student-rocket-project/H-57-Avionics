@@ -1,27 +1,38 @@
 body {
   background-color: #2f3136;
+  padding: 32px;
+}
+
+#root {
+  height: 100%;
 }
 
 .ant-card {
   background-color: #36393f !important;
+  height: 100%;
+  width: 400px;
+
+  .ant-card-head {
+    color: white !important;
+    border-bottom-color: #202225 !important;
+  }
+
+  .ant-card-body {
+    color: white !important;
+  }
 }
 
-.ant-card-head {
+.ant-select {
   color: white !important;
-  border-bottom-color: #202225 !important;
-}
 
-.ant-card-body {
-  color: white !important;
-}
+  .ant-select-selector {
+    background-color: #202225 !important;
+    border: 0 !important;
 
-.ant-select-selector {
-  background-color: #202225 !important;
-  border: 0 !important;
-}
-
-.ant-select-selection-placeholder {
-  color: #72767d !important;
+    .ant-select-selection-placeholder {
+      color: #72767d !important;
+    }
+  }
 }
 
 .ant-select-arrow {

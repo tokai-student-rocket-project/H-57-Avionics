@@ -1,17 +1,11 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { SerialPort } from 'serialport';
+import { ReadlineParser } from '@serialport/parser-readline';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -25,10 +19,21 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+ipcMain.handle('get-serialports', async () => {
+  return (await SerialPort.list()).map((serialportInfo) => serialportInfo.path);
+});
+
+let serialport: SerialPort | null = null;
+
+ipcMain.on('open-serialport', (_, serialportPath: string) => {
+  if (serialport?.isOpen) serialport.close();
+
+  serialport = new SerialPort({ path: serialportPath, baudRate: 9600 });
+
+  const parser = serialport.pipe(new ReadlineParser());
+  parser.on('data', (data) => {
+    mainWindow?.webContents.send('recieved-data', data as string);
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {
