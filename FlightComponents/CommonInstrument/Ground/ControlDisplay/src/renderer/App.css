@@ -1,16 +1,9 @@
 body {
   background-color: #2f3136;
-  padding: 32px;
-}
-
-#root {
-  height: 100%;
 }
 
 .ant-card {
   background-color: #36393f !important;
-  height: 100%;
-  width: 400px;
 
   .ant-card-head {
     color: white !important;

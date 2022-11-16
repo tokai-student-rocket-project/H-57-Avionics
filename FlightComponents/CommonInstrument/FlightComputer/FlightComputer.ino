@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <ArduinoJson.h>
+#include <TaskManager.h>
 #include "BME280Wrap.h"
 #include "MPU6050.h"
 #include "FlightPin.h"
@@ -93,11 +94,15 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
+  Tasks.add([]{downlinkState();})->startIntervalSec(0.5);
+
   downlinkEvent("initialized");
 }
 
 
 void loop() {
+  Tasks.update();
+
   device::_flightPin.update();
   
   updateFlightData();
@@ -148,9 +153,9 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  device::_protectionIndicator.set(isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
-  device::_flightIndicator.set(isFlying());
-  device::_separationIndicator.set(internal::_flightMode == FlightMode::PARACHUTE);
+  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
+  device::_flightIndicator.setState(isFlying());
+  device::_separationIndicator.setState(internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 
@@ -187,6 +192,23 @@ void downlinkEvent(String event) {
 }
 
 
+void downlinkState() {
+  device::_commandIndicator.on();
+
+  downPacket.clear();
+  downPacket["t"] = "s";
+  downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
+  downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
+  downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
+
+  LoRa.beginPacket();
+  serializeJson(downPacket, LoRa);
+  LoRa.endPacket();
+
+  device::_commandIndicator.off();
+}
+
+
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY;
 }
@@ -213,8 +235,8 @@ bool canSeparateForce() {
 
 void separate() {
   device::_shiranui3.on();
-  delay(1000);
-  device::_shiranui3.off();
+  // delay(1000);
+  // device::_shiranui3.off();
   device::_buzzer.on();
 
   changeFlightMode(FlightMode::PARACHUTE);

@@ -21,12 +21,20 @@ void FlightPin::update() {
 
   if (isReleased) {
     ++_releaseCount;
+    _restraintCount = 0;
   }
   else {
     _releaseCount = 0;
+    ++_restraintCount;
   }
 
-  _isReleased = _releaseCount >= MINIMUM_RELEASE_COUNT;
+  if (_releaseCount >= MINIMUM_COUNT) {
+    _isReleased = true;
+  }
+  
+  if (_restraintCount >= MINIMUM_COUNT) {
+    _isReleased = false;
+  }
 }
 
 

@@ -31,7 +31,7 @@ const SerialMonitor = () => {
   };
 
   window.electronAPI.recievedData((_, recievedData) => {
-    setData(`${recievedData}${data}`);
+    // setData(`${recievedData}${data}`);
   });
 
   return (
@@ -72,10 +72,16 @@ const SerialMonitor = () => {
         <FaLevelDownAlt
           size={18}
           cursor="pointer"
+          color="#b9bbbe"
           style={{ marginRight: '8px' }}
         />
         {/* <FaCode size={18} cursor="pointer" style={{ marginRight: '8px' }} /> */}
-        <FaCog size={18} cursor="pointer" style={{ marginRight: '8px' }} />
+        <FaCog
+          size={18}
+          cursor="pointer"
+          color="#b9bbbe"
+          style={{ marginRight: '8px' }}
+        />
       </div>
       <TextArea readOnly style={{ height: '400px' }} value={data} />
     </Card>

@@ -20,7 +20,9 @@ public:
 
   void off();
 
-  void set(bool state);
+  void setState(bool state);
+
+  bool getState();
 };
 
 #endif

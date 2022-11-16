@@ -5,11 +5,12 @@
 class FlightPin
 {
 private:
-  /// @brief 回数で指定。この値以上に連続でリリースを検知しないと飛行中にならない
-  const int MINIMUM_RELEASE_COUNT = 10;
+  /// @brief チャタリング対策
+  const int MINIMUM_COUNT = 10;
 
   int _pinNumber;
   int _releaseCount;
+  int _restraintCount;
   bool _isReleased;
 
 

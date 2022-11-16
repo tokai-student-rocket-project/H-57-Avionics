@@ -1,12 +1,24 @@
 import 'antd/dist/antd.css';
-import { Layout } from 'antd';
+import { Col, Layout, Row } from 'antd';
 import SerialMonitor from './components/SerialMonitor';
+import Status from './components/Status';
 import './App.css';
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Content } = Layout;
 
 const App = () => {
-  return <SerialMonitor />;
+  return (
+    <Content style={{ margin: '32px' }}>
+      <Row gutter={32}>
+        <Col span={8}>
+          <Status />
+        </Col>
+        <Col span={16}>
+          <SerialMonitor />
+        </Col>
+      </Row>
+    </Content>
+  );
 };
 
 export default App;

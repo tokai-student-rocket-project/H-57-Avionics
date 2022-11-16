@@ -25,10 +25,14 @@ void TwoStateDevice::off() {
 }
 
 
-void TwoStateDevice::set(bool state) {
+void TwoStateDevice::setState(bool state) {
   if (state) {
     on();
   } else {
     off();
   }
+}
+
+bool TwoStateDevice::getState() {
+  return digitalRead(_pinNumber);
 }
