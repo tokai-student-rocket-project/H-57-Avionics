@@ -45,6 +45,12 @@ body {
 }
 
 .ant-btn {
+  color: white;
+  background-color: transparent;
+  width: 100%;
+}
+
+.ant-btn-primary {
   background-color: #5865f2 !important;
   border: 0 !important;
 }

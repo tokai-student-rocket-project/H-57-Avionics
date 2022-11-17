@@ -1,4 +1,4 @@
-import { Card, Descriptions, Input, Button, Row, Col, Divider } from 'antd';
+import { Card, Input, Button, Row, Col, Divider } from 'antd';
 import { FaArrowLeft } from 'react-icons/fa';
 
 const Config = () => {

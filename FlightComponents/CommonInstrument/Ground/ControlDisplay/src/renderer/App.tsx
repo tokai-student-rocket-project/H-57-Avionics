@@ -5,6 +5,7 @@ import Status from './components/Status';
 import './App.css';
 import Config from './components/Config';
 import wireframe from './wireframe.png';
+import Command from './components/Command';
 
 const { Content } = Layout;
 
@@ -22,6 +23,7 @@ const App = () => {
         </Col>
         <Col span={4}>
           <Status />
+          <Command />
         </Col>
         <Col span={8}>
           <SerialMonitor />
