@@ -125,7 +125,7 @@ void loop() {
   }
 
   if (isFlying()) {
-    writeLog();
+    // writeLog();
   } else {
     receiveCommand();
   }

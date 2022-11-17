@@ -37,3 +37,19 @@ body {
   background-color: #40444b !important;
   border: 0 !important;
 }
+
+.ant-input-group-addon {
+  color: #b9bbbe !important;
+  background-color: #36393f !important;
+  border: 0 !important;
+}
+
+.ant-btn {
+  background-color: #5865f2 !important;
+  border: 0 !important;
+}
+
+.ant-divider {
+  color: #b9bbbe !important;
+  border-color: #b9bbbe !important;
+}
