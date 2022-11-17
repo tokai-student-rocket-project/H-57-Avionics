@@ -219,7 +219,7 @@ void downlinkFlightData() {
 
   downPacket.clear();
   downPacket["t"] = "f";
-  downPacket["ft"] = millis() - internal::_launchTime_ms;
+  downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["alt"] = String(flightData::_altitude_m, 1);
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);

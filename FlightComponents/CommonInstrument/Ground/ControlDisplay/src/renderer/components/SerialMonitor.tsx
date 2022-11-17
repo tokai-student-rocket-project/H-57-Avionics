@@ -30,10 +30,6 @@ const SerialMonitor = () => {
     if (serialport) window.electronAPI.oepnSerialport(serialport);
   };
 
-  window.electronAPI.recievedData((_, recievedData) => {
-    // setData(`${recievedData}${data}`);
-  });
-
   return (
     <Card title="SERIAL MONITOR" bordered={false}>
       <div

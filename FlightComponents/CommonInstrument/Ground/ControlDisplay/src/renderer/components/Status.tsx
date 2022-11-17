@@ -11,13 +11,10 @@ const Status = () => {
   const [shiranui3State, setShiranui3State] = useState<'OFF' | 'ON'>('OFF');
   const [buzzerState, setBuzzerState] = useState<'OFF' | 'ON'>('OFF');
 
-  window.electronAPI.recievedData((_, recievedData) => {
-    const recievedDataObject = JSON.parse(recievedData);
-    if (recievedDataObject.t === 's') {
-      setFlightpinState(recievedDataObject.f === '1' ? 'OPEN' : 'CLOSE');
-      setShiranui3State(recievedDataObject.s3 === '1' ? 'ON' : 'OFF');
-      setBuzzerState(recievedDataObject.b === '1' ? 'ON' : 'OFF');
-    }
+  window.electronAPI.statusUpdated(() => {
+    setFlightpinState(window.electronAPI.store.get('flightpin-state'));
+    setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
+    setBuzzerState(window.electronAPI.store.get('buzzer-state'));
   });
 
   return (

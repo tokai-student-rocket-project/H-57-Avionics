@@ -3,7 +3,13 @@ declare global {
     electronAPI: {
       getSerialports(): string[];
       oepnSerialport(path: string): void;
-      recievedData(callback: (event: never, data: string) => void): void;
+      statusUpdated(callback: () => void): void;
+      flightDataUpdated(callback: () => void): void;
+
+      store: {
+        get: (key: string) => any;
+        set: (key: string, val: any) => void;
+      };
     };
   }
 }

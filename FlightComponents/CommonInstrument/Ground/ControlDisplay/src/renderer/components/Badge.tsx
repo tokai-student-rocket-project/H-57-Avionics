@@ -1,16 +1,13 @@
 import { Typography } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const { Title } = Typography;
 
 const Badge = () => {
-  const [flightTime, setFlightTime] = useState<number>(0);
+  const [flightTime, setFlightTime] = useState<string>('0.00');
 
-  window.electronAPI.recievedData((_, recievedData) => {
-    const recievedDataObject = JSON.parse(recievedData);
-    if (recievedDataObject.t === 'f') {
-      setFlightTime(Number(recievedDataObject.ft) / 1000.0);
-    }
+  window.electronAPI.flightDataUpdated(() => {
+    setFlightTime(window.electronAPI.store.get('flight-time'));
   });
 
   return (
@@ -44,7 +41,7 @@ const Badge = () => {
         }}
       >
         <Title style={{ color: 'white', marginBottom: '0' }} level={3}>
-          {`T + ${flightTime.toFixed(2)}`}
+          {`T + ${flightTime}`}
         </Title>
       </div>
     </div>

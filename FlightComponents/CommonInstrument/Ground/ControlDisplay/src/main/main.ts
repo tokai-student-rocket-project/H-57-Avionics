@@ -6,6 +6,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { SerialPort } from 'serialport';
 import { ReadlineParser } from '@serialport/parser-readline';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -25,14 +26,35 @@ ipcMain.handle('get-serialports', async () => {
 
 let serialport: SerialPort | null = null;
 
+const store = new Store();
+ipcMain.on('get-store', async (event, val) => {
+  event.returnValue = store.get(val);
+});
+ipcMain.on('set-store', async (event, key, val) => {
+  store.set(key, val);
+});
+
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
 
   serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
-
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    mainWindow?.webContents.send('recieved-data', data as string);
+    const dataObject = JSON.parse(data);
+
+    if (dataObject.t === 's') {
+      store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
+      store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
+      store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');
+      mainWindow?.webContents.send('status-updated');
+    } else if (dataObject.t === 'f') {
+      store.set('flight-time', dataObject.ft);
+      store.set('altitude', dataObject.alt);
+      store.set('acceleration-x', dataObject.ax);
+      store.set('acceleration-y', dataObject.ay);
+      store.set('acceleration-z', dataObject.az);
+      mainWindow?.webContents.send('flight-data-updated');
+    }
   });
 });
 

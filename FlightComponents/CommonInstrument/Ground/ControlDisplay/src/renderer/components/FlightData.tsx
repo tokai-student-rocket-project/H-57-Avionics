@@ -2,8 +2,8 @@ import { Col, Row, Statistic } from 'antd';
 import { useState } from 'react';
 
 const FlightData = () => {
-  const [altitude, setAltitude] = useState<number>(0);
-  const [speed, setSpeed] = useState<number>(0);
+  const [altitude, setAltitude] = useState<string>('0.0');
+  const [speed, setSpeed] = useState<string>('0.00');
 
   let oldTime = 0;
 
@@ -24,22 +24,19 @@ const FlightData = () => {
     return oldSpeed + deltaSpeed;
   };
 
-  window.electronAPI.recievedData((_, recievedData) => {
-    const recievedDataObject = JSON.parse(recievedData);
-    if (recievedDataObject.t === 'f') {
-      setAltitude(Number(recievedDataObject.alt));
-      setSpeed(
-        accelerationToSpeed(
-          Number(recievedDataObject.ax) / 9.8,
-          Number(recievedDataObject.ay) / 9.8,
-          (Number(recievedDataObject.az) - 1.0) / 9.8,
-          (Number(recievedDataObject.ft) - oldTime) / 1000.0,
-          speed
-        )
-      );
+  window.electronAPI.flightDataUpdated(() => {
+    setAltitude(window.electronAPI.store.get('altitude'));
+    setSpeed(
+      accelerationToSpeed(
+        Number(window.electronAPI.store.get('acceleration-x')) * 9.8,
+        Number(window.electronAPI.store.get('acceleration-y')) * 9.8,
+        (Number(window.electronAPI.store.get('acceleration-z')) - 1.0) * 9.8,
+        Number(window.electronAPI.store.get('flight-time')) - oldTime,
+        Number(speed)
+      ).toFixed(2)
+    );
 
-      oldTime = Number(recievedDataObject.ft);
-    }
+    oldTime = Number(window.electronAPI.store.get('flight-time'));
   });
 
   return (
@@ -59,10 +56,10 @@ const FlightData = () => {
     >
       <Row gutter={16}>
         <Col span={12}>
-          <Statistic title="Altitude" value={altitude.toFixed(1)} suffix="m" />
+          <Statistic title="Altitude" value={altitude} suffix="m" />
         </Col>
         <Col span={12}>
-          <Statistic title="Speed" value={speed.toFixed(2)} suffix="m/s" />
+          <Statistic title="Speed" value={speed} suffix="m/s" />
         </Col>
       </Row>
     </div>
