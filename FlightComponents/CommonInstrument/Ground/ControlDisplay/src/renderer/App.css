@@ -59,3 +59,15 @@ body {
   color: #b9bbbe !important;
   border-color: #b9bbbe !important;
 }
+
+.ant-statistic-title {
+  color: white;
+}
+
+.ant-statistic-content-value {
+  color: white;
+}
+
+.ant-statistic-content-suffix {
+  color: #b9bbbe;
+}
