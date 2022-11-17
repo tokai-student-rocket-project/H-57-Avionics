@@ -4,7 +4,7 @@ import SerialMonitor from './components/SerialMonitor';
 import Status from './components/Status';
 import './App.css';
 import Config from './components/Config';
-import wireframe from './wireframe.png';
+import wireframe from './wireframe_h57_without_fin.png';
 import Command from './components/Command';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
