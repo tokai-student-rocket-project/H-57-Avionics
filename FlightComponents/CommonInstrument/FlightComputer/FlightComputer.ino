@@ -94,7 +94,10 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  Tasks.add([]{downlinkState();})->startIntervalSec(0.5);
+  Tasks.add([]{
+    downlinkState();
+    downlinkFlightData();
+  })->startIntervalSec(0.5);
 
   downlinkEvent("initialized");
 }
@@ -200,6 +203,27 @@ void downlinkState() {
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
+
+  LoRa.beginPacket();
+  serializeJson(downPacket, LoRa);
+  LoRa.endPacket();
+
+  device::_commandIndicator.off();
+}
+
+
+void downlinkFlightData() {
+  if (!isFlying()) return;
+
+  device::_commandIndicator.on();
+
+  downPacket.clear();
+  downPacket["t"] = "f";
+  downPacket["ft"] = millis() - internal::_launchTime_ms;
+  downPacket["alt"] = String(flightData::_altitude_m, 1);
+  downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
+  downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
+  downPacket["az"] = String(flightData::_acceleration_z_g, 2);
 
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);

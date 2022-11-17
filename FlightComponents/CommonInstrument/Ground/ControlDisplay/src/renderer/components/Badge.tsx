@@ -1,15 +1,25 @@
 import { Typography } from 'antd';
-import logo from '../logo.png';
+import { useState } from 'react';
 
 const { Title } = Typography;
 
 const Badge = () => {
+  const [flightTime, setFlightTime] = useState<number>(0);
+
+  window.electronAPI.recievedData((_, recievedData) => {
+    const recievedDataObject = JSON.parse(recievedData);
+    if (recievedDataObject.t === 'f') {
+      setFlightTime(Number(recievedDataObject.ft) / 1000.0);
+    }
+  });
+
   return (
     <div>
       <div
         style={{
           backgroundColor: '#202225',
           padding: '8px',
+          height: '64px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -19,13 +29,8 @@ const Badge = () => {
           borderStyle: 'solid',
         }}
       >
-        <img
-          src={logo}
-          alt="logo"
-          style={{ width: '32px', marginRight: '8px' }}
-        />
         <Title style={{ color: 'white', marginBottom: '0' }} level={1}>
-          HX-X57
+          XHX-X57X
         </Title>
       </div>
       <div
@@ -39,7 +44,7 @@ const Badge = () => {
         }}
       >
         <Title style={{ color: 'white', marginBottom: '0' }} level={3}>
-          T + 0.00
+          {`T + ${flightTime.toFixed(2)}`}
         </Title>
       </div>
     </div>

@@ -8,7 +8,7 @@ import wireframe from './wireframe_h57_without_fin.png';
 import Command from './components/Command';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
-import FlightMode from './components/FlightMode';
+import FlightMode from './components/Blank';
 
 const { Header, Content } = Layout;
 
