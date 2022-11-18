@@ -1,6 +1,0 @@
-{
-    "port": "/dev/tty.usbmodem1101",
-    "board": "arduino:samd:mkrwan1310",
-    "sketch": "FlightComponents/CommonInstrument/FlightComputer/FlightComputer.ino",
-    "programmer": "arduino:arduinoasisp"
-}

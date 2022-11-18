@@ -6,9 +6,14 @@ const { Title } = Typography;
 const Badge = () => {
   const [flightTime, setFlightTime] = useState<string>('0.00');
 
-  window.electronAPI.flightDataUpdated(() => {
-    setFlightTime(window.electronAPI.store.get('flight-time'));
-  });
+  useEffect(() => {
+    window.electronAPI.flightDataUpdated(() => {
+      setFlightTime(window.electronAPI.store.get('flight-time'));
+    });
+    return () => {
+      window.electronAPI.remove('flight-data-updated');
+    };
+  }, []);
 
   return (
     <div>

@@ -9,6 +9,7 @@ import Command from './components/Command';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
 import FlightMode from './components/Blank';
+import Telecom from './components/Telecom';
 
 const { Header, Content } = Layout;
 
@@ -31,9 +32,10 @@ const App = () => {
         </Row>
       </Header>
 
-      <Content style={{ margin: '32px' }}>
-        <Row gutter={32}>
+      <Content style={{ margin: '16px' }}>
+        <Row gutter={16}>
           <Col span={8}>
+            <Telecom />
             <Config />
           </Col>
           <Col span={4}>
@@ -45,9 +47,7 @@ const App = () => {
             <Status />
             <Command />
           </Col>
-          <Col span={8}>
-            <SerialMonitor />
-          </Col>
+          <Col span={8} />
         </Row>
       </Content>
     </Layout>

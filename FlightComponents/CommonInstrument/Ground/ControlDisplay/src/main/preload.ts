@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 export type Channels = 'ipc-example';
 
@@ -8,7 +8,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   statusUpdated: (callback: () => void) =>
     ipcRenderer.on('status-updated', callback),
   flightDataUpdated: (callback: () => void) =>
-    ipcRenderer.once('flight-data-updated', callback),
+    ipcRenderer.on('flight-data-updated', callback),
+  configUpdated: (callback: () => void) =>
+    ipcRenderer.on('config-updated', callback),
+  rssiUpdated: (callback: () => void) =>
+    ipcRenderer.on('rssi-updated', callback),
+
+  remove: (channel: string) => ipcRenderer.removeAllListeners(channel),
 
   store: {
     get(key: string) {
