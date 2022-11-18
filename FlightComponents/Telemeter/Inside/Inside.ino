@@ -5,7 +5,7 @@
 
   H-57号機に搭載予定
 
-  */
+*/
 
 #include <LoRa.h>
 #include <SPI.h>
@@ -17,6 +17,8 @@
 Servo mainservo;
 Servo supplyservo;
 volatile int deg = 0;
+float supplyservo_deg;
+float mainservo_deg;
 // int min_deg = 0;
 // int max_deg = 90;
 
@@ -26,6 +28,7 @@ float longitude;
 float altitude;
 float speed;
 float satellites;
+unsigned long Time;
 
 // Arduinojsonの設定
 StaticJsonDocument<1024> downPacket_tlm;
@@ -96,16 +99,18 @@ void loop()
         altitude = GPS.altitude();
         speed = GPS.speed();
         satellites = GPS.satellites();
+        Time = GPS.getTime();
 
         // print GPS values
-        printValues();
+        //printValues();
 
         // Create and send LoRa packet
-        //LoRa_send();
+        // LoRa_send();
+
+        // Create and send LoRa packet
+        downlinkFlightData_tlm();
     }
     // receiverOpen();
-
-    // Serial.println(mainservo.read());
 }
 
 // function to send information over LoRa network
@@ -137,7 +142,7 @@ void LoRa_send()
 */
 
 // function that prints all readings in the Serial Monitor
-
+/*
 void printValues()
 {
     unsigned long curr_PRINT = millis();
@@ -160,6 +165,7 @@ void printValues()
         prev_PRINT = curr_PRINT;
     }
 }
+*/
 
 // Create Reciver code.
 /*
@@ -254,15 +260,15 @@ void LUNCH_Position()
 {
     for (deg = 0; deg <= 90; deg++)
     {
-        supplyservo.write(deg); // CLOSE
+        supplyservo.write(deg);               // CLOSE
+        supplyservo_deg = supplyservo.read(); //現在の角度を取得
     }
-    // Serial.println("== Supply CLOSE ==");
 
     for (deg = 0; deg <= 90; deg++)
     {
-        mainservo.write(deg); // OPEN
+        mainservo.write(deg);             // OPEN
+        mainservo_deg = mainservo.read(); //現在の角度を取得
     }
-    // Serial.println("== Main OPEN ==");
     Serial.println("-- Complete Lunch Position --");
 }
 
@@ -270,12 +276,14 @@ void WAITING_Position()
 {
     for (deg = 90; deg >= 0; deg--)
     {
-        supplyservo.write(deg); // OPEN
+        supplyservo.write(deg);               // OPEN
+        supplyservo_deg = supplyservo.read(); //現在の角度を取得
     }
 
     for (deg = 90; deg >= 0; deg--)
     {
-        mainservo.write(deg); // CLOSE
+        mainservo.write(deg);             // CLOSE
+        mainservo_deg = mainservo.read(); //現在の角度を取得
     }
     Serial.println("== Complete WAITING Position ==");
 }
@@ -284,21 +292,24 @@ void downlinkFlightData_tlm()
 {
     if (!LoRa.begin(923E6))
         return;
-    
+
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
-    downPacket_tlm.clear();
-    downPacket_tlm["sensor"] = "gps";
-    downPacket_tlm["lat"] = String(latitude, 8);
-    downPacket_tlm["lon"] = String(longitude, 8);
-    downPacket_tlm["satellites"] = String(satellites, 1);
+        downPacket_tlm.clear();
+        downPacket_tlm["sensor"] = "gps";
+        downPacket_tlm["lat"] = String(latitude, 8);
+        downPacket_tlm["lon"] = String(longitude, 8);
+        downPacket_tlm["satellites"] = String(satellites, 1);
+        downPacket_tlm["mainservoDeg"] = String(mainservo_deg, 1);
+        downPacket_tlm["supplyservoDeg"] = String(supplyservo_deg, 1);
 
-    LoRa.beginPacket();
-    serializeJson(downPacket_tlm, LoRa);
-    LoRa.endPacket();
+        LoRa.beginPacket();
+        serializeJson(downPacket_tlm, LoRa);
+        LoRa.endPacket();
 
-    serializeJson(downPacket_tlm, Serial);
-    prev_SEND = curr_SEND;
+        Serial.println();
+        serializeJsonPretty(downPacket_tlm, Serial);
+        prev_SEND = curr_SEND;
     }
 }
