@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   statusUpdated: (callback: () => void) =>
     ipcRenderer.on('status-updated', callback),
   flightDataUpdated: (callback: () => void) =>
-    ipcRenderer.once('flight-data-updated', callback),
+    ipcRenderer.on('flight-data-updated', callback),
 
   store: {
     get(key: string) {
