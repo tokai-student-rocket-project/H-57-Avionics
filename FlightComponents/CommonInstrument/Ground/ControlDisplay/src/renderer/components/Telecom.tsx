@@ -52,7 +52,6 @@ const Telecom = () => {
     });
 
     window.electronAPI.statusUpdated(() => {
-      console.log('t');
       blinkIndicator(setStatusDownState);
     });
 

@@ -13,7 +13,6 @@ const Status = () => {
 
   useEffect(() => {
     window.electronAPI.statusUpdated(() => {
-      console.log('s');
       setFlightpinState(window.electronAPI.store.get('flightpin-state'));
       setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
       setBuzzerState(window.electronAPI.store.get('buzzer-state'));
