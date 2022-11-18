@@ -1,6 +1,11 @@
 /*
   機体からGPS情報を地上に送信するArduinoです。
-*/
+  ソースファイル名：Inside.ino
+  作成者：1CES2116 Hiroki Tsutsumi, <氏名の追加>
+
+  H-57号機に搭載予定
+
+  */
 
 #include <LoRa.h>
 #include <SPI.h>
@@ -22,17 +27,23 @@ float altitude;
 float speed;
 float satellites;
 
+// Arduinojsonの設定
+StaticJsonDocument<1024> downPacket_tlm;
+
+// LoRa addressの設定? <=2022/11/18時点では不明瞭
 byte localAddress = 0xBB; // address of this device
 byte destination = 0xFF;  // where we are sending data to
 
-//電圧検知の設定
+//電圧検知の設定　<<消去予定>>
 // const int VoltageDetectionPin = A1; // A1を電圧検知入力ピンに設定
 // int value;
 // float volt;
 
-//スイッチの設定
+//スイッチの設定 <<消去予定>>
 // const int SwitchPin = 6;
 // int value;
+
+// millis()の設定
 unsigned long prev_SEND, prev_PRINT, interval_SEND, interval_PRINT;
 
 void setup()
@@ -40,7 +51,7 @@ void setup()
 
     // initialize serial communications and wait for port to open:
     Serial.begin(9600);
-    // while (!Serial)
+    // while (!Serial) <<消去予定>>
 
     if (!LoRa.begin(923E6))
     {
@@ -117,8 +128,8 @@ void LoRa_send()
     LoRa.println(satellites);
     LoRa.println();
     LoRa.endPacket(); // sends the LoRa packet
+    delay(10000);     // a 10 second delay to limit the amount of packets sent
     */
-    // delay(10000);     // a 10 second delay to limit the amount of packets sent
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
@@ -284,4 +295,20 @@ void WAITING_Position()
         mainservo.write(deg); // CLOSE
     }
     Serial.println("== Complete WAITING Position ==");
+}
+
+void downlinkFlightData()
+{
+    if (!LoRa.begin(923E6))
+        return;
+
+    downPacket_tlm.clear();
+    downPacket_tlm["sensor"] = "gps";
+    downPacket_tlm["lat"] = String(latitude, 8);
+    downPacket_tlm["lon"] = String(longitude, 8);
+    downPacket_tlm["satellites"] = String(satellites, 1);
+
+    LoRa.beginPacket();
+    serializeJson(downPacket_tlm, LoRa);
+    LoRa.endPacket();
 }
