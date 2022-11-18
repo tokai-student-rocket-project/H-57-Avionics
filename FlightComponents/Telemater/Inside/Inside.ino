@@ -6,6 +6,7 @@
 #include <SPI.h>
 #include <Arduino_MKRGPS.h>
 #include <Servo.h>
+#include <ArduinoJson.h>
 
 //サーボの設定
 Servo mainservo;
@@ -65,7 +66,6 @@ void setup()
     prev_PRINT = 0;
     interval_PRINT = 5000;
 
-
     //スイッチピンの設定
     pinMode(6, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(6), LUNCH_Position, RISING);
@@ -118,7 +118,7 @@ void LoRa_send()
     LoRa.println();
     LoRa.endPacket(); // sends the LoRa packet
     */
-    //delay(10000);     // a 10 second delay to limit the amount of packets sent
+    // delay(10000);     // a 10 second delay to limit the amount of packets sent
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
@@ -149,21 +149,21 @@ void printValues()
     unsigned long curr_PRINT = millis();
     if ((curr_PRINT - prev_PRINT) >= interval_PRINT)
     {
-    Serial.print("Location: ");
-    Serial.print(latitude, 8);
-    Serial.print(", ");
-    Serial.println(longitude, 8);
-    Serial.print("Altitude: ");
-    Serial.print(altitude);
-    Serial.println("m");
-    Serial.print("Ground speed: ");
-    Serial.print(speed);
-    Serial.println(" km/h");
-    Serial.print("Number of satellites: ");
-    Serial.println(satellites);
-    Serial.println();
+        Serial.print("Location: ");
+        Serial.print(latitude, 8);
+        Serial.print(", ");
+        Serial.println(longitude, 8);
+        Serial.print("Altitude: ");
+        Serial.print(altitude);
+        Serial.println("m");
+        Serial.print("Ground speed: ");
+        Serial.print(speed);
+        Serial.println(" km/h");
+        Serial.print("Number of satellites: ");
+        Serial.println(satellites);
+        Serial.println();
 
-    prev_PRINT = curr_PRINT;
+        prev_PRINT = curr_PRINT;
     }
 }
 
