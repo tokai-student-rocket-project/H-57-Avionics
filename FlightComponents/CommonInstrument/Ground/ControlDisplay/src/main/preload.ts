@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   rssiUpdated: (callback: () => void) =>
     ipcRenderer.on('rssi-updated', callback),
 
+  remove: (channel: string) => ipcRenderer.removeAllListeners(channel),
+
   store: {
     get(key: string) {
       return ipcRenderer.sendSync('get-store', key);

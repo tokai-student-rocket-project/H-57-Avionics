@@ -1,11 +1,11 @@
 import { Col, Row, Statistic } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const FlightData = () => {
   const [altitude, setAltitude] = useState<string>('0.0');
   const [speed, setSpeed] = useState<string>('0.00');
 
-  let oldTime = 0;
+  const [oldTime, setOldTime] = useState<number>(0);
 
   const accelerationToSpeed = (
     accelerationX: number,
@@ -24,20 +24,25 @@ const FlightData = () => {
     return oldSpeed + deltaSpeed;
   };
 
-  window.electronAPI.flightDataUpdated(() => {
-    setAltitude(window.electronAPI.store.get('altitude'));
-    setSpeed(
-      accelerationToSpeed(
-        Number(window.electronAPI.store.get('acceleration-x')) * 9.8,
-        Number(window.electronAPI.store.get('acceleration-y')) * 9.8,
-        (Number(window.electronAPI.store.get('acceleration-z')) - 1.0) * 9.8,
-        Number(window.electronAPI.store.get('flight-time')) - oldTime,
-        Number(speed)
-      ).toFixed(2)
-    );
+  useEffect(() => {
+    window.electronAPI.flightDataUpdated(() => {
+      setAltitude(window.electronAPI.store.get('altitude'));
+      setSpeed(
+        accelerationToSpeed(
+          Number(window.electronAPI.store.get('acceleration-x')) * 9.8,
+          Number(window.electronAPI.store.get('acceleration-y')) * 9.8,
+          (Number(window.electronAPI.store.get('acceleration-z')) - 1.0) * 9.8,
+          Number(window.electronAPI.store.get('flight-time')) - oldTime,
+          Number(speed)
+        ).toFixed(2)
+      );
 
-    oldTime = Number(window.electronAPI.store.get('flight-time'));
-  });
+      setOldTime(Number(window.electronAPI.store.get('flight-time')));
+    });
+    return () => {
+      window.electronAPI.remove('flight-data-updated');
+    };
+  }, []);
 
   return (
     <div

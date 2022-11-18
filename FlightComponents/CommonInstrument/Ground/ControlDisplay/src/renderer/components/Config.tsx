@@ -1,5 +1,5 @@
 import { Card, Input, Button, Row, Col, Divider } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 
 const Config = () => {
@@ -9,15 +9,20 @@ const Config = () => {
   const [activeSeparationMaximum, setActiveSeparationMaximum] =
     useState<string>('');
 
-  window.electronAPI.configUpdated(() => {
-    setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
-    setActiveSeparationMinimum(
-      window.electronAPI.store.get('separation-minimum')
-    );
-    setActiveSeparationMaximum(
-      window.electronAPI.store.get('separation-maximum')
-    );
-  });
+  useEffect(() => {
+    window.electronAPI.configUpdated(() => {
+      setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
+      setActiveSeparationMinimum(
+        window.electronAPI.store.get('separation-minimum')
+      );
+      setActiveSeparationMaximum(
+        window.electronAPI.store.get('separation-maximum')
+      );
+    });
+    return () => {
+      window.electronAPI.remove('config-updated');
+    };
+  }, []);
 
   return (
     <Card title="CONFIG" bordered={false} style={{ marginTop: '32px' }}>

@@ -1,5 +1,5 @@
 import { Card, Descriptions } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const positiveColor = '#46c46d';
 const nagativeColor = '#ed4245';
@@ -11,11 +11,17 @@ const Status = () => {
   const [shiranui3State, setShiranui3State] = useState<'OFF' | 'ON'>('OFF');
   const [buzzerState, setBuzzerState] = useState<'OFF' | 'ON'>('OFF');
 
-  window.electronAPI.statusUpdated(() => {
-    setFlightpinState(window.electronAPI.store.get('flightpin-state'));
-    setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
-    setBuzzerState(window.electronAPI.store.get('buzzer-state'));
-  });
+  useEffect(() => {
+    window.electronAPI.statusUpdated(() => {
+      console.log('s');
+      setFlightpinState(window.electronAPI.store.get('flightpin-state'));
+      setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
+      setBuzzerState(window.electronAPI.store.get('buzzer-state'));
+    });
+    return () => {
+      window.electronAPI.remove('status-updated');
+    };
+  }, []);
 
   return (
     <Card title="STATUS" bordered={false}>

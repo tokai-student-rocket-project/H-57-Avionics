@@ -1,5 +1,5 @@
 import { Card, Row, Select, Divider } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaRss } from 'react-icons/fa';
 
 const { Option } = Select;
@@ -42,22 +42,31 @@ const Telecom = () => {
     window.electronAPI.oepnSerialport(selectedSerialport);
   };
 
-  window.electronAPI.flightDataUpdated(() => {
-    blinkIndicator(setFlightDataDownState);
-  });
+  useEffect(() => {
+    window.electronAPI.flightDataUpdated(() => {
+      blinkIndicator(setFlightDataDownState);
+    });
 
-  window.electronAPI.statusUpdated(() => {
-    blinkIndicator(setStatusDownState);
-  });
+    window.electronAPI.configUpdated(() => {
+      blinkIndicator(setConfigDownState);
+    });
 
-  window.electronAPI.configUpdated(() => {
-    blinkIndicator(setConfigDownState);
-  });
+    window.electronAPI.statusUpdated(() => {
+      console.log('t');
+      blinkIndicator(setStatusDownState);
+    });
 
-  window.electronAPI.rssiUpdated(() => {
-    setRssi(window.electronAPI.store.get('rssi'));
-    console.log(rssi);
-  });
+    window.electronAPI.rssiUpdated(() => {
+      setRssi(window.electronAPI.store.get('rssi'));
+    });
+
+    return () => {
+      window.electronAPI.remove('flight-data-updated');
+      window.electronAPI.remove('config-updated');
+      window.electronAPI.remove('status-updated');
+      window.electronAPI.remove('rssi-updated');
+    };
+  }, []);
 
   return (
     <Card

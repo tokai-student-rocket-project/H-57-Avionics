@@ -8,6 +8,8 @@ declare global {
       configUpdated(callback: () => void): void;
       rssiUpdated(callback: () => void): void;
 
+      remove(channel: string): void;
+
       store: {
         get: (key: string) => any;
         set: (key: string, val: any) => void;
