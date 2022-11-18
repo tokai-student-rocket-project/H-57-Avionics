@@ -5,6 +5,7 @@ declare global {
       oepnSerialport(path: string): void;
       statusUpdated(callback: () => void): void;
       flightDataUpdated(callback: () => void): void;
+      configUpdated(callback: () => void): void;
 
       store: {
         get: (key: string) => any;

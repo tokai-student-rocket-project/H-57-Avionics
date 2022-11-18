@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 export type Channels = 'ipc-example';
 
@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('status-updated', callback),
   flightDataUpdated: (callback: () => void) =>
     ipcRenderer.on('flight-data-updated', callback),
+  configUpdated: (callback: () => void) =>
+    ipcRenderer.on('config-updated', callback),
 
   store: {
     get(key: string) {

@@ -12,7 +12,7 @@ const blinkIndicator = async (
   set: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   set(true);
-  await delay(200);
+  await delay(100);
   set(false);
 };
 
@@ -42,6 +42,10 @@ const Telecom = () => {
 
   window.electronAPI.statusUpdated(() => {
     blinkIndicator(setStatusDownState);
+  });
+
+  window.electronAPI.configUpdated(() => {
+    blinkIndicator(setConfigDownState);
   });
 
   return (

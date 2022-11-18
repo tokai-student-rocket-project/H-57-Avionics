@@ -54,6 +54,11 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       store.set('acceleration-y', dataObject.ay);
       store.set('acceleration-z', dataObject.az);
       mainWindow?.webContents.send('flight-data-updated');
+    } else if (dataObject.t === 'c') {
+      store.set('base-pressure', dataObject.p);
+      store.set('separation-minimum', dataObject.smin);
+      store.set('separation-maximum', dataObject.smax);
+      mainWindow?.webContents.send('config-updated');
     }
   });
 });
