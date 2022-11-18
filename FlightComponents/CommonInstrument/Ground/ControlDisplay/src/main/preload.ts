@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('flight-data-updated', callback),
   configUpdated: (callback: () => void) =>
     ipcRenderer.on('config-updated', callback),
+  rssiUpdated: (callback: () => void) =>
+    ipcRenderer.on('rssi-updated', callback),
 
   store: {
     get(key: string) {

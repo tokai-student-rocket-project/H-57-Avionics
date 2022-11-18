@@ -36,5 +36,7 @@ void loop() {
     char output[4096];
     serializeJson(packet, output);
     Serial.println(output);
+
+    Serial.println("{\"t\":\"r\",\"rssi\":\"" + String(LoRa.packetRssi()) + "\"}");
   }
 }

@@ -6,6 +6,7 @@ declare global {
       statusUpdated(callback: () => void): void;
       flightDataUpdated(callback: () => void): void;
       configUpdated(callback: () => void): void;
+      rssiUpdated(callback: () => void): void;
 
       store: {
         get: (key: string) => any;

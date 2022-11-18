@@ -7,6 +7,12 @@ const { Option } = Select;
 const activeColor = '#46c46d';
 const disactiveColor = '#72767d';
 
+const rssiToColor = (rssi: number): string => {
+  if (rssi < -100) return '#ed4245';
+  if (rssi < -70) return '#faa61a';
+  return '#46c46d';
+};
+
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const blinkIndicator = async (
   set: React.Dispatch<React.SetStateAction<boolean>>
@@ -48,6 +54,11 @@ const Telecom = () => {
     blinkIndicator(setConfigDownState);
   });
 
+  window.electronAPI.rssiUpdated(() => {
+    setRssi(window.electronAPI.store.get('rssi'));
+    console.log(rssi);
+  });
+
   return (
     <Card
       title="TELECOM"
@@ -66,7 +77,11 @@ const Telecom = () => {
               </Option>
             ))}
           </Select>
-          <FaRss style={{ marginLeft: '16px' }} size={16} color="#72767d" />
+          <FaRss
+            style={{ marginLeft: '16px' }}
+            size={16}
+            color={rssiToColor(rssi)}
+          />
         </div>
       }
     >

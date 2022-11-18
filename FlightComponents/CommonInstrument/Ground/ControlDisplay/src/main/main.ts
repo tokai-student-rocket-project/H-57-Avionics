@@ -59,6 +59,9 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       store.set('separation-minimum', dataObject.smin);
       store.set('separation-maximum', dataObject.smax);
       mainWindow?.webContents.send('config-updated');
+    } else if (dataObject.t === 'r') {
+      store.set('rssi', dataObject.rssi);
+      mainWindow?.webContents.send('rssi-updated');
     }
   });
 });
