@@ -102,7 +102,7 @@ void loop()
         Time = GPS.getTime();
 
         // print GPS values
-        //printValues();
+        // printValues();
 
         // Create and send LoRa packet
         // LoRa_send();
@@ -274,18 +274,24 @@ void LUNCH_Position()
 
 void WAITING_Position()
 {
+    unsigned long curr_SEND, prev_SEND, interval_SEND;
+
     for (deg = 90; deg >= 0; deg--)
     {
         supplyservo.write(deg);               // OPEN
         supplyservo_deg = supplyservo.read(); //現在の角度を取得
     }
 
-    for (deg = 90; deg >= 0; deg--)
+    if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
-        mainservo.write(deg);             // CLOSE
-        mainservo_deg = mainservo.read(); //現在の角度を取得
+        for (deg = 90; deg >= 0; deg--)
+        {
+            mainservo.write(deg);             // CLOSE
+            mainservo_deg = mainservo.read(); //現在の角度を取得
+        }
+        Serial.println("== Complete WAITING Position ==");
+        prev_SEND = curr_SEND;
     }
-    Serial.println("== Complete WAITING Position ==");
 }
 
 void downlinkFlightData_tlm()
@@ -301,6 +307,7 @@ void downlinkFlightData_tlm()
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
+        downPacket_tlm["presentTime"] = String(Time, 1);
         downPacket_tlm["mainservoDeg"] = String(mainservo_deg, 1);
         downPacket_tlm["supplyservoDeg"] = String(supplyservo_deg, 1);
 
