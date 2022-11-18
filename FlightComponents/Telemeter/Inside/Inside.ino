@@ -101,7 +101,7 @@ void loop()
         printValues();
 
         // Create and send LoRa packet
-        LoRa_send();
+        //LoRa_send();
     }
     // receiverOpen();
 
@@ -109,27 +109,9 @@ void loop()
 }
 
 // function to send information over LoRa network
+/*
 void LoRa_send()
 {
-    /*
-    LoRa.beginPacket();      // creates a LoRa packet
-    LoRa.write(destination); // destination address
-    LoRa.print("Location ");
-    // LoRa.print("LAT: ");
-    LoRa.print(latitude, 8); //国土地理院の地理院地図を参考に決定
-    // LoRa.print(" LONG: ");
-    LoRa.print(",");
-    LoRa.println(longitude, 8); // 5桁目以降の表示は非推奨
-    LoRa.print(speed);
-    LoRa.println(" km/h");
-    LoRa.print(altitude);
-    LoRa.println("m");
-    LoRa.print("Numder of satellites: ");
-    LoRa.println(satellites);
-    LoRa.println();
-    LoRa.endPacket(); // sends the LoRa packet
-    delay(10000);     // a 10 second delay to limit the amount of packets sent
-    */
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
@@ -152,6 +134,7 @@ void LoRa_send()
         prev_SEND = curr_SEND;
     }
 }
+*/
 
 // function that prints all readings in the Serial Monitor
 
@@ -297,11 +280,14 @@ void WAITING_Position()
     Serial.println("== Complete WAITING Position ==");
 }
 
-void downlinkFlightData()
+void downlinkFlightData_tlm()
 {
     if (!LoRa.begin(923E6))
         return;
-
+    
+    unsigned long curr_SEND = millis();
+    if ((curr_SEND - prev_SEND) >= interval_SEND)
+    {
     downPacket_tlm.clear();
     downPacket_tlm["sensor"] = "gps";
     downPacket_tlm["lat"] = String(latitude, 8);
@@ -311,4 +297,8 @@ void downlinkFlightData()
     LoRa.beginPacket();
     serializeJson(downPacket_tlm, LoRa);
     LoRa.endPacket();
+
+    serializeJson(downPacket_tlm, Serial);
+    prev_SEND = curr_SEND;
+    }
 }
