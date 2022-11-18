@@ -1,38 +1,50 @@
-#include <SPI.h>
-#include <LoRa.h>
-
 /*
   地上でGPSを受信するArduinoです。
 */
 
-String message;
+#include <SPI.h>
+#include <LoRa.h>
+#include <ArduinoJson.h>
+
+StaticJsonDocument<1024> packet;
+//String message;
 
 byte localAddress = 0xFF;
 
+// const int Switch = 1;
 
-//const int Switch = 1;
-
-
-void setup() {
+void setup()
+{
   Serial.begin(9600);
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  while (!Serial);
+  while (!Serial)
+    ;
   Serial.println("LoRa GPS data receiver");
-  if (!LoRa.begin(923E6)) {
+  if (!LoRa.begin(923E6))
+  {
     Serial.println("Starting LoRa failed!");
-    while (1);
+    while (1)
+      ;
   }
   delay(100);
 }
-void loop() {
+void loop()
+{
 
-  onReceive(LoRa.parsePacket());
+  if (LoRa.parsePacket())
+  {
+    deserializeJson(packet, LoRa);
+    char output[1024];
+    serializeJson(packet, output);
+    Serial.println(output);
+  }
+  // onReceive(LoRa.parsePacket());
 
-  //int Switch_value;
-  //Switch_value = digitalRead(Switch);
-  //Serial.println(Switch_value);
+  // int Switch_value;
+  // Switch_value = digitalRead(Switch);
+  // Serial.println(Switch_value);
 
   /*
   if (Serial.available() > 0) {
@@ -51,26 +63,32 @@ void loop() {
   */
 }
 
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
+/*
+void onReceive(int packetSize)
+{
+  if (packetSize == 0)
+    return; // if there's no packet, return
 
   int recipient = LoRa.read();
   String incoming = "";
 
-  while (LoRa.available()) {
+  while (LoRa.available())
+  {
     incoming += (char)LoRa.read();
   }
 
-  if (recipient != localAddress && recipient != 0xFF) {
+  if (recipient != localAddress && recipient != 0xFF)
+  {
     Serial.println("This message is not for me.");
-    return;                             // skip rest of function
+    return; // skip rest of function
   }
 
   Serial.print(incoming);
   Serial.print(" || RSSI: "); //通信強度がわかります。
-  Serial.println(LoRa.packetRssi()); 
+  Serial.println(LoRa.packetRssi());
   Serial.println();
 }
+*/
 
 /*
 void sendOpen(byte Opencommand) {
