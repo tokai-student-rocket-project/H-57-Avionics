@@ -23,8 +23,12 @@ const Status = () => {
   }, []);
 
   return (
-    <Card title="STATUS" bordered={false} style={{ margin: '16px' }}>
-      <Descriptions column={1} labelStyle={{ color: 'white' }}>
+    <Card title="STATUS" style={{ margin: '16px' }} bordered={false}>
+      <Descriptions
+        style={{ marginTop: '24px' }}
+        column={1}
+        labelStyle={{ color: 'white' }}
+      >
         <Descriptions.Item label="フライトピン">
           <span
             style={{

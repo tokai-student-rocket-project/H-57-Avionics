@@ -1,4 +1,4 @@
-import { Card, Select, Divider, Descriptions, Popover } from 'antd';
+import { Card, Select, Divider, Tooltip, Popover } from 'antd';
 import { useState, useEffect } from 'react';
 import { FaRss, FaCog } from 'react-icons/fa';
 
@@ -123,15 +123,18 @@ const Telecom = () => {
               color="#b9bbbe"
             />
           </Popover>
-          <FaRss
-            style={{ marginLeft: '16px' }}
-            size={16}
-            color={rssiToColor(rssi)}
-          />
+          <Tooltip placement="bottom" title={rssi}>
+            <FaRss
+              style={{ marginLeft: '16px' }}
+              size={16}
+              cursor="pointer"
+              color={rssiToColor(rssi)}
+            />
+          </Tooltip>
         </div>
       }
     >
-      <Divider>Uplink</Divider>
+      <Divider>アップリンク</Divider>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>Config :</span>
         <div
@@ -144,7 +147,7 @@ const Telecom = () => {
           }}
         />
       </div>
-      <Divider>Downlink</Divider>
+      <Divider>ダウンリンク</Divider>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>FlightData :</span>
         <div

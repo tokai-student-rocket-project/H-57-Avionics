@@ -3,12 +3,13 @@ import { Col, Layout, Row } from 'antd';
 import Status from './components/Status';
 import './App.css';
 import Config from './components/Config';
-import wireframe from './wireframe_h57_without_fin.png';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
 import FlightMode from './components/Blank';
 import Telecom from './components/Telecom';
-import Telemeter from './components/Telemeter';
+import GPS from './components/GPS';
+import Valve from './components/Valve';
+import Wireframe from './components/Wireframe';
 
 const { Header, Content } = Layout;
 
@@ -38,15 +39,14 @@ const App = () => {
             <Config />
           </Col>
           <Col span={4}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <img height={600} src={wireframe} alt="wireframe" />
-            </div>
+            <Wireframe />
           </Col>
           <Col span={4}>
             <Status />
+            <Valve />
           </Col>
           <Col span={8}>
-            <Telemeter />
+            <GPS />
           </Col>
         </Row>
       </Content>
