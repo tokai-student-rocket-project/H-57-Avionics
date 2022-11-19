@@ -1,6 +1,6 @@
-import { Card, Row, Select, Divider } from 'antd';
+import { Card, Select, Divider, Descriptions, Popover } from 'antd';
 import { useState, useEffect } from 'react';
-import { FaRss } from 'react-icons/fa';
+import { FaRss, FaCog } from 'react-icons/fa';
 
 const { Option } = Select;
 
@@ -26,11 +26,11 @@ const Telecom = () => {
   const [serialports, setSerialports] = useState<string[]>([]);
 
   const [configUpState, setConfigUpState] = useState<boolean>(false);
-  const [commandUpState, setCommandUpState] = useState<boolean>(false);
   const [flightDataDownState, setFlightDataDownState] =
     useState<boolean>(false);
   const [configDownState, setConfigDownState] = useState<boolean>(false);
   const [statusDownState, setStatusDownState] = useState<boolean>(false);
+  const [gpsDownState, setGpsDownState] = useState<boolean>(false);
 
   const [rssi, setRssi] = useState<number>(0);
 
@@ -40,6 +40,10 @@ const Telecom = () => {
 
   const selectSerialport = (selectedSerialport: string) => {
     window.electronAPI.oepnSerialport(selectedSerialport);
+  };
+
+  const selectSerialportTelemeter = (selectedSerialport: string) => {
+    window.electronAPI.oepnSerialportTelemeter(selectedSerialport);
   };
 
   useEffect(() => {
@@ -55,6 +59,10 @@ const Telecom = () => {
       blinkIndicator(setStatusDownState);
     });
 
+    window.electronAPI.telemetryUpdated(() => {
+      blinkIndicator(setGpsDownState);
+    });
+
     window.electronAPI.rssiUpdated(() => {
       setRssi(window.electronAPI.store.get('rssi'));
     });
@@ -67,24 +75,54 @@ const Telecom = () => {
     };
   }, []);
 
+  const serialportSetting = (
+    <>
+      <Select
+        style={{ width: '256px' }}
+        placeholder="シリアルポートを選択"
+        onClick={getSerialports}
+        onSelect={selectSerialport}
+      >
+        {serialports.map((serialportItr) => (
+          <Option key={serialportItr} value={serialportItr}>
+            {serialportItr}
+          </Option>
+        ))}
+      </Select>
+      <Select
+        style={{ width: '256px' }}
+        placeholder="シリアルポートを選択"
+        onClick={getSerialports}
+        onSelect={selectSerialportTelemeter}
+      >
+        {serialports.map((serialportItr) => (
+          <Option key={serialportItr} value={serialportItr}>
+            {serialportItr}
+          </Option>
+        ))}
+      </Select>
+    </>
+  );
+
   return (
     <Card
       title="TELECOM"
       bordered={false}
+      style={{ margin: '16px' }}
       extra={
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Select
-            style={{ width: '256px' }}
-            placeholder="シリアルポートを選択"
-            onClick={getSerialports}
-            onSelect={selectSerialport}
+          <Popover
+            content={serialportSetting}
+            placement="bottom"
+            trigger="click"
           >
-            {serialports.map((serialportItr) => (
-              <Option key={serialportItr} value={serialportItr}>
-                {serialportItr}
-              </Option>
-            ))}
-          </Select>
+            <FaCog
+              cursor="pointer"
+              style={{ marginLeft: '16px' }}
+              size={16}
+              color="#b9bbbe"
+            />
+          </Popover>
           <FaRss
             style={{ marginLeft: '16px' }}
             size={16}
@@ -93,67 +131,62 @@ const Telecom = () => {
         </div>
       }
     >
-      <Divider>アップリンク</Divider>
-      <Row style={{ alignItems: 'center' }}>
-        Config:
+      <Divider>Uplink</Divider>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span>Config :</span>
         <div
           style={{
             width: '12px',
-            marginRight: '16px',
-            marginLeft: '8px',
+            margin: 'auto 16px auto 8px',
             height: '12px',
             backgroundColor: configUpState ? activeColor : disactiveColor,
             borderRadius: '50%',
           }}
         />
-        Command:
+      </div>
+      <Divider>Downlink</Divider>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span>FlightData :</span>
         <div
           style={{
             width: '12px',
-            marginRight: '16px',
-            marginLeft: '8px',
-            height: '12px',
-            backgroundColor: commandUpState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
-      </Row>
-      <Divider>ダウンリンク</Divider>
-      <Row style={{ alignItems: 'center' }}>
-        FlightData:
-        <div
-          style={{
-            width: '12px',
-            marginRight: '16px',
-            marginLeft: '8px',
+            margin: 'auto 16px auto 8px',
             height: '12px',
             backgroundColor: flightDataDownState ? activeColor : disactiveColor,
             borderRadius: '50%',
           }}
         />
-        Config:
+        <span>Config :</span>
         <div
           style={{
             width: '12px',
-            marginRight: '16px',
-            marginLeft: '8px',
+            margin: 'auto 16px auto 8px',
             height: '12px',
             backgroundColor: configDownState ? activeColor : disactiveColor,
             borderRadius: '50%',
           }}
         />
-        Status:
+        <span>Status :</span>
         <div
           style={{
             width: '12px',
-            marginRight: '16px',
-            marginLeft: '8px',
+            margin: 'auto 16px auto 8px',
             height: '12px',
             backgroundColor: statusDownState ? activeColor : disactiveColor,
             borderRadius: '50%',
           }}
         />
-      </Row>
+        <span>GPS :</span>
+        <div
+          style={{
+            width: '12px',
+            margin: 'auto 16px auto 8px',
+            height: '12px',
+            backgroundColor: gpsDownState ? activeColor : disactiveColor,
+            borderRadius: '50%',
+          }}
+        />
+      </div>
     </Card>
   );
 };

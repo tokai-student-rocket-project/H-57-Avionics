@@ -5,6 +5,9 @@ export type Channels = 'ipc-example';
 contextBridge.exposeInMainWorld('electronAPI', {
   getSerialports: () => ipcRenderer.invoke('get-serialports'),
   oepnSerialport: (path: string) => ipcRenderer.send('open-serialport', path),
+  oepnSerialportTelemeter: (path: string) =>
+    ipcRenderer.send('open-serialport-telemeter', path),
+
   statusUpdated: (callback: () => void) =>
     ipcRenderer.on('status-updated', callback),
   flightDataUpdated: (callback: () => void) =>
@@ -13,6 +16,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('config-updated', callback),
   rssiUpdated: (callback: () => void) =>
     ipcRenderer.on('rssi-updated', callback),
+
+  telemetryUpdated: (callback: () => void) =>
+    ipcRenderer.on('telemetry-updated', callback),
 
   remove: (channel: string) => ipcRenderer.removeAllListeners(channel),
 

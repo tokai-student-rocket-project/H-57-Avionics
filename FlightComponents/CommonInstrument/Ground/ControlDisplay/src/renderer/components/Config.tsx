@@ -25,7 +25,7 @@ const Config = () => {
   }, []);
 
   return (
-    <Card title="CONFIG" bordered={false} style={{ marginTop: '32px' }}>
+    <Card title="CONFIG" bordered={false} style={{ margin: '16px' }}>
       <Divider>基準気圧</Divider>
       <Row gutter={8} wrap={false} align="middle">
         <Col flex="auto">

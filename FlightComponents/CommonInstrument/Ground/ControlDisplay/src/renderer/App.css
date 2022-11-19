@@ -12,6 +12,7 @@ body {
 
   .ant-card-body {
     color: white !important;
+    padding-top: 0 !important;
   }
 }
 
@@ -58,6 +59,8 @@ body {
 .ant-divider {
   color: #b9bbbe !important;
   border-color: #b9bbbe !important;
+  margin-top: 16px !important;
+  margin-bottom: 8px !important;
 }
 
 .ant-statistic-title {
@@ -70,4 +73,8 @@ body {
 
 .ant-statistic-content-suffix {
   color: #b9bbbe;
+}
+
+.ant-popover-inner {
+  background-color: #36393f;
 }

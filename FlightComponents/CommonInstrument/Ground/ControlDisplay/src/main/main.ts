@@ -24,8 +24,6 @@ ipcMain.handle('get-serialports', async () => {
   return (await SerialPort.list()).map((serialportInfo) => serialportInfo.path);
 });
 
-let serialport: SerialPort | null = null;
-
 const store = new Store();
 ipcMain.on('get-store', async (event, val) => {
   event.returnValue = store.get(val);
@@ -33,6 +31,9 @@ ipcMain.on('get-store', async (event, val) => {
 ipcMain.on('set-store', async (event, key, val) => {
   store.set(key, val);
 });
+
+let serialport: SerialPort | null = null;
+let serialportTelemeter: SerialPort | null = null;
 
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
@@ -63,6 +64,26 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       store.set('rssi', dataObject.rssi);
       mainWindow?.webContents.send('rssi-updated');
     }
+  });
+});
+
+ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
+  if (serialportTelemeter?.isOpen) serialportTelemeter.close();
+
+  serialportTelemeter = new SerialPort({
+    path: serialportPath,
+    baudRate: 9600,
+  });
+  const parser = serialportTelemeter.pipe(new ReadlineParser());
+  parser.on('data', (data) => {
+    const dataObject = JSON.parse(data);
+
+    store.set('latitude', dataObject.lat);
+    store.set('lontitude', dataObject.lon);
+    store.set('satellites', dataObject.satellites);
+    store.set('mainservo-degrees', dataObject.mainservoDeg);
+    store.set('supplyservo-degrees', dataObject.supplyservoDeg);
+    mainWindow?.webContents.send('telemetry-updated');
   });
 });
 

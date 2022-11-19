@@ -23,11 +23,12 @@ const Status = () => {
   }, []);
 
   return (
-    <Card title="STATUS" bordered={false}>
+    <Card title="STATUS" bordered={false} style={{ margin: '16px' }}>
       <Descriptions column={1} labelStyle={{ color: 'white' }}>
         <Descriptions.Item label="フライトピン">
           <span
             style={{
+              fontSize: '1.2em',
               color: flightpinState === 'CLOSE' ? nagativeColor : positiveColor,
             }}
           >
@@ -37,6 +38,7 @@ const Status = () => {
         <Descriptions.Item label="不知火Ⅲ">
           <span
             style={{
+              fontSize: '1.2em',
               color: shiranui3State === 'OFF' ? nagativeColor : positiveColor,
             }}
           >
@@ -44,11 +46,12 @@ const Status = () => {
           </span>
         </Descriptions.Item>
         <Descriptions.Item label="不知火Ⅳ">
-          <span style={{ color: '#72767d' }}>N/A</span>
+          <span style={{ fontSize: '1.2em', color: '#72767d' }}>N/A</span>
         </Descriptions.Item>
         <Descriptions.Item label="ブザー">
           <span
             style={{
+              fontSize: '1.2em',
               color: buzzerState === 'OFF' ? nagativeColor : positiveColor,
             }}
           >
