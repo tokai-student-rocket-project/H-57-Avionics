@@ -52,20 +52,18 @@ const Valve = () => {
   }, [mainServoDegrees, supplyServoDegrees]);
 
   useEffect(() => {
-    if (Number(window.electronAPI.store.get('mainservo-degrees'))) {
+    window.electronAPI.telemetryRecieved(() => {
       setMainServoDegrees(
         Number(window.electronAPI.store.get('mainservo-degrees'))
       );
-    }
 
-    if (Number(window.electronAPI.store.get('supplyservo-degrees'))) {
       setSupplyServoDegrees(
         Number(window.electronAPI.store.get('supplyservo-degrees'))
       );
-    }
+    });
 
     return () => {
-      window.electronAPI.remove('telemetry-updated');
+      window.electronAPI.remove('telemetry-recieved');
     };
   }, []);
 

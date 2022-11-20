@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels = 'ipc-example';
 
@@ -8,17 +8,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   oepnSerialportTelemeter: (path: string) =>
     ipcRenderer.send('open-serialport-telemeter', path),
 
-  statusUpdated: (callback: () => void) =>
-    ipcRenderer.on('status-updated', callback),
-  flightDataUpdated: (callback: () => void) =>
-    ipcRenderer.on('flight-data-updated', callback),
-  configUpdated: (callback: () => void) =>
-    ipcRenderer.on('config-updated', callback),
-  rssiUpdated: (callback: () => void) =>
-    ipcRenderer.on('rssi-updated', callback),
+  statusRecieved: (callback: () => void) =>
+    ipcRenderer.on('status-recieved', callback),
+  flightDataRecieved: (callback: () => void) =>
+    ipcRenderer.on('flight-data-recieved', callback),
+  configRecieved: (callback: () => void) =>
+    ipcRenderer.on('config-recieved', callback),
+  eventRecieved: (
+    callback: (_: IpcRendererEvent, event: string, flightTime: string) => void
+  ) => ipcRenderer.on('event-recieved', callback),
+  rssiRecieved: (callback: () => void) =>
+    ipcRenderer.on('rssi-recieved', callback),
 
-  telemetryUpdated: (callback: () => void) =>
-    ipcRenderer.on('telemetry-updated', callback),
+  telemetryRecieved: (callback: () => void) =>
+    ipcRenderer.on('telemetry-recieved', callback),
 
   remove: (channel: string) => ipcRenderer.removeAllListeners(channel),
 

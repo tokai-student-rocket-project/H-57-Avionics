@@ -30,6 +30,7 @@ const Telecom = () => {
     useState<boolean>(false);
   const [configDownState, setConfigDownState] = useState<boolean>(false);
   const [statusDownState, setStatusDownState] = useState<boolean>(false);
+  const [eventDownState, setEventDownState] = useState<boolean>(false);
   const [gpsDownState, setGpsDownState] = useState<boolean>(false);
 
   const [rssi, setRssi] = useState<number>(0);
@@ -47,31 +48,36 @@ const Telecom = () => {
   };
 
   useEffect(() => {
-    window.electronAPI.flightDataUpdated(() => {
+    window.electronAPI.flightDataRecieved(() => {
       blinkIndicator(setFlightDataDownState);
     });
 
-    window.electronAPI.configUpdated(() => {
+    window.electronAPI.configRecieved(() => {
       blinkIndicator(setConfigDownState);
     });
 
-    window.electronAPI.statusUpdated(() => {
+    window.electronAPI.statusRecieved(() => {
       blinkIndicator(setStatusDownState);
     });
 
-    window.electronAPI.telemetryUpdated(() => {
+    window.electronAPI.telemetryRecieved(() => {
       blinkIndicator(setGpsDownState);
     });
 
-    window.electronAPI.rssiUpdated(() => {
+    window.electronAPI.rssiRecieved(() => {
       setRssi(window.electronAPI.store.get('rssi'));
     });
 
+    window.electronAPI.eventRecieved(() => {
+      blinkIndicator(setEventDownState);
+    });
+
     return () => {
-      window.electronAPI.remove('flight-data-updated');
-      window.electronAPI.remove('config-updated');
-      window.electronAPI.remove('status-updated');
-      window.electronAPI.remove('rssi-updated');
+      window.electronAPI.remove('flight-data-recieved');
+      window.electronAPI.remove('config-recieved');
+      window.electronAPI.remove('status-recieved');
+      window.electronAPI.remove('rssi-recieved');
+      window.electronAPI.remove('teremetry-recieved');
     };
   }, []);
 
@@ -176,6 +182,18 @@ const Telecom = () => {
             margin: 'auto 16px auto 8px',
             height: '12px',
             backgroundColor: statusDownState ? activeColor : disactiveColor,
+            borderRadius: '50%',
+          }}
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span>Event :</span>
+        <div
+          style={{
+            width: '12px',
+            margin: 'auto 16px auto 8px',
+            height: '12px',
+            backgroundColor: eventDownState ? activeColor : disactiveColor,
             borderRadius: '50%',
           }}
         />

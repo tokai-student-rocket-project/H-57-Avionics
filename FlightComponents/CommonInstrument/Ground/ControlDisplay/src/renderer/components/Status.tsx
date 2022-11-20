@@ -12,13 +12,13 @@ const Status = () => {
   const [buzzerState, setBuzzerState] = useState<'OFF' | 'ON'>('OFF');
 
   useEffect(() => {
-    window.electronAPI.statusUpdated(() => {
+    window.electronAPI.statusRecieved(() => {
       setFlightpinState(window.electronAPI.store.get('flightpin-state'));
       setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
       setBuzzerState(window.electronAPI.store.get('buzzer-state'));
     });
     return () => {
-      window.electronAPI.remove('status-updated');
+      window.electronAPI.remove('status-recieved');
     };
   }, []);
 

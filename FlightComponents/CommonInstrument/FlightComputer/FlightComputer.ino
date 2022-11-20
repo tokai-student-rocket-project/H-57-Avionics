@@ -103,7 +103,7 @@ void setup() {
     downlinkConfig();
   })->startIntervalSec(1.0);
 
-  downlinkEvent("initialized");
+  downlinkEvent("INITIALIZE");
 }
 
 
@@ -118,17 +118,17 @@ void loop() {
 
   if (canReset()) {
     reset();
-    downlinkEvent("reset");
+    downlinkEvent("RESET");
   }
 
   if (canSeparate()) {
     separate();
-    downlinkEvent("separate by tod");
+    downlinkEvent("SEPARATE");
   }
 
   if (canSeparateForce()) {
     separate();
-    downlinkEvent("separate by timer");
+    downlinkEvent("FORCE-SEPARATE");
   }
 
   if (isFlying()) {
@@ -188,8 +188,9 @@ void downlinkEvent(String event) {
   device::_commandIndicator.on();
 
   downPacket.clear();
-  downPacket["type"] = "event";
-  downPacket["event"] = event;
+  downPacket["t"] = "e";
+  downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
+  downPacket["e"] = event;
 
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
@@ -302,13 +303,14 @@ void updateFlightMode() {
     case FlightMode::STANDBY:
       if (device::_flightPin.isReleased()) {
         changeFlightMode(FlightMode::CLIMB);
-        downlinkEvent("launched");
+        downlinkEvent("LAUNCH");
       };
       break;
 
     case FlightMode::CLIMB:
       if (internal::_descentDetector._isDescending) {
         changeFlightMode(FlightMode::DESCENT);
+        downlinkEvent("DESCENT");
       }
       break;
   }

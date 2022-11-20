@@ -83,3 +83,7 @@ body {
   width: 100%;
   height: 200px;
 }
+
+.ant-timeline-item-tail {
+  border-color: #b9bbbe;
+}

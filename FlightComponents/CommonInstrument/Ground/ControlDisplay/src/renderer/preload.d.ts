@@ -5,12 +5,15 @@ declare global {
       oepnSerialport(path: string): void;
       oepnSerialportTelemeter(path: string): void;
 
-      statusUpdated(callback: () => void): void;
-      flightDataUpdated(callback: () => void): void;
-      configUpdated(callback: () => void): void;
-      rssiUpdated(callback: () => void): void;
+      statusRecieved(callback: () => void): void;
+      flightDataRecieved(callback: () => void): void;
+      configRecieved(callback: () => void): void;
+      eventRecieved(
+        callback: (_: never, event: string, flightTime: string) => void
+      ): void;
+      rssiRecieved(callback: () => void): void;
 
-      telemetryUpdated(callback: () => void): void;
+      telemetryRecieved(callback: () => void): void;
 
       remove(channel: string): void;
 

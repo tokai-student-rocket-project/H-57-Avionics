@@ -14,11 +14,11 @@ const Wireframe = () => {
   const [flightTime, setFlightTime] = useState<number>(0);
 
   useEffect(() => {
-    window.electronAPI.flightDataUpdated(() => {
+    window.electronAPI.flightDataRecieved(() => {
       setFlightTime(Number(window.electronAPI.store.get('flight-time')));
     });
     return () => {
-      window.electronAPI.remove('flight-data-updated');
+      window.electronAPI.remove('flight-data-recieved');
     };
   }, []);
 

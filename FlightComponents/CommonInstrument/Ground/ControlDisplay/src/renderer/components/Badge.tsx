@@ -7,11 +7,11 @@ const Badge = () => {
   const [flightTime, setFlightTime] = useState<string>('0.00');
 
   useEffect(() => {
-    window.electronAPI.flightDataUpdated(() => {
+    window.electronAPI.flightDataRecieved(() => {
       setFlightTime(window.electronAPI.store.get('flight-time'));
     });
     return () => {
-      window.electronAPI.remove('flight-data-updated');
+      window.electronAPI.remove('flight-data-recieved');
     };
   }, []);
 

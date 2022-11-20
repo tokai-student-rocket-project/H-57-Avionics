@@ -10,7 +10,7 @@ const Config = () => {
     useState<string>('');
 
   useEffect(() => {
-    window.electronAPI.configUpdated(() => {
+    window.electronAPI.configRecieved(() => {
       setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
       setActiveSeparationMinimum(
         window.electronAPI.store.get('separation-minimum')
@@ -20,7 +20,7 @@ const Config = () => {
       );
     });
     return () => {
-      window.electronAPI.remove('config-updated');
+      window.electronAPI.remove('config-recieved');
     };
   }, []);
 

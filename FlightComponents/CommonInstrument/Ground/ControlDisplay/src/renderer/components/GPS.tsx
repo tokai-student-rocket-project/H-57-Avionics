@@ -29,13 +29,13 @@ const GPS = () => {
   const [sattelites, setSattelites] = useState<number>(4);
 
   useEffect(() => {
-    window.electronAPI.telemetryUpdated(() => {
+    window.electronAPI.telemetryRecieved(() => {
       setLatitude(Number(window.electronAPI.store.get('latitude')));
       setLongitude(Number(window.electronAPI.store.get('longitude')));
       setSattelites(Number(window.electronAPI.store.get('sattelites')));
 
       return () => {
-        window.electronAPI.remove('telemetry-updated');
+        window.electronAPI.remove('telemetry-recieved');
       };
     });
   }, []);

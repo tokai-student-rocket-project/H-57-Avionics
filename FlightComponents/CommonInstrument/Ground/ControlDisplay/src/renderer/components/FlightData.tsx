@@ -25,7 +25,7 @@ const FlightData = () => {
   };
 
   useEffect(() => {
-    window.electronAPI.flightDataUpdated(() => {
+    window.electronAPI.flightDataRecieved(() => {
       setAltitude(window.electronAPI.store.get('altitude'));
       setSpeed(
         accelerationToSpeed(
@@ -40,7 +40,7 @@ const FlightData = () => {
       setOldTime(Number(window.electronAPI.store.get('flight-time')));
     });
     return () => {
-      window.electronAPI.remove('flight-data-updated');
+      window.electronAPI.remove('flight-data-recieved');
     };
   }, []);
 
