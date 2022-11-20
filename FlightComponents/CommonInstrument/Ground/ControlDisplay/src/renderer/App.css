@@ -64,11 +64,7 @@ body {
 }
 
 .ant-statistic-title {
-  color: white;
-}
-
-.ant-statistic-content-value {
-  color: white;
+  color: #b9bbbe;
 }
 
 .ant-statistic-content-suffix {

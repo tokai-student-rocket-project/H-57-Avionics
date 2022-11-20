@@ -44,6 +44,7 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
     const dataObject = JSON.parse(data);
 
     if (dataObject.t === 's') {
+      store.set('flight-mode', dataObject.m);
       store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
       store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
       store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');

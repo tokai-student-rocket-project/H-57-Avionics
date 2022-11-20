@@ -5,7 +5,7 @@ import './App.css';
 import Config from './components/Config';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
-import FlightMode from './components/Blank';
+import FlightMode from './components/FlightMode';
 import Telecom from './components/Telecom';
 import GPS from './components/GPS';
 import Valve from './components/Valve';

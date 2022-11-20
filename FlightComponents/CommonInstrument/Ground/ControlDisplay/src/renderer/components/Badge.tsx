@@ -3,15 +3,33 @@ import { useState, useEffect } from 'react';
 
 const { Title } = Typography;
 
+const getColor = (mode: string, isAccent: boolean) => {
+  if (mode === 'STANDBY') return '#faa61a';
+  if (mode === 'PARASHUTE') return '#46c46d';
+
+  return isAccent ? '#5865f2' : 'white';
+};
+
 const Badge = () => {
   const [flightTime, setFlightTime] = useState<string>('0.00');
+  const [flightMode, setFlightMode] = useState<string>('');
 
   useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
       setFlightTime(window.electronAPI.store.get('flight-time'));
     });
+
+    window.electronAPI.statusRecieved(() => {
+      setFlightMode(
+        ['STANDBY', 'CLIMB', 'DESCENT', 'PARASHUTE'][
+          Number(window.electronAPI.store.get('flight-mode'))
+        ]
+      );
+    });
+
     return () => {
       window.electronAPI.remove('flight-data-recieved');
+      window.electronAPI.remove('status-recieved');
     };
   }, []);
 
@@ -26,7 +44,7 @@ const Badge = () => {
           alignItems: 'center',
           justifyContent: 'center',
           clipPath: 'polygon(12% 100%, 0% 0%, 100% 0%, 88% 100%)',
-          borderBottomColor: '#5865f2',
+          borderBottomColor: getColor(flightMode, true),
           borderBottomWidth: '2px',
           borderStyle: 'solid',
         }}

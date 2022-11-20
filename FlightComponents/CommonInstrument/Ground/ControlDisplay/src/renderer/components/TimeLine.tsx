@@ -1,6 +1,5 @@
 import { Card, Timeline } from 'antd';
 import { useState, useEffect } from 'react';
-import { FaDotCircle } from 'react-icons/fa';
 
 type TimelineItem = {
   time: string;
@@ -15,7 +14,6 @@ const TimeLine = () => {
       if (!event || !flightTime) return;
 
       if (event === 'LAUNCH') {
-        console.log('clear');
         setEvents([]);
         events.length = 0;
       }

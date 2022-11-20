@@ -205,6 +205,7 @@ void downlinkStatus() {
 
   downPacket.clear();
   downPacket["t"] = "s";
+  downPacket["m"] = String(static_cast<int>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
