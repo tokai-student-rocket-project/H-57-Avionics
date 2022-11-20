@@ -79,7 +79,7 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
     const dataObject = JSON.parse(data);
 
     store.set('latitude', dataObject.lat);
-    store.set('lontitude', dataObject.lon);
+    store.set('longitude', dataObject.lon);
     store.set('satellites', dataObject.satellites);
     store.set('mainservo-degrees', dataObject.mainservoDeg);
     store.set('supplyservo-degrees', dataObject.supplyservoDeg);
