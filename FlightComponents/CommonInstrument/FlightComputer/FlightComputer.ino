@@ -103,7 +103,7 @@ void setup() {
     downlinkConfig();
   })->startIntervalSec(1.0);
 
-  downlinkEvent("INITIALIZE");
+  downlinkEvent("INITIALIZED");
 }
 
 
@@ -123,12 +123,12 @@ void loop() {
 
   if (canSeparate()) {
     separate();
-    downlinkEvent("SEPARATE");
+    downlinkEvent("SEPARATED");
   }
 
   if (canSeparateForce()) {
     separate();
-    downlinkEvent("FORCE-SEPARATE");
+    downlinkEvent("FORCE-SEPARATED");
   }
 
   if (isFlying()) {
@@ -304,7 +304,7 @@ void updateFlightMode() {
     case FlightMode::STANDBY:
       if (device::_flightPin.isReleased()) {
         changeFlightMode(FlightMode::CLIMB);
-        downlinkEvent("LAUNCH");
+        downlinkEvent("LAUNCHED");
       };
       break;
 
@@ -336,22 +336,24 @@ void receiveCommand() {
     return;
   }
 
+  device::_commandIndicator.on();
+
   deserializeJson(upPacket, LoRa);
 
-  if (upPacket["type"] == "req") {
-    device::_commandIndicator.on();
-
-    if (upPacket["req"] == "setRefPress") {
+  if (upPacket["t"] == "c") {
+    if (upPacket["l"] == "p") {
       device::_bme280.setReferencePressure(
-        upPacket["v"].is<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    } else if (upPacket["req"] == "setSepaMin") {
+        upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
+    } else if (upPacket["l"] == "smin") {
       separationConfig::separation_minimum_time_ms = 
-        (upPacket["v"].is<double>() ? (double)upPacket["v"] : 4.0) * 1000.0;
-    } else if (upPacket["req"] == "setSepaMax") {
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 4.0) * 1000.0;
+    } else if (upPacket["l"] == "smax") {
       separationConfig::separation_maximum_time_ms = 
-        (upPacket["v"].is<double>() ? (double)upPacket["v"] : 10.0) * 1000.0;
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.0) * 1000.0;
     }
 
-    device::_commandIndicator.off();
+    upPacket.clear();
   }
+
+  device::_commandIndicator.off();
 }

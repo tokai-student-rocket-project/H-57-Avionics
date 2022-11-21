@@ -9,6 +9,12 @@ const Config = () => {
   const [activeSeparationMaximum, setActiveSeparationMaximum] =
     useState<string>('');
 
+  const [standbyBasePrassure, setStandbyBasePressure] = useState<string>('');
+  const [standbySeparationMinimum, setStandbySeparationMinimum] =
+    useState<string>('');
+  const [standbySeparationMaximum, setStandbySeparationMaximum] =
+    useState<string>('');
+
   useEffect(() => {
     window.electronAPI.configRecieved(() => {
       setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
@@ -24,6 +30,16 @@ const Config = () => {
     };
   }, []);
 
+  const sendConfig = (event: React.MouseEvent<HTMLInputElement>) => {
+    const label = event.currentTarget.getAttribute('data-num');
+    if (label === 'p')
+      window.electronAPI.sendConfig(label, standbyBasePrassure);
+    if (label === 'smin')
+      window.electronAPI.sendConfig(label, standbySeparationMinimum);
+    if (label === 'smax')
+      window.electronAPI.sendConfig(label, standbySeparationMaximum);
+  };
+
   return (
     <Card title="CONFIG" bordered={false} style={{ margin: '16px' }}>
       <Divider>基準気圧</Divider>
@@ -32,12 +48,16 @@ const Config = () => {
           <Input addonAfter="hPa" readOnly value={activeBasePrassure} />
         </Col>
         <Col>
-          <Button type="primary">
+          <Button type="primary" onClick={sendConfig} data-num="p">
             <FaArrowLeft />
           </Button>
         </Col>
         <Col flex="auto">
-          <Input addonAfter="hPa" />
+          <Input
+            addonAfter="hPa"
+            value={standbyBasePrassure}
+            onChange={(event) => setStandbyBasePressure(event.target.value)}
+          />
         </Col>
       </Row>
       <Divider>最短分離時間</Divider>
@@ -46,12 +66,18 @@ const Config = () => {
           <Input addonAfter="sec" readOnly value={activeSeparationMinimum} />
         </Col>
         <Col>
-          <Button type="primary">
+          <Button type="primary" onClick={sendConfig} data-num="smin">
             <FaArrowLeft />
           </Button>
         </Col>
         <Col flex="auto">
-          <Input addonAfter="sec" />
+          <Input
+            addonAfter="sec"
+            value={standbySeparationMinimum}
+            onChange={(event) =>
+              setStandbySeparationMinimum(event.target.value)
+            }
+          />
         </Col>
       </Row>
       <Divider>最長分離時間</Divider>
@@ -60,12 +86,18 @@ const Config = () => {
           <Input addonAfter="sec" readOnly value={activeSeparationMaximum} />
         </Col>
         <Col>
-          <Button type="primary">
+          <Button type="primary" onClick={sendConfig} data-num="smax">
             <FaArrowLeft />
           </Button>
         </Col>
         <Col flex="auto">
-          <Input addonAfter="sec" />
+          <Input
+            addonAfter="sec"
+            value={standbySeparationMaximum}
+            onChange={(event) =>
+              setStandbySeparationMaximum(event.target.value)
+            }
+          />
         </Col>
       </Row>
     </Card>

@@ -50,7 +50,7 @@ const Badge = () => {
         }}
       >
         <Title style={{ color: 'white', marginBottom: '0' }} level={1}>
-          XHX-X57X
+          H - 57
         </Title>
       </div>
       <div

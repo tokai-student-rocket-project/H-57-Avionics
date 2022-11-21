@@ -48,6 +48,10 @@ const Telecom = () => {
   };
 
   useEffect(() => {
+    window.electronAPI.configSended(() => {
+      blinkIndicator(setConfigUpState);
+    });
+
     window.electronAPI.flightDataRecieved(() => {
       blinkIndicator(setFlightDataDownState);
     });

@@ -75,6 +75,14 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
   });
 });
 
+ipcMain.on('send-config', (_, label: string, value: string) => {
+  if (!serialport) return;
+
+  const dataObject = JSON.stringify({ t: 'c', l: label, v: value });
+  serialport.write(`${dataObject}\n`);
+  mainWindow?.webContents.send('config-sended');
+});
+
 ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
   if (serialportTelemeter?.isOpen) serialportTelemeter.close();
 

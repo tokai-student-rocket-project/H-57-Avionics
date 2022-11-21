@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   rssiRecieved: (callback: () => void) =>
     ipcRenderer.on('rssi-recieved', callback),
 
+  sendConfig: (label: string, value: string) =>
+    ipcRenderer.send('send-config', label, value),
+  configSended: (callback: () => void) =>
+    ipcRenderer.on('config-sended', callback),
+
   telemetryRecieved: (callback: () => void) =>
     ipcRenderer.on('telemetry-recieved', callback),
 

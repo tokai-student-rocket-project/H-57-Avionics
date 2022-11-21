@@ -24,7 +24,7 @@ const TimeLine = () => {
     return () => {
       window.electronAPI.remove('event-recieved');
     };
-  }, [events]);
+  }, []);
 
   return (
     <Card title="TIMELINE" style={{ margin: '16px' }} bordered={false}>

@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
 

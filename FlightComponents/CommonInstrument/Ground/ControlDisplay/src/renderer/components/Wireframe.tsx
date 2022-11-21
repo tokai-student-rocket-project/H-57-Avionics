@@ -3,28 +3,31 @@ import wireframeThrusting from '../images/wireframe/thrusting.png';
 import wireframeNormal from '../images/wireframe/normal.png';
 import wireframeSeperated from '../images/wireframe/separated.png';
 
-const getWireframe = (flightTime: number): string => {
-  if (flightTime === 0) return wireframeNormal;
-  if (flightTime <= 4) return wireframeThrusting;
-  if (flightTime <= 10) return wireframeNormal;
-  return wireframeSeperated;
+const getWireframe = (flightMode: string): string => {
+  if (flightMode === 'CLIMB') return wireframeThrusting;
+  if (flightMode === 'PARASHUTE') return wireframeSeperated;
+  return wireframeNormal;
 };
 
 const Wireframe = () => {
-  const [flightTime, setFlightTime] = useState<number>(0);
+  const [flightMode, setFlightMode] = useState<string>('');
 
   useEffect(() => {
-    window.electronAPI.flightDataRecieved(() => {
-      setFlightTime(Number(window.electronAPI.store.get('flight-time')));
+    window.electronAPI.statusRecieved(() => {
+      setFlightMode(
+        ['STANDBY', 'CLIMB', 'DESCENT', 'PARASHUTE'][
+          Number(window.electronAPI.store.get('flight-mode'))
+        ]
+      );
     });
     return () => {
-      window.electronAPI.remove('flight-data-recieved');
+      window.electronAPI.remove('statu-recieved');
     };
   }, []);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <img height={600} src={getWireframe(flightTime)} alt="wireframe" />
+      <img height={600} src={getWireframe(flightMode)} alt="wireframe" />
     </div>
   );
 };

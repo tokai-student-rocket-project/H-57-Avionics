@@ -13,6 +13,9 @@ declare global {
       ): void;
       rssiRecieved(callback: () => void): void;
 
+      sendConfig(label: string, value: string): void;
+      configSended(callback: () => void): void;
+
       telemetryRecieved(callback: () => void): void;
 
       remove(channel: string): void;
