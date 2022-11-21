@@ -44,13 +44,13 @@ namespace device {
 
 namespace config {
   // 想定される燃焼時間
-  unsigned long burn_time_ms = 4000;
+  unsigned long burn_time_ms = 2778;
 
   // 最小分離時間 [ms]
-  unsigned long separation_minimum_time_ms = 10000;
+  unsigned long separation_minimum_time_ms = 10692;
 
   // 最大分離時間 [ms]
-  unsigned long separation_maximum_time_ms = 14000;
+  unsigned long separation_maximum_time_ms = 12692;
 }
 
 namespace internal {
@@ -359,13 +359,13 @@ void receiveCommand() {
         upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
     } else if (upPacket["l"] == "b") {
       config::burn_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 4.0) * 1000.0;
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 2.778) * 1000.0;
     } else if (upPacket["l"] == "smin") {
       config::separation_minimum_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.0) * 1000.0;
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.692) * 1000.0;
     } else if (upPacket["l"] == "smax") {
       config::separation_maximum_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 14.0) * 1000.0;
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 12.692) * 1000.0;
     }
 
     upPacket.clear();
