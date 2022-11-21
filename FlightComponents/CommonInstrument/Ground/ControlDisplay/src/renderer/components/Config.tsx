@@ -4,12 +4,14 @@ import { FaArrowLeft } from 'react-icons/fa';
 
 const Config = () => {
   const [activeBasePrassure, setActiveBasePressure] = useState<string>('');
+  const [activeBurnTime, setActiveBurnTime] = useState<string>('');
   const [activeSeparationMinimum, setActiveSeparationMinimum] =
     useState<string>('');
   const [activeSeparationMaximum, setActiveSeparationMaximum] =
     useState<string>('');
 
   const [standbyBasePrassure, setStandbyBasePressure] = useState<string>('');
+  const [standbyBurnTime, setStandbyBurnTime] = useState<string>('');
   const [standbySeparationMinimum, setStandbySeparationMinimum] =
     useState<string>('');
   const [standbySeparationMaximum, setStandbySeparationMaximum] =
@@ -18,6 +20,7 @@ const Config = () => {
   useEffect(() => {
     window.electronAPI.configRecieved(() => {
       setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
+      setActiveBurnTime(window.electronAPI.store.get('burn-time'));
       setActiveSeparationMinimum(
         window.electronAPI.store.get('separation-minimum')
       );
@@ -34,6 +37,7 @@ const Config = () => {
     const label = event.currentTarget.getAttribute('data-num');
     if (label === 'p')
       window.electronAPI.sendConfig(label, standbyBasePrassure);
+    if (label === 'b') window.electronAPI.sendConfig(label, standbyBurnTime);
     if (label === 'smin')
       window.electronAPI.sendConfig(label, standbySeparationMinimum);
     if (label === 'smax')
@@ -57,6 +61,24 @@ const Config = () => {
             addonAfter="hPa"
             value={standbyBasePrassure}
             onChange={(event) => setStandbyBasePressure(event.target.value)}
+          />
+        </Col>
+      </Row>
+      <Divider>想定燃焼時間</Divider>
+      <Row gutter={8} wrap={false} align="middle">
+        <Col flex="auto">
+          <Input addonAfter="sec" readOnly value={activeBurnTime} />
+        </Col>
+        <Col>
+          <Button type="primary" onClick={sendConfig} data-num="b">
+            <FaArrowLeft />
+          </Button>
+        </Col>
+        <Col flex="auto">
+          <Input
+            addonAfter="sec"
+            value={standbyBurnTime}
+            onChange={(event) => setStandbyBurnTime(event.target.value)}
           />
         </Col>
       </Row>

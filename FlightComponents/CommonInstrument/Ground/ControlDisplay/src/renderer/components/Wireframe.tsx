@@ -4,7 +4,7 @@ import wireframeNormal from '../images/wireframe/normal.png';
 import wireframeSeperated from '../images/wireframe/separated.png';
 
 const getWireframe = (flightMode: string): string => {
-  if (flightMode === 'CLIMB') return wireframeThrusting;
+  if (flightMode === 'THRUST') return wireframeThrusting;
   if (flightMode === 'PARASHUTE') return wireframeSeperated;
   return wireframeNormal;
 };
@@ -15,7 +15,7 @@ const Wireframe = () => {
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
-        ['STANDBY', 'CLIMB', 'DESCENT', 'PARASHUTE'][
+        ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE'][
           Number(window.electronAPI.store.get('flight-mode'))
         ]
       );

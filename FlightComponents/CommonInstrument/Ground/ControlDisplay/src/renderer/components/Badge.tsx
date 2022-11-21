@@ -21,7 +21,7 @@ const Badge = () => {
 
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
-        ['STANDBY', 'CLIMB', 'DESCENT', 'PARASHUTE'][
+        ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE'][
           Number(window.electronAPI.store.get('flight-mode'))
         ]
       );

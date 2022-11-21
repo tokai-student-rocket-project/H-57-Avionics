@@ -58,6 +58,7 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       mainWindow?.webContents.send('flight-data-recieved');
     } else if (dataObject.t === 'c') {
       store.set('base-pressure', dataObject.p);
+      store.set('burn-time', dataObject.b);
       store.set('separation-minimum', dataObject.smin);
       store.set('separation-maximum', dataObject.smax);
       mainWindow?.webContents.send('config-recieved');

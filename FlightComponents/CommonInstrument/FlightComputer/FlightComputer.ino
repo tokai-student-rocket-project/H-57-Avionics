@@ -17,6 +17,7 @@ StaticJsonDocument<4096> downPacket;
 
 enum class FlightMode {
   STANDBY,
+  THRUST,
   CLIMB,
   DESCENT,
   PARACHUTE
@@ -41,12 +42,15 @@ namespace device {
   TwoStateDevice _buzzer(0);
 }
 
-namespace separationConfig {
+namespace config {
+  // 想定される燃焼時間
+  unsigned long burn_time_ms = 4000;
+
   // 最小分離時間 [ms]
-  unsigned long separation_minimum_time_ms = 4000;
+  unsigned long separation_minimum_time_ms = 10000;
 
   // 最大分離時間 [ms]
-  unsigned long separation_maximum_time_ms = 10000;
+  unsigned long separation_maximum_time_ms = 14000;
 }
 
 namespace internal {
@@ -121,11 +125,6 @@ void loop() {
     downlinkEvent("RESET");
   }
 
-  if (canSeparate()) {
-    separate();
-    downlinkEvent("SEPARATED");
-  }
-
   if (canSeparateForce()) {
     separate();
     downlinkEvent("FORCE-SEPARATED");
@@ -160,7 +159,7 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
+  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_minimum_time_ms);
   device::_flightIndicator.setState(isFlying());
   device::_separationIndicator.setState(internal::_flightMode == FlightMode::PARACHUTE);
 }
@@ -246,8 +245,9 @@ void downlinkConfig() {
   downPacket.clear();
   downPacket["t"] = "c";
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
-  downPacket["smax"] = String(separationConfig::separation_maximum_time_ms / 1000.0, 2);
-  downPacket["smin"] = String(separationConfig::separation_minimum_time_ms / 1000.0, 2);
+  downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
+  downPacket["smax"] = String(config::separation_maximum_time_ms / 1000.0, 2);
+  downPacket["smin"] = String(config::separation_minimum_time_ms / 1000.0, 2);
 
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
@@ -262,6 +262,12 @@ bool isFlying() {
 }
 
 
+bool isBurnout() {
+  return internal::_flightMode == FlightMode::THRUST
+      && millis() > internal::_launchTime_ms + config::burn_time_ms;
+}
+
+
 bool canReset() {
   return isFlying()
       && !device::_flightPin.isReleased();
@@ -270,14 +276,14 @@ bool canReset() {
 
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && millis() > internal::_launchTime_ms + separationConfig::separation_minimum_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_minimum_time_ms;
 }
 
 
 bool canSeparateForce() {
   return isFlying()
       && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + separationConfig::separation_maximum_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_maximum_time_ms;
 }
 
 
@@ -303,9 +309,17 @@ void updateFlightMode() {
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
       if (device::_flightPin.isReleased()) {
-        changeFlightMode(FlightMode::CLIMB);
+        internal::_launchTime_ms = millis();
+        changeFlightMode(FlightMode::THRUST);
         downlinkEvent("LAUNCHED");
       };
+      break;
+
+    case FlightMode::THRUST:
+      if (isBurnout()) {
+        changeFlightMode(FlightMode::CLIMB);
+        downlinkEvent("BURNOUT");
+      }
       break;
 
     case FlightMode::CLIMB:
@@ -314,27 +328,26 @@ void updateFlightMode() {
         downlinkEvent("DESCENT");
       }
       break;
+
+    case FlightMode::DESCENT:
+      if (canSeparate()) {
+        separate();
+        downlinkEvent("SEPARATED");
+      }
+      break;
   }
 }
 
 
 void changeFlightMode(FlightMode nextMode) {
-  if (internal::_flightMode == nextMode) {
-    return;
-  }
-
-  if (nextMode == FlightMode::CLIMB) {
-    internal::_launchTime_ms = millis();
-  }
+  if (internal::_flightMode == nextMode) return;
 
   internal::_flightMode = nextMode;
 }
 
 
 void receiveCommand() {
-  if (!LoRa.parsePacket()) {
-    return;
-  }
+  if (!LoRa.parsePacket()) return;
 
   device::_commandIndicator.on();
 
@@ -344,12 +357,15 @@ void receiveCommand() {
     if (upPacket["l"] == "p") {
       device::_bme280.setReferencePressure(
         upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    } else if (upPacket["l"] == "smin") {
-      separationConfig::separation_minimum_time_ms = 
+    } else if (upPacket["l"] == "b") {
+      config::burn_time_ms = 
         (upPacket["v"].as<double>() ? (double)upPacket["v"] : 4.0) * 1000.0;
-    } else if (upPacket["l"] == "smax") {
-      separationConfig::separation_maximum_time_ms = 
+    } else if (upPacket["l"] == "smin") {
+      config::separation_minimum_time_ms = 
         (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.0) * 1000.0;
+    } else if (upPacket["l"] == "smax") {
+      config::separation_maximum_time_ms = 
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 14.0) * 1000.0;
     }
 
     upPacket.clear();
