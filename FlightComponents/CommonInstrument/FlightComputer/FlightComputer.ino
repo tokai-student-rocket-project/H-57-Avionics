@@ -11,8 +11,8 @@
 #include "FrequencyTimer.h"
 
 
-StaticJsonDocument<1024> upPacket;
-StaticJsonDocument<4096> downPacket;
+StaticJsonDocument<256> upPacket;
+StaticJsonDocument<256> downPacket;
 
 
 enum class FlightMode {
@@ -79,7 +79,7 @@ namespace flightData {
 
 void setup() {
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial1.begin(115200);
   LoRa.begin(920E6);
 
@@ -97,6 +97,10 @@ void setup() {
   device::_separationIndicator.initialize();
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
+
+  Tasks.add([]{
+    writeLog();
+  })->startIntervalSec(0.01);
 
   Tasks.add([]{
     downlinkStatus();
@@ -119,6 +123,7 @@ void loop() {
   updateFlightData();
   updateIndicators();
   updateFlightMode();
+  receiveCommand();
 
   if (canReset()) {
     reset();
@@ -128,12 +133,6 @@ void loop() {
   if (canSeparateForce()) {
     separate();
     downlinkEvent("FORCE-SEPARATED");
-  }
-
-  if (isFlying()) {
-    // writeLog();
-  } else {
-    receiveCommand();
   }
 
   internal::_frequencyTimer.delay();
@@ -166,13 +165,13 @@ void updateIndicators() {
 
 
 void writeLog() {
+  if (!isFlying()) return;
+
   char message[64];
-  sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
-    millis(),
+  sprintf(message, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+    (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<int>(internal::_flightMode),
     flightData::_altitude_m,
-    flightData::_pressure_Pa / 100.0,
-    flightData::_temperature_degT,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g,
@@ -347,6 +346,7 @@ void changeFlightMode(FlightMode nextMode) {
 
 
 void receiveCommand() {
+  if (isFlying()) return;
   if (!LoRa.parsePacket()) return;
 
   device::_commandIndicator.on();
