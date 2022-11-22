@@ -81,7 +81,7 @@ void setup() {
   Wire.begin();
   Serial.begin(9600);
   Serial1.begin(115200);
-  LoRa.begin(923E6);
+  LoRa.begin(920E6);
 
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());

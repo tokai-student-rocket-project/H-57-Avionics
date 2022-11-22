@@ -19,7 +19,7 @@ StaticJsonDocument<4096> packet;
 
 void setup() {
   Serial.begin(115200);
-  LoRa.begin(923E6);
+  LoRa.begin(920E6);
 }
 
 

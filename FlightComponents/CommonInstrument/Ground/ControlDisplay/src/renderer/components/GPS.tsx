@@ -8,6 +8,7 @@ import {
   Circle,
   Tooltip,
   Polygon,
+  useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -23,9 +24,23 @@ const DegToDms = (degrees: number): string => {
   }" `;
 };
 
+type ChangeCenterProps = {
+  center: L.LatLngExpression;
+};
+
+const ChangeCenter = (props: ChangeCenterProps) => {
+  const { center } = props;
+  const map = useMap();
+  map.setView(center);
+  return null;
+};
+
 const GPS = () => {
   const [latitude, setLatitude] = useState<number>(42.514179);
   const [longitude, setLongitude] = useState<number>(143.439731);
+  const [center, setCenter] = useState<L.LatLngExpression>([
+    42.514179, 143.439731,
+  ]);
 
   const [sattelites, setSattelites] = useState<number>(4);
 
@@ -33,7 +48,12 @@ const GPS = () => {
     window.electronAPI.telemetryRecieved(() => {
       setLatitude(Number(window.electronAPI.store.get('latitude')));
       setLongitude(Number(window.electronAPI.store.get('longitude')));
-      setSattelites(Number(window.electronAPI.store.get('sattelites')));
+      setSattelites(Number(window.electronAPI.store.get('satellites')));
+
+      setCenter([
+        Number(window.electronAPI.store.get('latitude')),
+        Number(window.electronAPI.store.get('longitude')),
+      ]);
 
       return () => {
         window.electronAPI.remove('telemetry-recieved');
@@ -77,16 +97,13 @@ const GPS = () => {
           )}${Math.sign(longitude) === -1 ? 'W' : 'E'}`}</span>
         </Col>
       </Row>
-      <MapContainer
-        zoomControl={false}
-        center={[latitude, longitude]}
-        zoom={14}
-      >
+      <MapContainer zoomControl={false} center={center} zoom={15}>
         <TileLayer
           attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
           url="https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg"
         />
-        <Marker position={[latitude, longitude]} />
+        <Marker position={center} />
+        <ChangeCenter center={center} />
         <Circle
           pathOptions={{ color: '#ed4245' }}
           center={[42.514179, 143.439731]}
