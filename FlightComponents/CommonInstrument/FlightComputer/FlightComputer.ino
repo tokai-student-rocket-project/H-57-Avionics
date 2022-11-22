@@ -178,7 +178,7 @@ void writeLog() {
     flightData::_gyro_x_degps,
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
-  Serial1.println(message);
+  Serial.println(message);
 }
 
 
@@ -189,10 +189,7 @@ void downlinkEvent(String event) {
   downPacket["t"] = "e";
   downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["e"] = event;
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -207,10 +204,7 @@ void downlinkStatus() {
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -228,10 +222,7 @@ void downlinkFlightData() {
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
   downPacket["az"] = String(flightData::_acceleration_z_g, 2);
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -247,12 +238,16 @@ void downlinkConfig() {
   downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
   downPacket["smax"] = String(config::separation_maximum_time_ms / 1000.0, 2);
   downPacket["smin"] = String(config::separation_minimum_time_ms / 1000.0, 2);
+  sendDownPacket();
 
+  device::_commandIndicator.off();
+}
+
+
+void sendDownPacket() {
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
   LoRa.endPacket();
-
-  device::_commandIndicator.off();
 }
 
 
