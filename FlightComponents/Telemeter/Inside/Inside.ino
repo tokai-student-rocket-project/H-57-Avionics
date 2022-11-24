@@ -75,16 +75,16 @@ void setup()
     supplyservo.attach(4);
 
     prev_SEND = 0;
-    interval_SEND = 3000;
+    interval_SEND = 1000;
 
     prev_PRINT = 0;
     interval_PRINT = 5000;
 
     //スイッチピンの設定
-    pinMode(A1, INPUT_PULLUP);
+    pinMode(6, INPUT_PULLDOWN);
     attachInterrupt(digitalPinToInterrupt(6), LUNCH_Position, RISING);
 
-    pinMode(A2, INPUT_PULLUP);
+    pinMode(8, INPUT_PULLDOWN);
     attachInterrupt(digitalPinToInterrupt(8), WAITING_Position, RISING);
 }
 
