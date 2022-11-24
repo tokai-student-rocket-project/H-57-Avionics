@@ -11,12 +11,13 @@
 #include "FrequencyTimer.h"
 
 
-StaticJsonDocument<1024> upPacket;
-StaticJsonDocument<4096> downPacket;
+StaticJsonDocument<256> upPacket;
+StaticJsonDocument<256> downPacket;
 
 
 enum class FlightMode {
   STANDBY,
+  THRUST,
   CLIMB,
   DESCENT,
   PARACHUTE
@@ -41,12 +42,15 @@ namespace device {
   TwoStateDevice _buzzer(0);
 }
 
-namespace separationConfig {
+namespace config {
+  // 想定される燃焼時間
+  unsigned long burn_time_ms = 2778;
+
   // 最小分離時間 [ms]
-  unsigned long separation_minimum_time_ms = 4000;
+  unsigned long separation_minimum_time_ms = 10692;
 
   // 最大分離時間 [ms]
-  unsigned long separation_maximum_time_ms = 10000;
+  unsigned long separation_maximum_time_ms = 12692;
 }
 
 namespace internal {
@@ -75,9 +79,9 @@ namespace flightData {
 
 void setup() {
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial1.begin(115200);
-  LoRa.begin(923E6);
+  LoRa.begin(920E6);
 
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
@@ -95,6 +99,10 @@ void setup() {
   device::_buzzer.initialize();
 
   Tasks.add([]{
+    writeLog();
+  })->startIntervalSec(0.01);
+
+  Tasks.add([]{
     downlinkStatus();
     downlinkFlightData();
   })->startIntervalSec(0.5);
@@ -103,7 +111,7 @@ void setup() {
     downlinkConfig();
   })->startIntervalSec(1.0);
 
-  downlinkEvent("initialized");
+  downlinkEvent("INITIALIZED");
 }
 
 
@@ -115,26 +123,16 @@ void loop() {
   updateFlightData();
   updateIndicators();
   updateFlightMode();
+  receiveCommand();
 
   if (canReset()) {
     reset();
-    downlinkEvent("reset");
-  }
-
-  if (canSeparate()) {
-    separate();
-    downlinkEvent("separate by tod");
+    downlinkEvent("RESET");
   }
 
   if (canSeparateForce()) {
     separate();
-    downlinkEvent("separate by timer");
-  }
-
-  if (isFlying()) {
-    // writeLog();
-  } else {
-    receiveCommand();
+    downlinkEvent("FORCE-SEPARATED");
   }
 
   internal::_frequencyTimer.delay();
@@ -160,27 +158,27 @@ void updateFlightData() {
 
 
 void updateIndicators() {
-  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + separationConfig::separation_minimum_time_ms);
+  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_minimum_time_ms);
   device::_flightIndicator.setState(isFlying());
   device::_separationIndicator.setState(internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 
 void writeLog() {
+  if (!isFlying()) return;
+
   char message[64];
-  sprintf(message, "%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
-    millis(),
+  sprintf(message, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+    (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<int>(internal::_flightMode),
     flightData::_altitude_m,
-    flightData::_pressure_Pa / 100.0,
-    flightData::_temperature_degT,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g,
     flightData::_gyro_x_degps,
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
-  Serial1.println(message);
+  Serial.println(message);
 }
 
 
@@ -188,12 +186,10 @@ void downlinkEvent(String event) {
   device::_commandIndicator.on();
 
   downPacket.clear();
-  downPacket["type"] = "event";
-  downPacket["event"] = event;
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  downPacket["t"] = "e";
+  downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
+  downPacket["e"] = event;
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -204,13 +200,11 @@ void downlinkStatus() {
 
   downPacket.clear();
   downPacket["t"] = "s";
+  downPacket["m"] = String(static_cast<int>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -228,10 +222,7 @@ void downlinkFlightData() {
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
   downPacket["az"] = String(flightData::_acceleration_z_g, 2);
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
@@ -244,19 +235,30 @@ void downlinkConfig() {
   downPacket.clear();
   downPacket["t"] = "c";
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
-  downPacket["smax"] = String(separationConfig::separation_maximum_time_ms / 1000.0, 2);
-  downPacket["smin"] = String(separationConfig::separation_minimum_time_ms / 1000.0, 2);
-
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
+  downPacket["smax"] = String(config::separation_maximum_time_ms / 1000.0, 2);
+  downPacket["smin"] = String(config::separation_minimum_time_ms / 1000.0, 2);
+  sendDownPacket();
 
   device::_commandIndicator.off();
 }
 
 
+void sendDownPacket() {
+  LoRa.beginPacket();
+  serializeJson(downPacket, LoRa);
+  LoRa.endPacket();
+}
+
+
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY;
+}
+
+
+bool isBurnout() {
+  return internal::_flightMode == FlightMode::THRUST
+      && millis() > internal::_launchTime_ms + config::burn_time_ms;
 }
 
 
@@ -268,14 +270,14 @@ bool canReset() {
 
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && millis() > internal::_launchTime_ms + separationConfig::separation_minimum_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_minimum_time_ms;
 }
 
 
 bool canSeparateForce() {
   return isFlying()
       && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + separationConfig::separation_maximum_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_maximum_time_ms;
 }
 
 
@@ -301,14 +303,30 @@ void updateFlightMode() {
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
       if (device::_flightPin.isReleased()) {
-        changeFlightMode(FlightMode::CLIMB);
-        downlinkEvent("launched");
+        internal::_launchTime_ms = millis();
+        changeFlightMode(FlightMode::THRUST);
+        downlinkEvent("LAUNCHED");
       };
+      break;
+
+    case FlightMode::THRUST:
+      if (isBurnout()) {
+        changeFlightMode(FlightMode::CLIMB);
+        downlinkEvent("BURNOUT");
+      }
       break;
 
     case FlightMode::CLIMB:
       if (internal::_descentDetector._isDescending) {
         changeFlightMode(FlightMode::DESCENT);
+        downlinkEvent("DESCENT");
+      }
+      break;
+
+    case FlightMode::DESCENT:
+      if (canSeparate()) {
+        separate();
+        downlinkEvent("SEPARATED");
       }
       break;
   }
@@ -316,39 +334,37 @@ void updateFlightMode() {
 
 
 void changeFlightMode(FlightMode nextMode) {
-  if (internal::_flightMode == nextMode) {
-    return;
-  }
-
-  if (nextMode == FlightMode::CLIMB) {
-    internal::_launchTime_ms = millis();
-  }
+  if (internal::_flightMode == nextMode) return;
 
   internal::_flightMode = nextMode;
 }
 
 
 void receiveCommand() {
-  if (!LoRa.parsePacket()) {
-    return;
-  }
+  if (isFlying()) return;
+  if (!LoRa.parsePacket()) return;
+
+  device::_commandIndicator.on();
 
   deserializeJson(upPacket, LoRa);
 
-  if (upPacket["type"] == "req") {
-    device::_commandIndicator.on();
-
-    if (upPacket["req"] == "setRefPress") {
+  if (upPacket["t"] == "c") {
+    if (upPacket["l"] == "p") {
       device::_bme280.setReferencePressure(
-        upPacket["v"].is<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    } else if (upPacket["req"] == "setSepaMin") {
-      separationConfig::separation_minimum_time_ms = 
-        (upPacket["v"].is<double>() ? (double)upPacket["v"] : 4.0) * 1000.0;
-    } else if (upPacket["req"] == "setSepaMax") {
-      separationConfig::separation_maximum_time_ms = 
-        (upPacket["v"].is<double>() ? (double)upPacket["v"] : 10.0) * 1000.0;
+        upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
+    } else if (upPacket["l"] == "b") {
+      config::burn_time_ms = 
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 2.778) * 1000.0;
+    } else if (upPacket["l"] == "smin") {
+      config::separation_minimum_time_ms = 
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.692) * 1000.0;
+    } else if (upPacket["l"] == "smax") {
+      config::separation_maximum_time_ms = 
+        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 12.692) * 1000.0;
     }
 
-    device::_commandIndicator.off();
+    upPacket.clear();
   }
+
+  device::_commandIndicator.off();
 }

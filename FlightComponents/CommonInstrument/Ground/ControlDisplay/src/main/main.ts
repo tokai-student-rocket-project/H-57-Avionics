@@ -24,8 +24,6 @@ ipcMain.handle('get-serialports', async () => {
   return (await SerialPort.list()).map((serialportInfo) => serialportInfo.path);
 });
 
-let serialport: SerialPort | null = null;
-
 const store = new Store();
 ipcMain.on('get-store', async (event, val) => {
   event.returnValue = store.get(val);
@@ -34,34 +32,84 @@ ipcMain.on('set-store', async (event, key, val) => {
   store.set(key, val);
 });
 
+let serialport: SerialPort | null = null;
+let serialportTelemeter: SerialPort | null = null;
+
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
 
   serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    const dataObject = JSON.parse(data);
+    try {
+      const dataObject = JSON.parse(data);
 
-    if (dataObject.t === 's') {
-      store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
-      store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
-      store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');
-      mainWindow?.webContents.send('status-updated');
-    } else if (dataObject.t === 'f') {
-      store.set('flight-time', dataObject.ft);
-      store.set('altitude', dataObject.alt);
-      store.set('acceleration-x', dataObject.ax);
-      store.set('acceleration-y', dataObject.ay);
-      store.set('acceleration-z', dataObject.az);
-      mainWindow?.webContents.send('flight-data-updated');
-    } else if (dataObject.t === 'c') {
-      store.set('base-pressure', dataObject.p);
-      store.set('separation-minimum', dataObject.smin);
-      store.set('separation-maximum', dataObject.smax);
-      mainWindow?.webContents.send('config-updated');
-    } else if (dataObject.t === 'r') {
-      store.set('rssi', dataObject.rssi);
-      mainWindow?.webContents.send('rssi-updated');
+      if (dataObject.t === 's') {
+        store.set('flight-mode', dataObject.m);
+        store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
+        store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
+        store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');
+        mainWindow?.webContents.send('status-recieved');
+      } else if (dataObject.t === 'f') {
+        store.set('flight-time', dataObject.ft);
+        store.set('altitude', dataObject.alt);
+        store.set('acceleration-x', dataObject.ax);
+        store.set('acceleration-y', dataObject.ay);
+        store.set('acceleration-z', dataObject.az);
+        mainWindow?.webContents.send('flight-data-recieved');
+      } else if (dataObject.t === 'c') {
+        store.set('base-pressure', dataObject.p);
+        store.set('burn-time', dataObject.b);
+        store.set('separation-minimum', dataObject.smin);
+        store.set('separation-maximum', dataObject.smax);
+        mainWindow?.webContents.send('config-recieved');
+      } else if (dataObject.t === 'e') {
+        console.log(dataObject.e);
+        mainWindow?.webContents.send(
+          'event-recieved',
+          dataObject.e as string,
+          dataObject.ft as string
+        );
+      } else if (dataObject.t === 'r') {
+        store.set('rssi', dataObject.rssi);
+        mainWindow?.webContents.send('rssi-recieved');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+});
+
+ipcMain.on('send-config', (_, label: string, value: string) => {
+  if (!serialport) return;
+
+  const dataObject = JSON.stringify({ t: 'c', l: label, v: value });
+  serialport.write(`${dataObject}\n`);
+  mainWindow?.webContents.send('config-sended');
+});
+
+ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
+  if (serialportTelemeter?.isOpen) serialportTelemeter.close();
+
+  serialportTelemeter = new SerialPort({
+    path: serialportPath,
+    baudRate: 9600,
+  });
+  const parser = serialportTelemeter.pipe(new ReadlineParser());
+  parser.on('data', (data) => {
+    try {
+      const dataObject = JSON.parse(data);
+
+      console.log(dataObject);
+
+      store.set('latitude', dataObject.lat);
+      store.set('longitude', dataObject.lon);
+      store.set('satellites', dataObject.satellites);
+      store.set('mainservo-degrees', dataObject.mainservoDeg);
+      store.set('supplyservo-degrees', dataObject.supplyservoDeg);
+      mainWindow?.webContents.send('telemetry-recieved');
+    } catch (error) {
+      console.log(error);
     }
   });
 });

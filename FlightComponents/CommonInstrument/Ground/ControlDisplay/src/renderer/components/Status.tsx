@@ -12,22 +12,27 @@ const Status = () => {
   const [buzzerState, setBuzzerState] = useState<'OFF' | 'ON'>('OFF');
 
   useEffect(() => {
-    window.electronAPI.statusUpdated(() => {
+    window.electronAPI.statusRecieved(() => {
       setFlightpinState(window.electronAPI.store.get('flightpin-state'));
       setShiranui3State(window.electronAPI.store.get('shiranui3-state'));
       setBuzzerState(window.electronAPI.store.get('buzzer-state'));
     });
     return () => {
-      window.electronAPI.remove('status-updated');
+      window.electronAPI.remove('status-recieved');
     };
   }, []);
 
   return (
-    <Card title="STATUS" bordered={false}>
-      <Descriptions column={1} labelStyle={{ color: 'white' }}>
+    <Card title="STATUS" style={{ margin: '16px' }} bordered={false}>
+      <Descriptions
+        style={{ marginTop: '24px' }}
+        column={1}
+        labelStyle={{ color: 'white' }}
+      >
         <Descriptions.Item label="フライトピン">
           <span
             style={{
+              fontSize: '1.2em',
               color: flightpinState === 'CLOSE' ? nagativeColor : positiveColor,
             }}
           >
@@ -37,6 +42,7 @@ const Status = () => {
         <Descriptions.Item label="不知火Ⅲ">
           <span
             style={{
+              fontSize: '1.2em',
               color: shiranui3State === 'OFF' ? nagativeColor : positiveColor,
             }}
           >
@@ -44,11 +50,12 @@ const Status = () => {
           </span>
         </Descriptions.Item>
         <Descriptions.Item label="不知火Ⅳ">
-          <span style={{ color: '#72767d' }}>N/A</span>
+          <span style={{ fontSize: '1.2em', color: '#72767d' }}>N/A</span>
         </Descriptions.Item>
         <Descriptions.Item label="ブザー">
           <span
             style={{
+              fontSize: '1.2em',
               color: buzzerState === 'OFF' ? nagativeColor : positiveColor,
             }}
           >
