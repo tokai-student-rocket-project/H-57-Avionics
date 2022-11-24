@@ -81,11 +81,11 @@ void setup()
     interval_PRINT = 5000;
 
     //スイッチピンの設定
-    pinMode(6, INPUT_PULLUP);
+    pinMode(A1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(6), LUNCH_Position, RISING);
 
-    pinMode(7, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(7), WAITING_Position, RISING);
+    pinMode(A2, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(8), WAITING_Position, RISING);
 }
 
 void loop()
@@ -316,7 +316,7 @@ void downlinkFlightData_tlm()
         LoRa.endPacket();
 
         Serial.println();
-        serializeJsonPretty(downPacket_tlm, Serial);
+        serializeJson(downPacket_tlm, Serial);
         prev_SEND = curr_SEND;
     }
 }
