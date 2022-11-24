@@ -303,7 +303,7 @@ void downlinkFlightData_tlm()
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
         downPacket_tlm.clear();
-        downPacket_tlm["sensor"] = "gps";
+        //downPacket_tlm["sensor"] = "gps";
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
