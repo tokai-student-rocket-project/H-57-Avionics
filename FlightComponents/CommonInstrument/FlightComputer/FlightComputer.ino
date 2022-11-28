@@ -100,18 +100,23 @@ void setup() {
 
   Tasks.add([]{
     writeLog();
-  })->startIntervalSec(0.01);
+  })->startIntervalForSec(0.1);
+
+  Task.add([]{
+    downlinkFlightData();
+  })->startIntervalForSec(0.5);
 
   Tasks.add([]{
     downlinkStatus();
-    downlinkFlightData();
-  })->startIntervalSec(0.5);
+  })->startIntervalForSec(2.0);
 
   Tasks.add([]{
     downlinkConfig();
-  })->startIntervalSec(1.0);
+  })->startIntervalForSec(4.0);
 
   downlinkEvent("INITIALIZED");
+
+  reset();
 }
 
 
@@ -336,6 +341,7 @@ void updateFlightMode() {
 void changeFlightMode(FlightMode nextMode) {
   if (internal::_flightMode == nextMode) return;
 
+  downlinkStatus();
   internal::_flightMode = nextMode;
 }
 
@@ -367,4 +373,6 @@ void receiveCommand() {
   }
 
   device::_commandIndicator.off();
+
+  downlinkConfig();
 }
