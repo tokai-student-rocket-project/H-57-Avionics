@@ -33,7 +33,7 @@ byte destination = 0xFF;  // where we are sending data to
 unsigned long prev_SEND, interval_SEND;
 // unsigned long interval_SERVO, prev_SERVO;
 
-bool State = false;
+volatile bool State = false;
 
 void setup()
 {
@@ -97,9 +97,10 @@ void loop()
         downlinkFlightData_tlm();
     }
 
-    if (State == 1)
+    noInterrupts();
+    if (State)
     {
-        delay(300);
+        //delay(300);
         for (supply_deg = 0; supply_deg <= 90; supply_deg += 1)
         {
             supplyservo.write(supply_deg);        // CLOSE
@@ -107,7 +108,7 @@ void loop()
             delay(15);
             Serial.println(supplyservo.read());
         }
-        delay(300);
+        //delay(300);
         for (main_deg = 0; main_deg <= 90; main_deg += 1)
         {
             mainservo.write(main_deg);        // OPEN
@@ -119,14 +120,16 @@ void loop()
         Serial.println(State);
         State = false;
     }
-    degitalWrite()
+    interrupts();
 }
 
 void Waiting_State()
 {
     State = true;
     Serial.println("Interrupt");
+
 }
+
 
 /*
 void LUNCH_Position()
