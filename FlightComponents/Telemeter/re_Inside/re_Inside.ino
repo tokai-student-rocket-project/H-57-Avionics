@@ -97,7 +97,7 @@ void loop()
         downlinkFlightData_tlm();
     }
 
-    noInterrupts();
+    
     if (State)
     {
         //delay(300);
@@ -120,7 +120,7 @@ void loop()
         Serial.println(State);
         State = false;
     }
-    interrupts();
+    
 }
 
 void Waiting_State()
