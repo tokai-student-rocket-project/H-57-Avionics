@@ -7,10 +7,15 @@
 //サーボの設定
 Servo mainservo;
 Servo supplyservo;
-volatile int main_deg = 0;
-volatile int supply_deg = 0;
+volatile int main_min_deg = 0;
+volatile int supply_min_deg = 0;
+volatile int main_max_deg = 90;
+volatile int supply_max_deg = 90;
+volatile int t = 1;
 float supplyservo_deg;
 float mainservo_deg;
+
+int pos = 0;
 //  int min_deg = 0;
 //  int max_deg = 90;
 
@@ -33,17 +38,15 @@ byte destination = 0xFF;  // where we are sending data to
 unsigned long prev_SEND, interval_SEND;
 // unsigned long interval_SERVO, prev_SERVO;
 
-volatile bool State = false;
-
 void setup()
 {
 
     //スイッチピンの設定
     pinMode(6, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(6), Waiting_State, RISING);
+    attachInterrupt(digitalPinToInterrupt(6), L_Position, RISING);
 
-    // pinMode(8, INPUT_PULLUP);
-    // attachInterrupt(digitalPinToInterrupt(8), WAITING_Position, RISING);
+    pinMode(8, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(8), W_Position, RISING);
 
     // pinMode(6, INPUT_PULLUP);
     // attachInterrupt(digitalPinToInterrupt(6), LUNCH_Status, RISING);
@@ -54,7 +57,6 @@ void setup()
     // initialize serial communications and wait for port to open:
     Serial.begin(9600);
 
-    
     if (!LoRa.begin(923E6))
     {
         Serial.println("Starting LoRa failed!");
@@ -62,14 +64,12 @@ void setup()
             ;
     }
 
-    
     if (!GPS.begin())
     {
         Serial.println("Failed to initialize GPS!");
         while (1)
             ;
     }
-    
 
     // PWM出力ピンの設定
     mainservo.attach(5);
@@ -97,91 +97,72 @@ void loop()
         downlinkFlightData_tlm();
     }
 
-    
-    if (State)
+    switch (t)
     {
-        //delay(300);
-        for (supply_deg = 0; supply_deg <= 90; supply_deg += 1)
+    case 90:
+        detachInterrupt(6);
+
+        delayMicroseconds(1000000);
+        for (pos = 0; pos <= main_max_deg; pos += 1)
         {
-            supplyservo.write(supply_deg);        // CLOSE
-            supplyservo_deg = supplyservo.read(); //現在の角度を取得
-            delay(15);
-            Serial.println(supplyservo.read());
+            mainservo.write(pos);
+            Serial.println(pos);
+            delayMicroseconds(17000);
         }
-        //delay(300);
-        for (main_deg = 0; main_deg <= 90; main_deg += 1)
+
+        noInterrupts();
+        attachInterrupt(digitalPinToInterrupt(8), W_Position, RISING);
+        t = 1;
+        interrupts();
+
+        Serial.println("Comp LUNCH Position");
+        Serial.println();
+        break;
+
+    case 0:
+        detachInterrupt(8);
+
+        delayMicroseconds(1000000);
+        for (pos = main_max_deg; pos >= main_min_deg; pos -= 1)
         {
-            mainservo.write(main_deg);        // OPEN
-            mainservo_deg = mainservo.read(); //現在の角度を取得
-            delay(15);
-            Serial.println(mainservo.read());
+            mainservo.write(pos);
+            Serial.println(pos);
+            delayMicroseconds(17000);
         }
-        Serial.println("-- Complete Lunch Position --");
-        Serial.println(State);
-        State = false;
+
+        noInterrupts();
+        attachInterrupt(digitalPinToInterrupt(6), L_Position, RISING);
+        t = 1;
+        interrupts();
+        
+        Serial.println("Comp WAITING Position");
+        Serial.println();
+
+    default:
+        //何もしない
+        break;
     }
-    
 }
 
-void Waiting_State()
+void L_Position()
 {
-    State = true;
-    Serial.println("Interrupt");
-
+    supplyservo.write(supply_max_deg);
+    t = supply_max_deg;
+    supplyservo_deg = supplyservo.read();
+    Serial.print("supply");
+    Serial.println(supplyservo_deg);
+    Serial.println(t);
 }
 
-
-/*
-void LUNCH_Position()
+void W_Position()
 {
-    for (supply_deg = 0; supply_deg <= 90; supply_deg += 1)
-    {
-        supplyservo.write(supply_deg);        // CLOSE
-        supplyservo_deg = supplyservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(supplyservo.read());
-    }
-
-    delayMicroseconds(1000000);
-
-    for (main_deg = 0; main_deg <= 90; main_deg += 1)
-    {
-        mainservo.write(main_deg);        // OPEN
-        mainservo_deg = mainservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(mainservo.read());
-    }
-    // digitalWrite(3, HIGH);
-    Serial.println("-- Complete Lunch Position --");
-    Serial.println();
+    supplyservo.write(supply_min_deg);
+    t = supply_min_deg;
+    supplyservo_deg = supplyservo.read();
+    Serial.print("supply");
+    Serial.println(supplyservo_deg);
+    Serial.println(t);
 }
-*/
-
-/*
-void WAITING_Position()
-{
-    for (supply_deg = 90; supply_deg >= 0; supply_deg -= 1)
-    {
-        supplyservo.write(supply_deg);        // OPEN
-        supplyservo_deg = supplyservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(supplyservo.read());
-    }
-
-    delayMicroseconds(1000000);
-
-    for (main_deg = 90; main_deg >= 0; main_deg -= 1)
-    {
-        mainservo.write(main_deg);        // CLOSE
-        mainservo_deg = mainservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(mainservo.read());
-    }
-    // digitalWrite(3, LOW);
-    Serial.println("== Complete WAITING Position ==");
-    Serial.println();
-}
-*/
 
 void downlinkFlightData_tlm()
 {
