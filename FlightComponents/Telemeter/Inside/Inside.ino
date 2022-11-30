@@ -16,12 +16,14 @@
 //サーボの設定
 Servo mainservo;
 Servo supplyservo;
-volatile int main_deg = 0;
-volatile int supply_deg = 0;
+// volatile int main_deg = 0;
+// volatile int supply_deg = 0;
 float supplyservo_deg;
 float mainservo_deg;
-// int min_deg = 0;
-// int max_deg = 90;
+volatile int supply_min_deg = 0;
+volatile int supply_max_deg = 60;
+volatile int main_min_deg = 0;
+volatile int main_max_deg = 140;
 
 // GPSの設定
 float latitude;
@@ -40,17 +42,21 @@ byte destination = 0xFF;  // where we are sending data to
 
 // millis()の設定
 unsigned long prev_SEND, interval_SEND;
-unsigned long interval_SERVO, prev_SERVO;
+// unsigned long interval_SERVO, prev_SERVO;
+
+//割り込みの設定
+int interruptPin_1 = 6;
+int interruptPin_2 = 8;
 
 void setup()
 {
 
     //スイッチピンの設定
-    pinMode(6, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(6), LUNCH_Position, RISING);
+    pinMode(interruptPin_1, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(interruptPin_1), LUNCH_Position, RISING);
 
-    pinMode(8, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(8), WAITING_Position, RISING);
+    pinMode(interruptPin_2, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(interruptPin_2), WAITING_Position, RISING);
 
     // initialize serial communications and wait for port to open:
     Serial.begin(9600);
@@ -75,12 +81,15 @@ void setup()
 
     prev_SEND = 0;
     interval_SEND = 1000;
+
+    //　状態確認用LED
+    // PinMode(PIN, OUTPUT);
+    // PinMode(PIN, OUTPUT);
 }
 
 void loop()
 {
     // check if there is new GPS data available
-
     if (GPS.available())
     {
         // read GPS values
@@ -94,56 +103,53 @@ void loop()
         // Create and send LoRa packet
         downlinkFlightData_tlm();
     }
-
+    // attachInterrupt()
 }
 
 void LUNCH_Position()
 {
-    for (supply_deg = 0; supply_deg <= 90; supply_deg += 1)
-    {
-        supplyservo.write(supply_deg);        // CLOSE
-        supplyservo_deg = supplyservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(supplyservo.read());
-    }
+    supplyservo.write(supply_max_deg);    // CLOSE
+    supplyservo_deg = supplyservo.read(); //現在の角度を取得
+    Serial.println(supplyservo.read());
 
-    delayMicroseconds(1000000);
+    //供給路と主流路が同時に開いている状態の防止
+    // delayMicroseconds(1000000); // 1,000,000us = 1,000,000E-6s = 1s
 
-    for (main_deg = 0; main_deg <= 90; main_deg += 1)
+    if (supply_max_deg == 60)
     {
-        mainservo.write(main_deg);        // OPEN
+        mainservo.write(main_max_deg);    // OPEN
         mainservo_deg = mainservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
         Serial.println(mainservo.read());
+        // digitalWrite(3, HIGH);
+        // digitalWrite(Pin, LOW);
+        Serial.println("-- Complete Lunch Position --");
+        Serial.println();
     }
-    // digitalWrite(3, HIGH);
-    Serial.println("-- Complete Lunch Position --");
-    Serial.println();
 }
 
 void WAITING_Position()
 {
-    for (supply_deg = 90; supply_deg >= 0; supply_deg -= 1)
-    {
-        supplyservo.write(supply_deg);        // OPEN
-        supplyservo_deg = supplyservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
-        Serial.println(supplyservo.read());
-    }
+    supplyservo.write(supply_min_deg);    // OPEN
+    supplyservo_deg = supplyservo.read(); //現在の角度を取得
+    Serial.println(supplyservo.read());
 
-    delayMicroseconds(1000000);
+    //供給路と主流路が同時に開いている状態の防止
+    // delayMicroseconds(1000000); // 1,000,000us = 1,000,000E-6s = 1s
 
-    for (main_deg = 90; main_deg >= 0; main_deg -= 1)
+    if (supply_min_deg == 0)
     {
-        mainservo.write(main_deg);        // CLOSE
+        mainservo.write(main_min_deg);    // CLOSE
         mainservo_deg = mainservo.read(); //現在の角度を取得
-        //delayMicroseconds(50000);
         Serial.println(mainservo.read());
+        // digitalWrite(3, LOW);
+        // digitalWrite(PIN, HIGH);
+        Serial.println("== Complete WAITING Position ==");
+        Serial.println();
     }
-    // digitalWrite(3, LOW);
-    Serial.println("== Complete WAITING Position ==");
-    Serial.println();
 }
+
+// Safety ArmedからSafeにした際にサーボが駆動するが、これはサーボが0度以外になっている場合に0に戻っている（つまりダンプ可能な状態）
+//同時に割り込みが入った場合は、上から順に読まれていくので、LUNCHI_Position => WAITING_Positionの順となる
 
 void downlinkFlightData_tlm()
 {
