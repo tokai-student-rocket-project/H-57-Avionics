@@ -6,18 +6,18 @@ class FlightPin
 {
 private:
   /// @brief チャタリング対策
-  const int MINIMUM_COUNT = 10;
+  const uint16_t MINIMUM_COUNT = 10;
 
-  int _pinNumber;
-  int _releaseCount;
-  int _restraintCount;
+  uint8_t _pinNumber;
+  uint16_t _releaseCount;
+  uint16_t _restraintCount;
   bool _isReleased;
 
 
 public:
   /// @brief コンストラクタ
   /// @param pinNumber フライトピンのArduinoでのピン番号
-  FlightPin(int pinNumber);
+  FlightPin(uint8_t pinNumber);
 
   /// @brief フライトピンを初期化
   void initialize();

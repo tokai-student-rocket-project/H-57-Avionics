@@ -3,12 +3,12 @@
 
 /// @brief コンストラクタ
 /// @param sensitivity 大きいほど強い平滑化(0~1)
-DescentDetector::DescentDetector(double sensitivity) {
+DescentDetector::DescentDetector(float sensitivity) {
   _sensitivity = sensitivity;
 }
 /// @brief 高度を更新します。値に応じて_isDescendinも更新されます
 /// @param altitude 高度
-void DescentDetector::updateAltitude(double altitude)
+void DescentDetector::updateAltitude(float altitude)
 {
   // 指数平滑化移動平均
   _average = _averageOrigin + _sensitivity * (altitude - _averageOrigin);
@@ -26,14 +26,4 @@ void DescentDetector::updateAltitude(double altitude)
   _isDescending = _descentCount >= MINIMUM_DESCENT_COUNT;
 
   _averageOrigin = _average;
-
-  // デバッグ用
-  // 後で消す
-  Serial.print(altitude);
-  Serial.print("\t");
-  Serial.print(_average);
-  Serial.print("\t");
-  Serial.print(_descentCount);
-  Serial.print("\t");
-  Serial.println(10);
 }

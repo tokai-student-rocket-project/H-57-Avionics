@@ -44,33 +44,39 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
     try {
       const dataObject = JSON.parse(data);
 
-      if (dataObject.t === 's') {
+      if (dataObject.m) {
         store.set('flight-mode', dataObject.m);
         store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
         store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
         store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');
         mainWindow?.webContents.send('status-recieved');
-      } else if (dataObject.t === 'f') {
+      }
+
+      if (dataObject.ft) {
         store.set('flight-time', dataObject.ft);
         store.set('altitude', dataObject.alt);
         store.set('acceleration-x', dataObject.ax);
         store.set('acceleration-y', dataObject.ay);
         store.set('acceleration-z', dataObject.az);
         mainWindow?.webContents.send('flight-data-recieved');
-      } else if (dataObject.t === 'c') {
+      }
+
+      if (dataObject.a) {
+        store.set('separation-altitude', dataObject.a);
         store.set('base-pressure', dataObject.p);
-        store.set('burn-time', dataObject.b);
-        store.set('separation-minimum', dataObject.smin);
-        store.set('separation-maximum', dataObject.smax);
+        store.set('burn-time', dataObject.bt);
+        store.set('separation-protection', dataObject.sp);
+        store.set('force-separation', dataObject.fs);
+        store.set('landing-time', dataObject.l);
         mainWindow?.webContents.send('config-recieved');
-      } else if (dataObject.t === 'e') {
-        console.log(dataObject.e);
-        mainWindow?.webContents.send(
-          'event-recieved',
-          dataObject.e as string,
-          dataObject.ft as string
-        );
-      } else if (dataObject.t === 'r') {
+      }
+
+      if (dataObject.e) {
+        mainWindow?.webContents.send('event-recieved', dataObject.e as string);
+        mainWindow?.webContents.send('event-recieved');
+      }
+
+      if (dataObject.t === 'r') {
         store.set('rssi', dataObject.rssi);
         mainWindow?.webContents.send('rssi-recieved');
       }
@@ -97,10 +103,10 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
   });
   const parser = serialportTelemeter.pipe(new ReadlineParser());
   parser.on('data', (data) => {
+    console.log(data);
+
     try {
       const dataObject = JSON.parse(data);
-
-      console.log(dataObject);
 
       store.set('latitude', dataObject.lat);
       store.set('longitude', dataObject.lon);

@@ -5,13 +5,13 @@
 class TwoStateDevice
 {
 private:
-  int _pinNumber;
+  uint8_t _pinNumber;
 
 
 public:
   /// @brief コンストラクタ
   /// @param pinNumber Arduinoでのピン番号
-  TwoStateDevice(int pinNumber);
+  TwoStateDevice(uint8_t pinNumber);
 
   /// @brief 初期化
   void initialize();

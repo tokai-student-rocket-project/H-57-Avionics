@@ -4,7 +4,7 @@
 
 /// @brief コンストラクタ
 /// @param pinNumber Arduinoでのピン番号
-TwoStateDevice::TwoStateDevice(int pinNumber) {
+TwoStateDevice::TwoStateDevice(uint8_t pinNumber) {
   _pinNumber = pinNumber;
 }
 
