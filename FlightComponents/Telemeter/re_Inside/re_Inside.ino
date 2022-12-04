@@ -110,10 +110,7 @@ void loop()
             delayMicroseconds(17000);
         }
 
-        noInterrupts();
-        attachInterrupt(digitalPinToInterrupt(8), W_Position, RISING);
         t = 1;
-        interrupts();
 
         Serial.println("Comp LUNCH Position");
         Serial.println();
@@ -129,17 +126,13 @@ void loop()
             Serial.println(pos);
             delayMicroseconds(17000);
         }
-
-        noInterrupts();
-        attachInterrupt(digitalPinToInterrupt(6), L_Position, RISING);
+        
         t = 1;
-        interrupts();
         
         Serial.println("Comp WAITING Position");
         Serial.println();
 
     default:
-        //何もしない
         break;
     }
 }
@@ -149,9 +142,8 @@ void L_Position()
     supplyservo.write(supply_max_deg);
     t = supply_max_deg;
     supplyservo_deg = supplyservo.read();
-    Serial.print("supply");
+    Serial.print("Supply_Degree");
     Serial.println(supplyservo_deg);
-    Serial.println(t);
 }
 
 void W_Position()
@@ -159,9 +151,8 @@ void W_Position()
     supplyservo.write(supply_min_deg);
     t = supply_min_deg;
     supplyservo_deg = supplyservo.read();
-    Serial.print("supply");
+    Serial.print("Supply_Degree");
     Serial.println(supplyservo_deg);
-    Serial.println(t);
 }
 
 void downlinkFlightData_tlm()
