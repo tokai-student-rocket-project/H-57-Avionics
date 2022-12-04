@@ -126,19 +126,22 @@ void setup() {
       changeFlightMode(FlightMode::PARACHUTE);
       downlinkEvent("FORCE-SEPARATED");
     }
-  })->startIntervalSec(0.01);
-
-  Tasks.add([]{
-    downlinkFlightData();
-  })->startIntervalSec(0.5);
+  })->startFps(100);
 
   Tasks.add([]{
     downlinkStatus();
-  })->startIntervalSec(2.0);
+    downlinkFlightData();
+  })->startFps(2);
 
   Tasks.add([]{
     downlinkConfig();
-  })->startIntervalSec(4.0);
+  })->startFps(0.2);
+
+  // separate関数で使うタスク
+  Tasks.add("TurnOffShiranui3TurnOnBuzzer", []{    
+    device::_shiranui3.off();
+    device::_buzzer.on();
+  });
 
   downlinkEvent("INITIALIZED");
 
@@ -362,9 +365,9 @@ bool canSeparateForce() {
 /// @brief 分離信号を出す
 void separate() {
   device::_shiranui3.on();
-  // delay(1000);
-  // device::_shiranui3.off();
-  device::_buzzer.on();
+
+  if (!Tasks.getTaskByName("TurnOffShiranui3TurnOnBuzzer")->isRunning())
+    Tasks.getTaskByName("TurnOffShiranui3TurnOnBuzzer")->startOnceAfterSec(3.0);
 }
 
 
