@@ -26,14 +26,4 @@ void DescentDetector::updateAltitude(float altitude)
   _isDescending = _descentCount >= MINIMUM_DESCENT_COUNT;
 
   _averageOrigin = _average;
-
-  // デバッグ用
-  // 後で消す
-  Serial.print(altitude);
-  Serial.print("\t");
-  Serial.print(_average);
-  Serial.print("\t");
-  Serial.print(_descentCount);
-  Serial.print("\t");
-  Serial.println(10);
 }

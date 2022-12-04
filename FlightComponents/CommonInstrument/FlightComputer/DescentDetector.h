@@ -15,6 +15,8 @@ public:
 
   /// @brief 降下中か
   bool _isDescending;
+
+  uint16_t _descentCount;
   
 private:
   /// @brief メートルで指定。この値以上に減少しないと降下にならない
@@ -25,7 +27,6 @@ private:
   float _sensitivity;
   float _average;
   float _averageOrigin;
-  uint16_t _descentCount;
 };
 
 #endif

@@ -182,24 +182,29 @@ void updateIndicators() {
 // ロガーにフライトデータを書き込む
 void writeLog() {
   // パケット構造
-  // <飛行時間[s]>,<フライトモード>,<高度[m]>,
+  // <飛行時間[s]>,<フライトモード>,
+  // <不知火3の状態>,<ブザーの状態>,
+  // <高度[m]>,<降下検出数>,
   // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
   // <角速度X[rad/s]>,<角速度Y[rad/s]>,<角速度Z[rad/s]>\n
 
   if (!isFlying()) return;
 
-  char log[64];
-  sprintf(log, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+  char log[256];
+  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
     (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<uint8_t>(internal::_flightMode),
+    device::_shiranui3.getState() ? 1 : 0,
+    device::_buzzer.getState() ? 1 : 0,
     flightData::_altitude_m,
+    internal::_descentDetector._descentCount,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g,
     flightData::_gyro_x_degps,
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
-  // Serial.println(log);
+  Serial1.println(log);
 }
 
 
