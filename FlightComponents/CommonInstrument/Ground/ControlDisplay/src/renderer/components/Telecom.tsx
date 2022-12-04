@@ -8,6 +8,7 @@ const activeColor = '#46c46d';
 const disactiveColor = '#72767d';
 
 const rssiToColor = (rssi: number): string => {
+  if (rssi === -999) return '#72767d';
   if (rssi < -100) return '#ed4245';
   if (rssi < -70) return '#faa61a';
   return '#46c46d';
@@ -33,7 +34,7 @@ const Telecom = () => {
   const [eventDownState, setEventDownState] = useState<boolean>(false);
   const [gpsDownState, setGpsDownState] = useState<boolean>(false);
 
-  const [rssi, setRssi] = useState<number>(0);
+  const [rssi, setRssi] = useState<number>(-999);
 
   const getSerialports = async () => {
     setSerialports(await window.electronAPI.getSerialports());

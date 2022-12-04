@@ -97,10 +97,10 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
   });
   const parser = serialportTelemeter.pipe(new ReadlineParser());
   parser.on('data', (data) => {
+    console.log(data);
+
     try {
       const dataObject = JSON.parse(data);
-
-      console.log(dataObject);
 
       store.set('latitude', dataObject.lat);
       store.set('longitude', dataObject.lon);
