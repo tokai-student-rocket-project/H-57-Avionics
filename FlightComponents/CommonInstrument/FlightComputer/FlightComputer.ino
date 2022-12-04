@@ -129,13 +129,11 @@ void setup() {
   })->startFps(100);
 
   Tasks.add([]{
-    downlinkStatus();
-    downlinkFlightData();
+    writeStatusToDownPacket();
+    writeFlightDataToDownPacket();
+    writeConfigToDownPacket();
+    sendDownPacket();
   })->startFps(2);
-
-  Tasks.add([]{
-    downlinkConfig();
-  })->startFps(0.2);
 
   // separate関数で使うタスク
   Tasks.add("TurnOffShiranui3TurnOnBuzzer", []{    
@@ -190,8 +188,8 @@ void writeLog() {
 
   if (!isFlying()) return;
 
-  char message[64];
-  sprintf(message, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+  char log[64];
+  sprintf(log, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
     (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<uint8_t>(internal::_flightMode),
     flightData::_altitude_m,
@@ -201,7 +199,7 @@ void writeLog() {
     flightData::_gyro_x_degps,
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
-  // Serial.println(message);
+  // Serial.println(log);
 }
 
 
@@ -210,45 +208,36 @@ void writeLog() {
 void downlinkEvent(String event) {
   // パケット構造
   // {
-  //   "t": "e",                  ... t->Type, e->Event
-  //   "ft": "<飛行時間[s]>",     ... ft->FlightTime
   //   "e":"<イベント>"
   //  }
 
-  downPacket["t"] = "e";
-  downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["e"] = event;
 
   sendDownPacket();
 }
 
 
-/// @brief ステータスをダウンリンクで送信する
-void downlinkStatus() {
+/// @brief ステータスをパケットに書き込む
+void writeStatusToDownPacket() {
   // パケット構造
   // {
-  //   "t": "s",                        ... t->Type, s->Status
   //   "m": "<フライトモード>",         ... m->Mode
   //   "f": "<フライトピンの状態>",     ... f->FlightPin
   //   "s3": "<不知火Ⅲの状態>",        ... s3->Shiranui3
   //   "b": "<ブザーの状態>"            ... b->Buzzer
   // }
 
-  downPacket["t"] = "s";
   downPacket["m"] = String(static_cast<uint8_t>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
-
-  sendDownPacket();
 }
 
 
-/// @brief フライトデータをダウンリンクで送信する
-void downlinkFlightData() {
+/// @brief フライトデータをパケットに書き込む
+void writeFlightDataToDownPacket() {
   // パケット構造
   // {
-  //   "t": "f",                  ... t->Type, f->FlightData
   //   "ft": "<飛行時間[s]>",     ... ft->FlightTime
   //   "alt": "<高度[m]>",        ... alt->Altitude
   //   "ax": "<加速度X[G]>",      ... ax->AccelerationX
@@ -259,25 +248,21 @@ void downlinkFlightData() {
 
   if (!isFlying()) return;
 
-  downPacket["t"] = "f";
   downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["alt"] = String(flightData::_altitude_m, 1);
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
   downPacket["az"] = String(flightData::_acceleration_z_g, 2);
-
-  sendDownPacket();
 }
 
 
-/// @brief コンフィグをダウンリンクで送信する
-void downlinkConfig() {
+/// @brief コンフィグをパケットに書き込む
+void writeConfigToDownPacket() {
   // パケット構造
   // {
-  //   "t": "c",                        ... t->Type, c->Config
   //   "a": "<指定分離高度[m]>"         ... a->Altitude
   //   "p": "<基準気圧[hPa]>",          ... p->Pressure
-  //   "b": "<想定燃焼時間[s]>",        ... b->BurnTime
+  //   "bt": "<想定燃焼時間[s]>",       ... bt->BurnTime
   //   "sp": "<分離保護時間[s]>",       ... sp->SeparationProtectionTime
   //   "fs": "<強制分離時間[s]>",       ... fs->ForceSeparationTime
   //   "l": "<想定着地時間[s]>"         ... l->LandingTime
@@ -285,15 +270,12 @@ void downlinkConfig() {
 
   if (isFlying()) return;
 
-  downPacket["t"] = "c";
   downPacket["a"] = String(config::separation_altitude_m, 1);
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
-  downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
+  downPacket["bt"] = String(config::burn_time_ms / 1000.0, 2);
   downPacket["sp"] = String(config::separation_protection_time_ms / 1000.0, 2);
   downPacket["fs"] = String(config::force_separation_time_ms / 1000.0, 2);
   downPacket["l"] = String(config::landing_time_ms / 1000.0, 2);
-
-  sendDownPacket();
 }
 
 
@@ -303,7 +285,7 @@ void sendDownPacket() {
 
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
-  LoRa.endPacket();
+  LoRa.endPacket(true);
 
   device::_commandIndicator.off();
 
@@ -426,7 +408,9 @@ void changeFlightMode(FlightMode nextMode) {
   if (internal::_flightMode == nextMode) return;
 
   internal::_flightMode = nextMode;
-  downlinkStatus();
+
+  writeStatusToDownPacket();
+  sendDownPacket();
 }
 
 
@@ -465,5 +449,6 @@ void receiveCommand() {
 
   device::_commandIndicator.off();
 
-  downlinkConfig();
+  writeConfigToDownPacket();
+  sendDownPacket();
 }
