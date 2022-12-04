@@ -11,6 +11,7 @@ const Config = () => {
     useState<string>('');
   const [activeForceSeparation, setActiveForceSeparation] =
     useState<string>('');
+  const [activeLandingTime, setActiveLandingTime] = useState<string>('');
 
   const [standbySeparationAltitude, setStandbySeparationAltitude] =
     useState<string>('');
@@ -20,6 +21,7 @@ const Config = () => {
     useState<string>('');
   const [standbyForceSeparation, setStandbyForceSeparation] =
     useState<string>('');
+  const [standbyLandingTime, setStandbyLandingTime] = useState<string>('');
 
   useEffect(() => {
     window.electronAPI.configRecieved(() => {
@@ -34,6 +36,7 @@ const Config = () => {
       setActiveForceSeparation(
         window.electronAPI.store.get('force-separation')
       );
+      setActiveLandingTime(window.electronAPI.store.get('landing-time'));
     });
     return () => {
       window.electronAPI.remove('config-recieved');
@@ -51,6 +54,7 @@ const Config = () => {
       window.electronAPI.sendConfig(label, standbySeparationProtection);
     if (label === 'fs')
       window.electronAPI.sendConfig(label, standbyForceSeparation);
+    if (label === 'l') window.electronAPI.sendConfig(label, standbyLandingTime);
   };
 
   return (
@@ -146,6 +150,24 @@ const Config = () => {
             addonAfter="sec"
             value={standbyForceSeparation}
             onChange={(event) => setStandbyForceSeparation(event.target.value)}
+          />
+        </Col>
+      </Row>
+      <Divider>想定着地時間</Divider>
+      <Row gutter={8} wrap={false} align="middle">
+        <Col flex="auto">
+          <Input addonAfter="sec" readOnly value={activeLandingTime} />
+        </Col>
+        <Col>
+          <Button type="primary" onClick={sendConfig} data-num="l">
+            <FaArrowLeft />
+          </Button>
+        </Col>
+        <Col flex="auto">
+          <Input
+            addonAfter="sec"
+            value={standbyLandingTime}
+            onChange={(event) => setStandbyLandingTime(event.target.value)}
           />
         </Col>
       </Row>

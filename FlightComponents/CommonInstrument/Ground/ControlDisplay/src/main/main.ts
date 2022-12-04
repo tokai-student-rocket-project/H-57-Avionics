@@ -63,6 +63,7 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         store.set('burn-time', dataObject.b);
         store.set('separation-protection', dataObject.sp);
         store.set('force-separation', dataObject.fs);
+        store.set('landing-time', dataObject.l);
         mainWindow?.webContents.send('config-recieved');
       } else if (dataObject.t === 'e') {
         console.log(dataObject.e);

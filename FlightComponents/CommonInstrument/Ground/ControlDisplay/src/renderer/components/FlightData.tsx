@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 const getColor = (mode: string, isAccent: boolean) => {
   if (mode === 'STANDBY') return '#faa61a';
   if (mode === 'PARASHUTE') return '#46c46d';
+  if (mode === 'LAND') return '#46c46d';
 
   return isAccent ? '#5865f2' : 'white';
 };
@@ -51,7 +52,7 @@ const FlightData = () => {
 
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
-        ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE'][
+        ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE', 'LAND'][
           Number(window.electronAPI.store.get('flight-mode'))
         ]
       );

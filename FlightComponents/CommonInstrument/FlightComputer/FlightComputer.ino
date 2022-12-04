@@ -20,7 +20,8 @@ enum class FlightMode {
   THRUST,
   CLIMB,
   DESCENT,
-  PARACHUTE
+  PARACHUTE,
+  LAND
 };
 
 
@@ -47,7 +48,7 @@ namespace config {
   constexpr double DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
   double separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
-  // 想定される燃焼時間 [ms]
+  // 想定燃焼時間 [ms]
   constexpr unsigned long DEFAULT_BURN_TIME_ms = 2778;
   unsigned long burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
@@ -58,6 +59,10 @@ namespace config {
   // 強制分離時間 [ms]
   constexpr unsigned long DEFAULT_FORCE_SEPARATION_TIME_ms = 12692;
   unsigned long force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
+
+  // 想定着地時間 [ms]
+  constexpr unsigned long DEFAULT_LANDING_TIME_ms = 30000;
+  unsigned long landing_time_ms = DEFAULT_LANDING_TIME_ms;
 }
 
 namespace internal {
@@ -253,6 +258,7 @@ void downlinkFlightData() {
   //   "ax": "<加速度X[G]>",      ... ax->AccelerationX
   //   "ay": "<加速度Y[G]>",      ... ay->AccelerationY
   //   "az": "<加速度Z[G]>"       ... az->AccelerationZ
+  
   // }
 
   if (!isFlying()) return;
@@ -277,7 +283,8 @@ void downlinkConfig() {
   //   "p": "<基準気圧[hPa]>",          ... p->Pressure
   //   "b": "<想定燃焼時間[s]>",        ... b->BurnTime
   //   "sp": "<分離保護時間[s]>",       ... sp->SeparationProtectionTime
-  //   "fs": "<強制分離時間[s]>"        ... fs->ForceSeparationTime
+  //   "fs": "<強制分離時間[s]>",       ... fs->ForceSeparationTime
+  //   "l": "<想定着地時間[s]>"         ... l->LandingTime
   // }
 
   if (isFlying()) return;
@@ -288,6 +295,7 @@ void downlinkConfig() {
   downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
   downPacket["sp"] = String(config::separation_protection_time_ms / 1000.0, 2);
   downPacket["fs"] = String(config::force_separation_time_ms / 1000.0, 2);
+  downPacket["l"] = String(config::landing_time_ms / 1000.0, 2);
 
   sendDownPacket();
 }
@@ -310,7 +318,8 @@ void sendDownPacket() {
 /// @brief 飛行中かを返す。フライトモードで判断
 /// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
-  return internal::_flightMode != FlightMode::STANDBY;
+  return internal::_flightMode != FlightMode::STANDBY
+      && internal::_flightMode != FlightMode::LAND;
 }
 
 
@@ -322,10 +331,19 @@ bool isBurnout() {
 }
 
 
+/// @brief着地したかを返す。タイマーで判断
+/// @return True: 着地, False: 着地でない
+bool isLanded() {
+  return isFlying()
+      && internal::_flightMode != FlightMode::LAND
+      && millis() > internal::_launchTime_ms + config::landing_time_ms;
+}
+
+
 /// @brief reset()を実行してもよい状況かを返す
 /// @return True: 実行可能, False: 実行不可能
 bool canReset() {
-  return isFlying()
+  return internal::_flightMode != FlightMode::STANDBY
       && !device::_flightPin.isReleased();
 }
 
@@ -396,6 +414,12 @@ void updateFlightMode() {
         downlinkEvent("SEPARATED");
       }
       break;
+
+    case FlightMode::PARACHUTE:
+      if (isLanded()) {
+        changeFlightMode(FlightMode::LAND);
+        downlinkEvent("LANDED");
+      }
   }
 }
 
@@ -435,6 +459,9 @@ void receiveCommand() {
     } else if (upPacket["l"] == "fs") {
       config::force_separation_time_ms = 
         upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
+    } else if (upPacket["l"] == "l") {
+      config::landing_time_ms = 
+        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
     }
 
     upPacket.clear();
