@@ -43,7 +43,10 @@ namespace device {
 }
 
 namespace config {
-  // 想定される燃焼時間
+  // 指定分離高度 [m]
+  double separation_altitude_m = 0.0;
+
+  // 想定される燃焼時間 [ms]
   unsigned long burn_time_ms = 2778;
 
   // 分離保護時間 [ms]
@@ -328,7 +331,8 @@ bool canReset() {
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && millis() > internal::_launchTime_ms + config::separation_protection_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_protection_time_ms
+      && flightData::_altitude_m <= config::separation_altitude_m;
 }
 
 
