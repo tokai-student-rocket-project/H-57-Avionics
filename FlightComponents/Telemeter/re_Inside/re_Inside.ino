@@ -3,6 +3,7 @@
 #include <Arduino_MKRGPS.h>
 #include <Servo.h>
 #include <ArduinoJson.h>
+#include <VarSpeedServo.h>
 
 //サーボの設定
 Servo mainservo;
