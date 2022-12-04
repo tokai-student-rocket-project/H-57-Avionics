@@ -100,19 +100,19 @@ void setup() {
 
   Tasks.add([]{
     writeLog();
-  })->startIntervalForSec(0.1);
+  })->startIntervalSec(0.1);
 
-  Task.add([]{
+  Tasks.add([]{
     downlinkFlightData();
-  })->startIntervalForSec(0.5);
+  })->startIntervalSec(0.5);
 
   Tasks.add([]{
     downlinkStatus();
-  })->startIntervalForSec(2.0);
+  })->startIntervalSec(2.0);
 
   Tasks.add([]{
     downlinkConfig();
-  })->startIntervalForSec(4.0);
+  })->startIntervalSec(4.0);
 
   downlinkEvent("INITIALIZED");
 
@@ -132,11 +132,13 @@ void loop() {
 
   if (canReset()) {
     reset();
+    changeFlightMode(FlightMode::STANDBY);
     downlinkEvent("RESET");
   }
 
   if (canSeparateForce()) {
     separate();
+    changeFlightMode(FlightMode::PARACHUTE);
     downlinkEvent("FORCE-SEPARATED");
   }
 
@@ -342,8 +344,6 @@ void separate() {
   // delay(1000);
   // device::_shiranui3.off();
   device::_buzzer.on();
-
-  changeFlightMode(FlightMode::PARACHUTE);
 }
 
 
@@ -351,8 +351,6 @@ void separate() {
 void reset() {
   device::_shiranui3.off();
   device::_buzzer.off();
-
-  changeFlightMode(FlightMode::STANDBY);
 }
 
 
@@ -384,6 +382,7 @@ void updateFlightMode() {
     case FlightMode::DESCENT:
       if (canSeparate()) {
         separate();
+        changeFlightMode(FlightMode::PARACHUTE);
         downlinkEvent("SEPARATED");
       }
       break;
@@ -396,8 +395,8 @@ void updateFlightMode() {
 void changeFlightMode(FlightMode nextMode) {
   if (internal::_flightMode == nextMode) return;
 
-  downlinkStatus();
   internal::_flightMode = nextMode;
+  downlinkStatus();
 }
 
 
