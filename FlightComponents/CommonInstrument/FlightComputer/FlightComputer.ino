@@ -100,18 +100,23 @@ void setup() {
 
   Tasks.add([]{
     writeLog();
-  })->startIntervalSec(0.01);
+  })->startIntervalForSec(0.1);
+
+  Task.add([]{
+    downlinkFlightData();
+  })->startIntervalForSec(0.5);
 
   Tasks.add([]{
     downlinkStatus();
-    downlinkFlightData();
-  })->startIntervalSec(0.5);
+  })->startIntervalForSec(2.0);
 
   Tasks.add([]{
     downlinkConfig();
-  })->startIntervalSec(1.0);
+  })->startIntervalForSec(4.0);
 
   downlinkEvent("INITIALIZED");
+
+  reset();
 }
 
 
@@ -139,6 +144,7 @@ void loop() {
 }
 
 
+/// @brief センサ類から各種データを読み出す
 void updateFlightData() {
   flightData::_temperature_degT = device::_bme280.getTemperature();
   flightData::_pressure_Pa      = device::_bme280.getPressure();
@@ -157,6 +163,7 @@ void updateFlightData() {
 }
 
 
+/// @brief 状況によってLEDを切り替える
 void updateIndicators() {
   device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_minimum_time_ms);
   device::_flightIndicator.setState(isFlying());
@@ -164,7 +171,13 @@ void updateIndicators() {
 }
 
 
+// ロガーにフライトデータを書き込む
 void writeLog() {
+  // パケット構造
+  // <飛行時間[s]>,<フライトモード>,<高度[m]>,
+  // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
+  // <角速度X[rad/s]>,<角速度Y[rad/s]>,<角速度Z[rad/s]>\n
+
   if (!isFlying()) return;
 
   char message[64];
@@ -182,98 +195,140 @@ void writeLog() {
 }
 
 
+/// @brief イベントをダウンリンクで送信する
+/// @param event イベント
 void downlinkEvent(String event) {
-  device::_commandIndicator.on();
+  // パケット構造
+  // {
+  //   "t": "e",                  ... t->Type, e->Event
+  //   "ft": "<飛行時間[s]>",     ... ft->FlightTime
+  //   "e":"<イベント>"
+  //  }
 
-  downPacket.clear();
   downPacket["t"] = "e";
   downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["e"] = event;
-  sendDownPacket();
 
-  device::_commandIndicator.off();
+  sendDownPacket();
 }
 
 
+/// @brief ステータスをダウンリンクで送信する
 void downlinkStatus() {
-  device::_commandIndicator.on();
+  // パケット構造
+  // {
+  //   "t": "s",                        ... t->Type, s->Status
+  //   "m": "<フライトモード>",         ... m->Mode
+  //   "f": "<フライトピンの状態>",     ... f->FlightPin
+  //   "s3": "<不知火Ⅲの状態>",        ... s3->Shiranui3
+  //   "b": "<ブザーの状態>"            ... b->Buzzer
+  // }
 
-  downPacket.clear();
   downPacket["t"] = "s";
   downPacket["m"] = String(static_cast<int>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
-  sendDownPacket();
 
-  device::_commandIndicator.off();
+  sendDownPacket();
 }
 
 
+/// @brief フライトデータをダウンリンクで送信する
 void downlinkFlightData() {
+  // パケット構造
+  // {
+  //   "t": "f",                  ... t->Type, f->FlightData
+  //   "ft": "<飛行時間[s]>",     ... ft->FlightTime
+  //   "alt": "<高度[m]>",        ... alt->Altitude
+  //   "ax": "<加速度X[G]>",      ... ax->AccelerationX
+  //   "ay": "<加速度Y[G]>",      ... ay->AccelerationY
+  //   "az": "<加速度Z[G]>"       ... az->AccelerationZ
+  // }
+
   if (!isFlying()) return;
 
-  device::_commandIndicator.on();
-
-  downPacket.clear();
   downPacket["t"] = "f";
   downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
   downPacket["alt"] = String(flightData::_altitude_m, 1);
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
   downPacket["az"] = String(flightData::_acceleration_z_g, 2);
-  sendDownPacket();
 
-  device::_commandIndicator.off();
+  sendDownPacket();
 }
 
+
+/// @brief コンフィグをダウンリンクで送信する
 void downlinkConfig() {
+  // パケット構造
+  // {
+  //   "t": "c",                        ... t->Type, c->Config
+  //   "p": "<基準気圧[hPa]>",          ... p->Pressure
+  //   "b": "<想定燃焼時間[s]>",        ... b->BurnTime
+  //   "smax": "<最長分離時間[s]>",     ... smax->SeparationMaximumTime
+  //   "smin": "<最短分離時間[s]>"      ... smin->SeparationMinimumTime
+  // }
+
   if (isFlying()) return;
 
-  device::_commandIndicator.on();
-
-  downPacket.clear();
   downPacket["t"] = "c";
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
   downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
   downPacket["smax"] = String(config::separation_maximum_time_ms / 1000.0, 2);
   downPacket["smin"] = String(config::separation_minimum_time_ms / 1000.0, 2);
-  sendDownPacket();
 
-  device::_commandIndicator.off();
+  sendDownPacket();
 }
 
 
+/// @brief downPacketの内容を送信する。
 void sendDownPacket() {
+  device::_commandIndicator.on();
+
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
   LoRa.endPacket();
+
+  device::_commandIndicator.off();
+
+  downPacket.clear();
 }
 
 
+/// @brief 飛行中かを返す。フライトモードで判断
+/// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY;
 }
 
 
+/// @brief 燃焼終了したかを返す。タイマーで判断
+/// @return True: 燃焼終了, False: 燃焼終了でない
 bool isBurnout() {
   return internal::_flightMode == FlightMode::THRUST
       && millis() > internal::_launchTime_ms + config::burn_time_ms;
 }
 
 
+/// @brief reset()を実行してもよい状況かを返す
+/// @return True: 実行可能, False: 実行不可能
 bool canReset() {
   return isFlying()
       && !device::_flightPin.isReleased();
 }
 
 
+/// @brief separate()を実行してもよい状況かを返す
+/// @return True: 実行可能, False: 実行不可能
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
       && millis() > internal::_launchTime_ms + config::separation_minimum_time_ms;
 }
 
 
+/// @brief separate()を強制分離として実行してもよい状況かを返す
+/// @return True: 実行可能, False: 実行不可能
 bool canSeparateForce() {
   return isFlying()
       && internal::_flightMode != FlightMode::PARACHUTE
@@ -281,6 +336,7 @@ bool canSeparateForce() {
 }
 
 
+/// @brief 分離信号を出す
 void separate() {
   device::_shiranui3.on();
   // delay(1000);
@@ -291,6 +347,7 @@ void separate() {
 }
 
 
+/// @brief リセットする
 void reset() {
   device::_shiranui3.off();
   device::_buzzer.off();
@@ -299,6 +356,7 @@ void reset() {
 }
 
 
+/// @brief 状況に応じてフライトモードを進める
 void updateFlightMode() {
   switch (internal::_flightMode) {
     case FlightMode::STANDBY:
@@ -333,13 +391,17 @@ void updateFlightMode() {
 }
 
 
+/// @brief 新しいフライトモードに変更する
+/// @param nextMode 新しいフライトモード
 void changeFlightMode(FlightMode nextMode) {
   if (internal::_flightMode == nextMode) return;
 
+  downlinkStatus();
   internal::_flightMode = nextMode;
 }
 
 
+/// @brief アップリンクを受信していれば処理をする
 void receiveCommand() {
   if (isFlying()) return;
   if (!LoRa.parsePacket()) return;
@@ -367,4 +429,6 @@ void receiveCommand() {
   }
 
   device::_commandIndicator.off();
+
+  downlinkConfig();
 }
