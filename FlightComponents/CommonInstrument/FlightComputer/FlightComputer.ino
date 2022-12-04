@@ -46,11 +46,11 @@ namespace config {
   // 想定される燃焼時間
   unsigned long burn_time_ms = 2778;
 
-  // 最小分離時間 [ms]
-  unsigned long separation_minimum_time_ms = 10692;
+  // 分離保護時間 [ms]
+  unsigned long separation_protection_time_ms = 10692;
 
-  // 最大分離時間 [ms]
-  unsigned long separation_maximum_time_ms = 12692;
+  // 強制分離時間 [ms]
+  unsigned long force_separation_time_ms = 12692;
 }
 
 namespace internal {
@@ -167,7 +167,7 @@ void updateFlightData() {
 
 /// @brief 状況によってLEDを切り替える
 void updateIndicators() {
-  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_minimum_time_ms);
+  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_protection_time_ms);
   device::_flightIndicator.setState(isFlying());
   device::_separationIndicator.setState(internal::_flightMode == FlightMode::PARACHUTE);
 }
@@ -277,8 +277,11 @@ void downlinkConfig() {
   downPacket["t"] = "c";
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
   downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
-  downPacket["smax"] = String(config::separation_maximum_time_ms / 1000.0, 2);
-  downPacket["smin"] = String(config::separation_minimum_time_ms / 1000.0, 2);
+  // 以下変更予定
+  // 最短分離時間 -> 分離保護時間
+  // 最長分離時間 -> 強制分離時間
+  downPacket["smax"] = String(config::separation_protection_time_ms / 1000.0, 2);
+  downPacket["smin"] = String(config::force_separation_time_ms / 1000.0, 2);
 
   sendDownPacket();
 }
@@ -325,7 +328,7 @@ bool canReset() {
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && millis() > internal::_launchTime_ms + config::separation_minimum_time_ms;
+      && millis() > internal::_launchTime_ms + config::separation_protection_time_ms;
 }
 
 
@@ -334,7 +337,7 @@ bool canSeparate() {
 bool canSeparateForce() {
   return isFlying()
       && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + config::separation_maximum_time_ms;
+      && millis() > internal::_launchTime_ms + config::force_separation_time_ms;
 }
 
 
@@ -417,10 +420,14 @@ void receiveCommand() {
       config::burn_time_ms = 
         (upPacket["v"].as<double>() ? (double)upPacket["v"] : 2.778) * 1000.0;
     } else if (upPacket["l"] == "smin") {
-      config::separation_minimum_time_ms = 
+      // 変更予定
+      // 最短分離時間 -> 分離保護時間
+      config::separation_protection_time_ms = 
         (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.692) * 1000.0;
     } else if (upPacket["l"] == "smax") {
-      config::separation_maximum_time_ms = 
+      // 変更予定
+      // 最長分離時間 -> 強制分離時間
+      config::force_separation_time_ms = 
         (upPacket["v"].as<double>() ? (double)upPacket["v"] : 12.692) * 1000.0;
     }
 
