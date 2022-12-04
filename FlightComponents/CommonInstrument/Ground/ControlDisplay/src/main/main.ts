@@ -58,10 +58,11 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         store.set('acceleration-z', dataObject.az);
         mainWindow?.webContents.send('flight-data-recieved');
       } else if (dataObject.t === 'c') {
+        store.set('separation-altitude', dataObject.a);
         store.set('base-pressure', dataObject.p);
         store.set('burn-time', dataObject.b);
-        store.set('separation-minimum', dataObject.smin);
-        store.set('separation-maximum', dataObject.smax);
+        store.set('separation-protection', dataObject.sp);
+        store.set('force-separation', dataObject.fs);
         mainWindow?.webContents.send('config-recieved');
       } else if (dataObject.t === 'e') {
         console.log(dataObject.e);

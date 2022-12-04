@@ -44,16 +44,20 @@ namespace device {
 
 namespace config {
   // 指定分離高度 [m]
-  double separation_altitude_m = 0.0;
+  constexpr double DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
+  double separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定される燃焼時間 [ms]
-  unsigned long burn_time_ms = 2778;
+  constexpr unsigned long DEFAULT_BURN_TIME_ms = 2778;
+  unsigned long burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  unsigned long separation_protection_time_ms = 10692;
+  constexpr unsigned long DEFAULT_SEPARATION_PROTECTION_TIME_ms = 10692;
+  unsigned long separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  unsigned long force_separation_time_ms = 12692;
+  constexpr unsigned long DEFAULT_FORCE_SEPARATION_TIME_ms = 12692;
+  unsigned long force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 }
 
 namespace internal {
@@ -269,22 +273,21 @@ void downlinkConfig() {
   // パケット構造
   // {
   //   "t": "c",                        ... t->Type, c->Config
+  //   "a": "<指定分離高度[m]>"         ... a->Altitude
   //   "p": "<基準気圧[hPa]>",          ... p->Pressure
   //   "b": "<想定燃焼時間[s]>",        ... b->BurnTime
-  //   "smax": "<最長分離時間[s]>",     ... smax->SeparationMaximumTime
-  //   "smin": "<最短分離時間[s]>"      ... smin->SeparationMinimumTime
+  //   "sp": "<分離保護時間[s]>",       ... sp->SeparationProtectionTime
+  //   "fs": "<強制分離時間[s]>"        ... fs->ForceSeparationTime
   // }
 
   if (isFlying()) return;
 
   downPacket["t"] = "c";
+  downPacket["a"] = String(config::separation_altitude_m, 1);
   downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
   downPacket["b"] = String(config::burn_time_ms / 1000.0, 2);
-  // 以下変更予定
-  // 最短分離時間 -> 分離保護時間
-  // 最長分離時間 -> 強制分離時間
-  downPacket["smax"] = String(config::separation_protection_time_ms / 1000.0, 2);
-  downPacket["smin"] = String(config::force_separation_time_ms / 1000.0, 2);
+  downPacket["sp"] = String(config::separation_protection_time_ms / 1000.0, 2);
+  downPacket["fs"] = String(config::force_separation_time_ms / 1000.0, 2);
 
   sendDownPacket();
 }
@@ -417,22 +420,21 @@ void receiveCommand() {
   deserializeJson(upPacket, LoRa);
 
   if (upPacket["t"] == "c") {
-    if (upPacket["l"] == "p") {
+    if (upPacket["l"] == "a") {
+      config::separation_altitude_m = 
+        upPacket["v"].as<double>() ? (double)upPacket["v"] : config::DEFAULT_SEPARATION_ALTITUDE_m;
+    } else if (upPacket["l"] == "p") {
       device::_bme280.setReferencePressure(
         upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
     } else if (upPacket["l"] == "b") {
       config::burn_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 2.778) * 1000.0;
-    } else if (upPacket["l"] == "smin") {
-      // 変更予定
-      // 最短分離時間 -> 分離保護時間
+        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_BURN_TIME_ms;
+    } else if (upPacket["l"] == "sp") {
       config::separation_protection_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 10.692) * 1000.0;
-    } else if (upPacket["l"] == "smax") {
-      // 変更予定
-      // 最長分離時間 -> 強制分離時間
+        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
+    } else if (upPacket["l"] == "fs") {
       config::force_separation_time_ms = 
-        (upPacket["v"].as<double>() ? (double)upPacket["v"] : 12.692) * 1000.0;
+        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
     }
 
     upPacket.clear();
