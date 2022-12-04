@@ -8,7 +8,7 @@ void BME280Wrap::initialize() {
 
 
 float BME280Wrap::getPressure() {
-  // SparkFunBME280の使用でreadFloatPressureの前にreadTempCを呼び出さないと正確な気圧を得られない。
+  // SparkFunBME280の仕様でreadFloatPressureの前にreadTempCを呼び出さないと正確な気圧を得られない。
   _bme280.readTempC();
   return _bme280.readFloatPressure();
 }

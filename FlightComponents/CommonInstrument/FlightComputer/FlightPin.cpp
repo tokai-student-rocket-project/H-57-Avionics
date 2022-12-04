@@ -4,7 +4,7 @@
 
 /// @brief コンストラクタ
 /// @param pinNumber フライトピンのArduinoでのピン番号
-FlightPin::FlightPin(int pinNumber) {
+FlightPin::FlightPin(uint8_t pinNumber) {
   _pinNumber = pinNumber;
 }
 

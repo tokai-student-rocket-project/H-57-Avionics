@@ -8,7 +8,6 @@
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
-#include "FrequencyTimer.h"
 
 
 StaticJsonDocument<256> upPacket;
@@ -45,35 +44,33 @@ namespace device {
 
 namespace config {
   // 指定分離高度 [m]
-  constexpr double DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
-  double separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
+  constexpr float DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
+  float separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定燃焼時間 [ms]
-  constexpr unsigned long DEFAULT_BURN_TIME_ms = 2778;
-  unsigned long burn_time_ms = config::DEFAULT_BURN_TIME_ms;
+  constexpr uint32_t DEFAULT_BURN_TIME_ms = 2778;
+  uint32_t burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  constexpr unsigned long DEFAULT_SEPARATION_PROTECTION_TIME_ms = 10692;
-  unsigned long separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
+  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 10692;
+  uint32_t separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  constexpr unsigned long DEFAULT_FORCE_SEPARATION_TIME_ms = 12692;
-  unsigned long force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
+  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 12692;
+  uint32_t force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 
   // 想定着地時間 [ms]
-  constexpr unsigned long DEFAULT_LANDING_TIME_ms = 30000;
-  unsigned long landing_time_ms = DEFAULT_LANDING_TIME_ms;
+  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 30000;
+  uint32_t landing_time_ms = DEFAULT_LANDING_TIME_ms;
 }
 
 namespace internal {
   FlightMode _flightMode;
   // 離床した瞬間の時間を保存しておく変数
-  unsigned long _launchTime_ms;
+  uint32_t _launchTime_ms;
 
   // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
   DescentDetector _descentDetector(0.35);
-  // 引数はloopの周期
-  FrequencyTimer _frequencyTimer(100);
 }
 
 namespace flightData {
@@ -111,8 +108,25 @@ void setup() {
   device::_buzzer.initialize();
 
   Tasks.add([]{
+    device::_flightPin.update();
+    updateFlightData();
+    updateIndicators();
+    updateFlightMode();
+    receiveCommand();
     writeLog();
-  })->startIntervalSec(0.1);
+
+    if (canReset()) {
+      reset();
+      changeFlightMode(FlightMode::STANDBY);
+      downlinkEvent("RESET");
+    }
+
+    if (canSeparateForce()) {
+      separate();
+      changeFlightMode(FlightMode::PARACHUTE);
+      downlinkEvent("FORCE-SEPARATED");
+    }
+  })->startIntervalSec(0.01);
 
   Tasks.add([]{
     downlinkFlightData();
@@ -134,27 +148,6 @@ void setup() {
 
 void loop() {
   Tasks.update();
-
-  device::_flightPin.update();
-  
-  updateFlightData();
-  updateIndicators();
-  updateFlightMode();
-  receiveCommand();
-
-  if (canReset()) {
-    reset();
-    changeFlightMode(FlightMode::STANDBY);
-    downlinkEvent("RESET");
-  }
-
-  if (canSeparateForce()) {
-    separate();
-    changeFlightMode(FlightMode::PARACHUTE);
-    downlinkEvent("FORCE-SEPARATED");
-  }
-
-  internal::_frequencyTimer.delay();
 }
 
 
@@ -164,7 +157,7 @@ void updateFlightData() {
   flightData::_pressure_Pa      = device::_bme280.getPressure();
   flightData::_altitude_m       = device::_bme280.getAltitude();
   
-  short ax, ay, az, gx, gy, gz;
+  int16_t ax, ay, az, gx, gy, gz;
   device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
   flightData::_acceleration_x_g = ax / 2048.0;
   flightData::_acceleration_y_g = ay / 2048.0;
@@ -197,7 +190,7 @@ void writeLog() {
   char message[64];
   sprintf(message, "%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
     (millis() - internal::_launchTime_ms) / 1000.0,
-    static_cast<int>(internal::_flightMode),
+    static_cast<uint8_t>(internal::_flightMode),
     flightData::_altitude_m,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
@@ -205,7 +198,7 @@ void writeLog() {
     flightData::_gyro_x_degps,
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
-  Serial.println(message);
+  // Serial.println(message);
 }
 
 
@@ -239,7 +232,7 @@ void downlinkStatus() {
   // }
 
   downPacket["t"] = "s";
-  downPacket["m"] = String(static_cast<int>(internal::_flightMode));
+  downPacket["m"] = String(static_cast<uint8_t>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
