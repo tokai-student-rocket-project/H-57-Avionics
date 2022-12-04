@@ -21,7 +21,7 @@ Servo supplyservo;
 float supplyservo_deg;
 float mainservo_deg;
 volatile int supply_min_deg = 0;
-volatile int supply_max_deg = 60;
+volatile int supply_max_deg = 90;
 volatile int main_min_deg = 0;
 volatile int main_max_deg = 140;
 
@@ -103,7 +103,7 @@ void loop()
         // Create and send LoRa packet
         downlinkFlightData_tlm();
     }
-    // attachInterrupt()
+    
 }
 
 void LUNCH_Position()
@@ -115,7 +115,7 @@ void LUNCH_Position()
     //供給路と主流路が同時に開いている状態の防止
     // delayMicroseconds(1000000); // 1,000,000us = 1,000,000E-6s = 1s
 
-    if (supply_max_deg == 60)
+    if (supplyservo_deg == 60)
     {
         mainservo.write(main_max_deg);    // OPEN
         mainservo_deg = mainservo.read(); //現在の角度を取得
@@ -135,8 +135,9 @@ void WAITING_Position()
 
     //供給路と主流路が同時に開いている状態の防止
     // delayMicroseconds(1000000); // 1,000,000us = 1,000,000E-6s = 1s
+    for ()
 
-    if (supply_min_deg == 0)
+    if (supplyservo_deg == 0)
     {
         mainservo.write(main_min_deg);    // CLOSE
         mainservo_deg = mainservo.read(); //現在の角度を取得
