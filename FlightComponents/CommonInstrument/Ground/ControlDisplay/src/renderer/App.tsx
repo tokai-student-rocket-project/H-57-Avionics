@@ -37,7 +37,7 @@ const App = () => {
         <Row>
           <Col span={8}>
             <Telecom />
-            <Config />
+            <GPS />
           </Col>
           <Col span={4}>
             <Wireframe />
@@ -47,8 +47,7 @@ const App = () => {
             <Valve />
           </Col>
           <Col span={8}>
-            <TimeLine />
-            <GPS />
+            <Config />
           </Col>
         </Row>
       </Content>
