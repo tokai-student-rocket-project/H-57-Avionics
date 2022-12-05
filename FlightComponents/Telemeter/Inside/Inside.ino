@@ -161,11 +161,11 @@ void downlinkFlightData_tlm()
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
         downPacket_tlm.clear();
-        downPacket_tlm["sensor"] = "gps";
+        //downPacket_tlm["sensor"] = "gps";
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
-        downPacket_tlm["presentTime"] = String(Time, 10);
+        downPacket_tlm["epochTime"] = String(Time, 10);
         downPacket_tlm["mainservoDeg"] = String(mainservo_deg, 1);
         downPacket_tlm["supplyservoDeg"] = String(supplyservo_deg, 1);
 
