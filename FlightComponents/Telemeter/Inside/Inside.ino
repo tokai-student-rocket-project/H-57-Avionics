@@ -16,14 +16,15 @@
 //サーボの設定
 Servo mainservo;
 Servo supplyservo;
-// volatile int main_deg = 0;
-// volatile int supply_deg = 0;
 float supplyservo_deg;
 float mainservo_deg;
-volatile int supply_min_deg = 0;
-volatile int supply_max_deg = 90;
-volatile int main_min_deg = 0;
-volatile int main_max_deg = 140;
+int supply_min_deg = 0;
+int supply_max_deg = 90;
+// int main_min_deg = 0;
+// int main_max_deg = 140;
+
+volatile int t = 0;
+float pos = 0;
 
 // GPSの設定
 float latitude;
@@ -45,18 +46,18 @@ unsigned long prev_SEND, interval_SEND;
 // unsigned long interval_SERVO, prev_SERVO;
 
 //割り込みの設定
-int interruptPin_1 = 6;
-int interruptPin_2 = 8;
+// int interruptPin_1 = 6;
+// int interruptPin_2 = 8;
 
 void setup()
 {
 
     //スイッチピンの設定
-    pinMode(interruptPin_1, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(interruptPin_1), LUNCH_Position, RISING);
+    pinMode(6, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(6), L_SW, RISING);
 
-    pinMode(interruptPin_2, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(interruptPin_2), WAITING_Position, RISING);
+    pinMode(8, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(8), W_SW, RISING);
 
     // initialize serial communications and wait for port to open:
     Serial.begin(9600);
@@ -103,9 +104,68 @@ void loop()
         // Create and send LoRa packet
         downlinkFlightData_tlm();
     }
-    
+
+    if (t == 1)
+    {
+        noInterrupts();
+        //mainservo.attach(5);
+        t = 0;
+        LUNCH_Position();
+        delay(10);
+        interrupts();
+    }
+
+    if (t == 2)
+    {
+        noInterrupts();
+        //mainservo.attach(5);
+        t = 0;
+        WAITING_Position();
+        delay(10);
+        interrupts();
+    }
 }
 
+void LUNCH_Position()
+{
+    supplyservo.write(supply_max_deg);
+    supplyservo_deg = supplyservo.read();
+    delay(1000);
+    for (pos = 0; pos >= 120; pos += 1)
+    {
+        mainservo.write(pos);
+        delayMicroseconds(500000);
+        mainservo_deg = mainservo.read();
+    }
+
+    /*
+    if (mainservo_deg == 120)
+    {
+        // mainservo.detach(5);
+    }
+    */
+}
+
+void WAITING_Position()
+{
+    supplyservo.write(supply_min_deg);
+    supplyservo_deg = supplyservo.read();
+    delay(1000);
+    for (pos = 120; pos <= 0; pos -= 1)
+    {
+        mainservo.write(pos);
+        delayMicroseconds(500000);
+        mainservo_deg = mainservo.read();
+    }
+
+    /*
+    if (mainservo_deg == 0)
+    {
+        // mainservo.detach(5);
+    }*/
+}
+
+/*
 void LUNCH_Position()
 {
     supplyservo.write(supply_max_deg);    // CLOSE
@@ -126,7 +186,8 @@ void LUNCH_Position()
         Serial.println();
     }
 }
-
+*/
+/*
 void WAITING_Position()
 {
     supplyservo.write(supply_min_deg);    // OPEN
@@ -148,6 +209,20 @@ void WAITING_Position()
         Serial.println();
     }
 }
+*/
+void L_SW()
+{
+    t = 1;
+    //detachInterrupt(digitalPinToInterrupt(6));
+    //noInterrupts();
+}
+
+void W_SW()
+{
+    t = 2;
+    //detachInterrupt(digitalPinToInterrupt(8));
+    //noInterrupts();
+}
 
 // Safety ArmedからSafeにした際にサーボが駆動するが、これはサーボが0度以外になっている場合に0に戻っている（つまりダンプ可能な状態）
 //同時に割り込みが入った場合は、上から順に読まれていくので、LUNCHI_Position => WAITING_Positionの順となる
@@ -161,7 +236,7 @@ void downlinkFlightData_tlm()
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
         downPacket_tlm.clear();
-        //downPacket_tlm["sensor"] = "gps";
+        // downPacket_tlm["sensor"] = "gps";
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
