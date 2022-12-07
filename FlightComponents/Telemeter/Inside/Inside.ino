@@ -4,7 +4,6 @@
   作成者：1CES2116 Hiroki Tsutsumi, <氏名の追加>
 
   H-57号機に搭載予定
-
 */
 
 #include <LoRa.h>
@@ -14,17 +13,16 @@
 #include <ArduinoJson.h>
 
 //サーボの設定
-Servo mainservo;
-Servo supplyservo;
+//Servo mainservo;
+//Servo supplyservo;
 float supplyservo_deg;
 float mainservo_deg;
-int supply_min_deg = 0;
-int supply_max_deg = 90;
+//int supply_min_deg = 0;
+//int supply_max_deg = 90;
 // int main_min_deg = 0;
 // int main_max_deg = 140;
 
 volatile int t = 0;
-float pos = 0;
 
 // GPSの設定
 float latitude;
@@ -77,8 +75,8 @@ void setup()
     }
 
     // PWM出力ピンの設定
-    mainservo.attach(5);
-    supplyservo.attach(4);
+    //mainservo.attach(5);
+    //supplyservo.attach(4);
 
     prev_SEND = 0;
     interval_SEND = 1000;
@@ -107,25 +105,24 @@ void loop()
 
     if (t == 1)
     {
-        noInterrupts();
-        //mainservo.attach(5);
         t = 0;
-        LUNCH_Position();
-        delay(10);
-        interrupts();
+        mainservo_deg = 140;
+        supplyservo_deg = 90;
+        // digitalWrite(PIN, HIGH); //OPEN LED
+        // digitalWrite(PIN, LOW);  //CLOSE LED
     }
 
     if (t == 2)
     {
-        noInterrupts();
-        //mainservo.attach(5);
         t = 0;
-        WAITING_Position();
-        delay(10);
-        interrupts();
+        mainservo_deg = 0;
+        supplyservo_deg = 0;
+        // digitalWrite(PIN, LOW);  //OPEN LED
+        // digitalWrite(PIN, HIGH); //CLOSE LED
     }
 }
 
+/*
 void LUNCH_Position()
 {
     supplyservo.write(supply_max_deg);
@@ -138,14 +135,16 @@ void LUNCH_Position()
         mainservo_deg = mainservo.read();
     }
 
-    /*
+
     if (mainservo_deg == 120)
     {
         // mainservo.detach(5);
     }
-    */
-}
 
+}
+*/
+
+/*
 void WAITING_Position()
 {
     supplyservo.write(supply_min_deg);
@@ -158,12 +157,13 @@ void WAITING_Position()
         mainservo_deg = mainservo.read();
     }
 
-    /*
+
     if (mainservo_deg == 0)
     {
         // mainservo.detach(5);
-    }*/
+    }
 }
+*/
 
 /*
 void LUNCH_Position()
@@ -187,6 +187,7 @@ void LUNCH_Position()
     }
 }
 */
+
 /*
 void WAITING_Position()
 {
@@ -210,18 +211,15 @@ void WAITING_Position()
     }
 }
 */
+
 void L_SW()
 {
     t = 1;
-    //detachInterrupt(digitalPinToInterrupt(6));
-    //noInterrupts();
 }
 
 void W_SW()
 {
     t = 2;
-    //detachInterrupt(digitalPinToInterrupt(8));
-    //noInterrupts();
 }
 
 // Safety ArmedからSafeにした際にサーボが駆動するが、これはサーボが0度以外になっている場合に0に戻っている（つまりダンプ可能な状態）
