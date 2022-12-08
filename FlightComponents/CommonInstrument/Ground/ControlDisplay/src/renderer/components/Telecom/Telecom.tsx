@@ -2,7 +2,7 @@ import { Card, Tooltip, Popover } from 'antd';
 import { useState, useEffect } from 'react';
 import { FaRss, FaCog } from 'react-icons/fa';
 import SerialportSelector from './components/SerialportSelector';
-import BlinkIndicator from './components/BlinkIndicator';
+import BlinkIndicator from './components/BlinkIndicator/BlinkIndicator';
 
 const rssiToColor = (rssi: number): string => {
   if (rssi === -999) return '#72767d';

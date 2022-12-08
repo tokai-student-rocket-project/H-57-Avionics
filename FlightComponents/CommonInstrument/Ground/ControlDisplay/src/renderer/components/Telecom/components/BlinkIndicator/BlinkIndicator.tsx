@@ -1,8 +1,6 @@
 import { Divider } from 'antd';
 import { useState, useEffect } from 'react';
-
-const activeColor = '#46c46d';
-const disactiveColor = '#72767d';
+import Indicator from './components/Indicator';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const blink = async (set: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -57,73 +55,25 @@ const BlinkIndicator = () => {
 
   return (
     <>
-      <Divider>アップリンク</Divider>
+      <Divider>Uplink</Divider>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>Config :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: configUpState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={configUpState} />
       </div>
-      <Divider>ダウンリンク</Divider>
+      <Divider>Downlink</Divider>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>FlightData :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: flightDataDownState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={flightDataDownState} />
         <span>Config :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: configDownState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={configDownState} />
         <span>Status :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: statusDownState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={statusDownState} />
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>Event :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: eventDownState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={eventDownState} />
         <span>GPS :</span>
-        <div
-          style={{
-            width: '12px',
-            margin: 'auto 16px auto 8px',
-            height: '12px',
-            backgroundColor: gpsDownState ? activeColor : disactiveColor,
-            borderRadius: '50%',
-          }}
-        />
+        <Indicator isActive={gpsDownState} />
       </div>
     </>
   );

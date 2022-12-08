@@ -1,4 +1,4 @@
-import { Select } from 'antd';
+import { Select, Descriptions } from 'antd';
 import { useState } from 'react';
 
 const { Option } = Select;
@@ -19,32 +19,42 @@ const SerialportSelector = () => {
   };
 
   return (
-    <>
-      <Select
-        style={{ width: '256px' }}
-        placeholder="シリアルポートを選択"
-        onClick={getSerialports}
-        onSelect={selectSerialport}
+    <div style={{ width: '300px' }}>
+      <Descriptions
+        column={1}
+        labelStyle={{ color: 'white' }}
+        layout="vertical"
       >
-        {serialports.map((serialportItr) => (
-          <Option key={serialportItr} value={serialportItr}>
-            {serialportItr}
-          </Option>
-        ))}
-      </Select>
-      <Select
-        style={{ width: '256px' }}
-        placeholder="シリアルポートを選択"
-        onClick={getSerialports}
-        onSelect={selectSerialportTelemeter}
-      >
-        {serialports.map((serialportItr) => (
-          <Option key={serialportItr} value={serialportItr}>
-            {serialportItr}
-          </Option>
-        ))}
-      </Select>
-    </>
+        <Descriptions.Item label="共通計器">
+          <Select
+            style={{ width: '100%' }}
+            placeholder="シリアルポートを選択"
+            onClick={getSerialports}
+            onSelect={selectSerialport}
+          >
+            {serialports.map((serialportItr) => (
+              <Option key={serialportItr} value={serialportItr}>
+                {serialportItr}
+              </Option>
+            ))}
+          </Select>
+        </Descriptions.Item>
+        <Descriptions.Item label="テレメータ">
+          <Select
+            style={{ width: '100%' }}
+            placeholder="シリアルポートを選択"
+            onClick={getSerialports}
+            onSelect={selectSerialportTelemeter}
+          >
+            {serialports.map((serialportItr) => (
+              <Option key={serialportItr} value={serialportItr}>
+                {serialportItr}
+              </Option>
+            ))}
+          </Select>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
   );
 };
 
