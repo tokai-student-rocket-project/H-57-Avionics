@@ -3,6 +3,7 @@
 #include <LoRa.h>
 #include <ArduinoJson.h>
 #include <TaskManager.h>
+#include <movingAvg.h>
 #include "BME280Wrap.h"
 #include "MPU6050.h"
 #include "FlightPin.h"
@@ -71,6 +72,10 @@ namespace internal {
 
   // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
   DescentDetector _descentDetector(0.35);
+
+  movingAvg _acceleration_x_avg_g(10);
+  movingAvg _acceleration_y_avg_g(10);
+  movingAvg _acceleration_z_avg_g(10);
 }
 
 namespace flightData {
@@ -106,6 +111,10 @@ void setup() {
   device::_separationIndicator.initialize();
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
+
+  internal::_acceleration_x_avg_g.begin();
+  internal::_acceleration_y_avg_g.begin();
+  internal::_acceleration_z_avg_g.begin();
 
   Tasks.add([]{
     device::_flightPin.update();
@@ -144,6 +153,10 @@ void setup() {
   downlinkEvent("INITIALIZED");
 
   reset();
+
+  Serial.print("x"); Serial.print(",");
+  Serial.print("y"); Serial.print(",");
+  Serial.println("z");
 }
 
 
@@ -157,17 +170,22 @@ void updateFlightData() {
   flightData::_temperature_degT = device::_bme280.getTemperature();
   flightData::_pressure_Pa      = device::_bme280.getPressure();
   flightData::_altitude_m       = device::_bme280.getAltitude();
+
+  internal::_descentDetector.updateAltitude(flightData::_altitude_m);
   
   int16_t ax, ay, az, gx, gy, gz;
   device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-  flightData::_acceleration_x_g = ax / 2048.0;
-  flightData::_acceleration_y_g = ay / 2048.0;
-  flightData::_acceleration_z_g = az / 2048.0;
+
+  flightData::_acceleration_x_g =
+    internal::_acceleration_x_avg_g.reading(ax) / 2048.0;
+  flightData::_acceleration_y_g =
+    internal::_acceleration_y_avg_g.reading(ay) / 2048.0;
+  flightData::_acceleration_z_g =
+    internal::_acceleration_z_avg_g.reading(az) / 2048.0;
+
   flightData::_gyro_x_degps = gx / 16.4;
   flightData::_gyro_y_degps = gy / 16.4;
   flightData::_gyro_z_degps = gz / 16.4;
-
-  internal::_descentDetector.updateAltitude(flightData::_altitude_m);
 }
 
 
@@ -205,8 +223,6 @@ void writeLog() {
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
   Serial1.println(log);
-
-  Serial.println(internal::_descentDetector._descentCount);
 }
 
 
