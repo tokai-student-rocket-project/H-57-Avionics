@@ -1,176 +1,136 @@
-import { Card, Input, Button, Row, Col, Divider } from 'antd';
+import { Card, Col, Row, Statistic, Select, Button, Input } from 'antd';
 import { useState, useEffect } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaTelegramPlane } from 'react-icons/fa';
+
+const units = { a: 'm', p: 'hPa', b: 'sec', sp: 'sec', fs: 'sec', l: 'sec' };
 
 const Config = () => {
-  const [activeSeparationAltitude, setActiveSeparationAltitude] =
-    useState<string>('');
-  const [activeBasePrassure, setActiveBasePressure] = useState<string>('');
-  const [activeBurnTime, setActiveBurnTime] = useState<string>('');
-  const [activeSeparationProtection, setActiveSeparationProtection] =
-    useState<string>('');
-  const [activeForceSeparation, setActiveForceSeparation] =
-    useState<string>('');
-  const [activeLandingTime, setActiveLandingTime] = useState<string>('');
+  const [separationAltitude, setSeparationAltitude] = useState<string>('');
+  const [basePrassure, setBasePressure] = useState<string>('');
+  const [burnTime, setBurnTime] = useState<string>('');
+  const [separationProtection, setSeparationProtection] = useState<string>('');
+  const [forceSeparation, setForceSeparation] = useState<string>('');
+  const [landingTime, setLandingTime] = useState<string>('');
 
-  const [standbySeparationAltitude, setStandbySeparationAltitude] =
-    useState<string>('');
-  const [standbyBasePrassure, setStandbyBasePressure] = useState<string>('');
-  const [standbyBurnTime, setStandbyBurnTime] = useState<string>('');
-  const [standbySeparationProtection, setStandbySeparationProtection] =
-    useState<string>('');
-  const [standbyForceSeparation, setStandbyForceSeparation] =
-    useState<string>('');
-  const [standbyLandingTime, setStandbyLandingTime] = useState<string>('');
+  const [selectedLabel, setSelectedLabel] = useState<string>('');
+  const [value, setValue] = useState<string>('');
 
   useEffect(() => {
     window.electronAPI.configRecieved(() => {
-      setActiveSeparationAltitude(
+      setSeparationAltitude(
         window.electronAPI.store.get('separation-altitude')
       );
-      setActiveBasePressure(window.electronAPI.store.get('base-pressure'));
-      setActiveBurnTime(window.electronAPI.store.get('burn-time'));
-      setActiveSeparationProtection(
+      setBasePressure(window.electronAPI.store.get('base-pressure'));
+      setBurnTime(window.electronAPI.store.get('burn-time'));
+      setSeparationProtection(
         window.electronAPI.store.get('separation-protection')
       );
-      setActiveForceSeparation(
-        window.electronAPI.store.get('force-separation')
-      );
-      setActiveLandingTime(window.electronAPI.store.get('landing-time'));
+      setForceSeparation(window.electronAPI.store.get('force-separation'));
+      setLandingTime(window.electronAPI.store.get('landing-time'));
     });
+
     return () => {
       window.electronAPI.remove('config-recieved');
     };
   }, []);
 
-  const sendConfig = (event: React.MouseEvent<HTMLInputElement>) => {
-    const label = event.currentTarget.getAttribute('data-num');
-    if (label === 'a')
-      window.electronAPI.sendConfig(label, standbySeparationAltitude);
-    if (label === 'p')
-      window.electronAPI.sendConfig(label, standbyBasePrassure);
-    if (label === 'b') window.electronAPI.sendConfig(label, standbyBurnTime);
-    if (label === 'sp')
-      window.electronAPI.sendConfig(label, standbySeparationProtection);
-    if (label === 'fs')
-      window.electronAPI.sendConfig(label, standbyForceSeparation);
-    if (label === 'l') window.electronAPI.sendConfig(label, standbyLandingTime);
+  const selectLabel = (label: string) => {
+    setSelectedLabel(label);
+  };
+
+  const sendConfig = () => {
+    if (selectedLabel === 'a')
+      window.electronAPI.sendConfig(selectedLabel, value);
+    if (selectedLabel === 'p')
+      window.electronAPI.sendConfig(selectedLabel, value);
+    if (selectedLabel === 'b')
+      window.electronAPI.sendConfig(selectedLabel, value);
+    if (selectedLabel === 'sp')
+      window.electronAPI.sendConfig(selectedLabel, value);
+    if (selectedLabel === 'fs')
+      window.electronAPI.sendConfig(selectedLabel, value);
+    if (selectedLabel === 'l')
+      window.electronAPI.sendConfig(selectedLabel, value);
   };
 
   return (
     <Card title="CONFIG" bordered={false} style={{ margin: '8px' }}>
-      <Divider>指定分離高度</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="m" readOnly value={activeSeparationAltitude} />
+      <Row style={{ marginTop: '24px' }}>
+        <Col span={12}>
+          <Statistic
+            title="指定分離高度"
+            suffix="m"
+            valueStyle={{ color: 'white' }}
+            value={separationAltitude}
+          />
         </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="a">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="m"
-            value={standbySeparationAltitude}
-            onChange={(event) =>
-              setStandbySeparationAltitude(event.target.value)
-            }
+        <Col span={12}>
+          <Statistic
+            title="基準気圧"
+            suffix="hPa"
+            valueStyle={{ color: 'white' }}
+            value={basePrassure}
           />
         </Col>
       </Row>
-      <Divider>基準気圧</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="hPa" readOnly value={activeBasePrassure} />
+      <Row style={{ marginTop: '12px' }}>
+        <Col span={12}>
+          <Statistic
+            title="想定燃焼時間"
+            suffix="sec"
+            valueStyle={{ color: 'white' }}
+            value={burnTime}
+          />
         </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="p">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="hPa"
-            value={standbyBasePrassure}
-            onChange={(event) => setStandbyBasePressure(event.target.value)}
+        <Col span={12}>
+          <Statistic
+            title="分離保護時間"
+            suffix="sec"
+            valueStyle={{ color: 'white' }}
+            value={separationProtection}
           />
         </Col>
       </Row>
-      <Divider>想定燃焼時間</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="sec" readOnly value={activeBurnTime} />
+      <Row style={{ marginTop: '12px' }}>
+        <Col span={12}>
+          <Statistic
+            title="強制分離時間"
+            suffix="sec"
+            valueStyle={{ color: 'white' }}
+            value={forceSeparation}
+          />
         </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="b">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="sec"
-            value={standbyBurnTime}
-            onChange={(event) => setStandbyBurnTime(event.target.value)}
+        <Col span={12}>
+          <Statistic
+            title="想定着地時間"
+            suffix="sec"
+            valueStyle={{ color: 'white' }}
+            value={landingTime}
           />
         </Col>
       </Row>
-      <Divider>分離保護時間</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="sec" readOnly value={activeSeparationProtection} />
-        </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="sp">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="sec"
-            value={standbySeparationProtection}
-            onChange={(event) =>
-              setStandbySeparationProtection(event.target.value)
-            }
-          />
-        </Col>
-      </Row>
-      <Divider>強制分離時間</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="sec" readOnly value={activeForceSeparation} />
-        </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="fs">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="sec"
-            value={standbyForceSeparation}
-            onChange={(event) => setStandbyForceSeparation(event.target.value)}
-          />
-        </Col>
-      </Row>
-      <Divider>想定着地時間</Divider>
-      <Row gutter={8} wrap={false} align="middle">
-        <Col flex="auto">
-          <Input addonAfter="sec" readOnly value={activeLandingTime} />
-        </Col>
-        <Col>
-          <Button type="primary" onClick={sendConfig} data-num="l">
-            <FaArrowLeft />
-          </Button>
-        </Col>
-        <Col flex="auto">
-          <Input
-            addonAfter="sec"
-            value={standbyLandingTime}
-            onChange={(event) => setStandbyLandingTime(event.target.value)}
-          />
-        </Col>
-      </Row>
+      <div style={{ display: 'flex', marginTop: '24px' }}>
+        <Select
+          onSelect={selectLabel}
+          style={{ width: '300px' }}
+          options={[
+            { value: 'a', label: '指定分離高度' },
+            { value: 'p', label: '基準気圧' },
+            { value: 'b', label: '想定燃焼時間' },
+            { value: 'sp', label: '分離保護時間' },
+            { value: 'fs', label: '強制分離時間' },
+            { value: 'l', label: '想定着地時' },
+          ]}
+        />
+        <Input
+          onChange={(event) => setValue(event.target.value)}
+          addonAfter={units[selectedLabel]}
+          style={{ height: '32px' }}
+        />
+        <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
+          <FaTelegramPlane size={24} />
+        </Button>
+      </div>
     </Card>
   );
 };

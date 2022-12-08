@@ -20,7 +20,8 @@ body {
   color: white !important;
 
   .ant-select-selector {
-    background-color: #202225 !important;
+    background-color: #40444b !important;
+    border-radius: 0 !important;
     border: 0 !important;
 
     .ant-select-selection-placeholder {
@@ -34,14 +35,16 @@ body {
 }
 
 .ant-input {
+  height: 32px;
   color: white !important;
   background-color: #40444b !important;
+  border-radius: 0 !important;
   border: 0 !important;
 }
 
 .ant-input-group-addon {
   color: #b9bbbe !important;
-  background-color: #36393f !important;
+  background-color: #40444b !important;
   border: 0 !important;
 }
 
@@ -49,6 +52,7 @@ body {
   color: white;
   background-color: transparent;
   width: 100%;
+  border-radius: 0 !important;
 }
 
 .ant-btn-primary {

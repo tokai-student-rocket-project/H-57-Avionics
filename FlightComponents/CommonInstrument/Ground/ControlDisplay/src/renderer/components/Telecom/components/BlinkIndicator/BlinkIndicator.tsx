@@ -44,12 +44,11 @@ const BlinkIndicator = () => {
     });
 
     return () => {
-      window.electronAPI.remove('config-sended');
       window.electronAPI.remove('flight-data-recieved');
       window.electronAPI.remove('config-recieved');
       window.electronAPI.remove('status-recieved');
+      window.electronAPI.remove('rssi-recieved');
       window.electronAPI.remove('teremetry-recieved');
-      window.electronAPI.remove('event-recieved');
     };
   }, []);
 
