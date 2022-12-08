@@ -2,7 +2,7 @@ import { Card } from 'antd';
 
 const AltitudeIndicator = () => {
   return (
-    <Card title="ALT INDCATOR" bordered={false} style={{ margin: '8px' }}>
+    <Card title="ALTITUDE INDCATOR" bordered={false} style={{ margin: '8px' }}>
       <div
         style={{
           height: '250px',
@@ -11,7 +11,7 @@ const AltitudeIndicator = () => {
           justifyContent: 'center',
         }}
       >
-        <span style={{ fontSize: '2em' }}>INOP</span>
+        <span style={{ fontSize: '2em' }}>COMING SOON</span>
       </div>
     </Card>
   );

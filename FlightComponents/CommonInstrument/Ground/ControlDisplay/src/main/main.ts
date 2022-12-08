@@ -71,11 +71,6 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         mainWindow?.webContents.send('config-recieved');
       }
 
-      if (dataObject.e) {
-        mainWindow?.webContents.send('event-recieved', dataObject.e as string);
-        mainWindow?.webContents.send('event-recieved');
-      }
-
       if (dataObject.t === 'r') {
         store.set('rssi', dataObject.rssi);
         mainWindow?.webContents.send('rssi-recieved');
