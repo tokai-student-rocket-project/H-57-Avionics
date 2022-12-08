@@ -2,7 +2,7 @@ import 'antd/dist/antd.css';
 import { Col, Layout, Row } from 'antd';
 import Status from './components/Status';
 import './App.css';
-import Config from './components/Config';
+import Config from './components/Config/Config';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
 import FlightMode from './components/FlightMode';
@@ -35,7 +35,16 @@ const App = () => {
       <Content>
         <Row>
           <Col span={8}>
-            <Telecom />
+            <Row>
+              <Col span={24}>
+                <Telecom />
+              </Col>
+            </Row>
+            <Row>
+              <Col span={24}>
+                <Config />
+              </Col>
+            </Row>
           </Col>
           <Col span={8}>
             <Row>
@@ -49,16 +58,11 @@ const App = () => {
               </Col>
             </Row>
           </Col>
-          <Col span={8}>
-            <Row>
-              <Col span={12}>
-                <Status />
-              </Col>
-              <Col span={12}>
-                <Valve />
-              </Col>
-            </Row>
-            <Config />
+          <Col span={4}>
+            <Status />
+          </Col>
+          <Col span={4}>
+            <Valve />
           </Col>
         </Row>
       </Content>
