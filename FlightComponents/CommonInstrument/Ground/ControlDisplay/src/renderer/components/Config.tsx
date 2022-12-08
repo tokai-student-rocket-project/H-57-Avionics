@@ -58,7 +58,7 @@ const Config = () => {
   };
 
   return (
-    <Card title="CONFIG" bordered={false} style={{ margin: '16px' }}>
+    <Card title="CONFIG" bordered={false} style={{ margin: '8px' }}>
       <Divider>指定分離高度</Divider>
       <Row gutter={8} wrap={false} align="middle">
         <Col flex="auto">

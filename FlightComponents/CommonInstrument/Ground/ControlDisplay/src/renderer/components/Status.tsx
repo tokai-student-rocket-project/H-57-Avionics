@@ -23,7 +23,7 @@ const Status = () => {
   }, []);
 
   return (
-    <Card title="STATUS" style={{ margin: '16px' }} bordered={false}>
+    <Card title="STATUS" style={{ margin: '8px' }} bordered={false}>
       <Descriptions
         style={{ marginTop: '24px' }}
         column={1}

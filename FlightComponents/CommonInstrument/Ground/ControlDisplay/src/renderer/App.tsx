@@ -10,7 +10,7 @@ import Telecom from './components/Telecom';
 import GPS from './components/GPS';
 import Valve from './components/Valve';
 import Wireframe from './components/Wireframe';
-import TimeLine from './components/TimeLine';
+import AltitudeIndicator from './components/AltitudeIndicator';
 
 const { Header, Content } = Layout;
 
@@ -37,17 +37,29 @@ const App = () => {
         <Row>
           <Col span={8}>
             <Telecom />
-            <GPS />
           </Col>
-          <Col span={4}>
-            <Wireframe />
-          </Col>
-          <Col span={4}>
-            <Status />
-            <Valve />
+          <Col span={8}>
+            <Row>
+              <Col span={24}>
+                <AltitudeIndicator />
+              </Col>
+            </Row>
+            <Row>
+              <Col span={24}>
+                <GPS />
+              </Col>
+            </Row>
           </Col>
           <Col span={8}>
             <Config />
+            <Row>
+              <Col span={12}>
+                <Status />
+              </Col>
+              <Col span={12}>
+                <Valve />
+              </Col>
+            </Row>
           </Col>
         </Row>
       </Content>

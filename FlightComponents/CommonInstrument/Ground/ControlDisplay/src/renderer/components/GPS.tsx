@@ -65,7 +65,7 @@ const GPS = () => {
     <Card
       title="GPS"
       bordered={false}
-      style={{ margin: '16px' }}
+      style={{ margin: '8px' }}
       extra={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaSatellite
