@@ -205,6 +205,8 @@ void writeLog() {
     flightData::_gyro_y_degps,
     flightData::_gyro_z_degps);
   Serial1.println(log);
+
+  Serial.println(internal::_descentDetector._descentCount);
 }
 
 
