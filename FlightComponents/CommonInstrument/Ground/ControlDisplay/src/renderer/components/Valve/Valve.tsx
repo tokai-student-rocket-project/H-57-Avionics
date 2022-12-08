@@ -1,14 +1,14 @@
 import { Card } from 'antd';
 import { useState, useEffect } from 'react';
-import mcsc from '../images/valve/mcsc.png';
-import mcsi from '../images/valve/mcsi.png';
-import mcso from '../images/valve/mcso.png';
-import misc from '../images/valve/misc.png';
-import misi from '../images/valve/misi.png';
-import miso from '../images/valve/miso.png';
-import mosc from '../images/valve/mosc.png';
-import mosi from '../images/valve/mosi.png';
-import moso from '../images/valve/moso.png';
+import mcsc from '../../images/valve/mcsc.png';
+import mcsi from '../../images/valve/mcsi.png';
+import mcso from '../../images/valve/mcso.png';
+import misc from '../../images/valve/misc.png';
+import misi from '../../images/valve/misi.png';
+import miso from '../../images/valve/miso.png';
+import mosc from '../../images/valve/mosc.png';
+import mosi from '../../images/valve/mosi.png';
+import moso from '../../images/valve/moso.png';
 
 const getValve = (
   mainServoDegrees: number,
