@@ -9,7 +9,6 @@ import FlightMode from './components/FlightMode';
 import Telecom from './components/Telecom';
 import GPS from './components/GPS';
 import Valve from './components/Valve';
-import Wireframe from './components/Wireframe';
 import AltitudeIndicator from './components/AltitudeIndicator';
 
 const { Header, Content } = Layout;
@@ -51,7 +50,6 @@ const App = () => {
             </Row>
           </Col>
           <Col span={8}>
-            <Config />
             <Row>
               <Col span={12}>
                 <Status />
@@ -60,6 +58,7 @@ const App = () => {
                 <Valve />
               </Col>
             </Row>
+            <Config />
           </Col>
         </Row>
       </Content>
