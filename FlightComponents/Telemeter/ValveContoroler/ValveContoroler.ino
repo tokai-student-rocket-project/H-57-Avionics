@@ -10,7 +10,10 @@ int SupplyServoPin = 6;
 float Supplyservo_deg;
 float Mainservo_deg;
 
-volatile int t = 0;
+constexpr int POSITION_CHANGING_THRESHOLD = 10;
+
+volatile int LCount = 0;
+volatile int WCount = 0;
 
 //StaticJsonDocument<32> ServoDeg;
 
@@ -30,12 +33,12 @@ void setup()
 
 void loop()
 {
-    if (t == 1)
-    {
-        t = 0;
+    if (LCount => POSITION_CHANGING_THRESHOLD) {
+        LCount = 0;
+
         L_Position();
         delay(300);
-        
+
         /*
         ServoDeg.clear();
         ServoDeg["mainservoDeg"] = String(Mainservo_deg, 2);
@@ -44,12 +47,12 @@ void loop()
         */
     }
 
-    if (t == 2)
-    {
-        t = 0;
+    if (WCount => POSITION_CHANGING_THRESHOLD) {
+        WCount = 0;
+
         W_Position();
         delay(300);
-        
+
         /*
         ServoDeg.clear();
         ServoDeg["mainservoDeg"] = String(Mainservo_deg, 2);
@@ -57,16 +60,20 @@ void loop()
         serializeJson(ServoDeg, Serial);
         */
     }
+
+    delay(10);
 }
 
 void L_SW()
 {
-    t = 1;
+    LCount++;
+    WCount = 0;
 }
 
 void W_SW()
 {
-    t = 2;
+    WCount++;
+    LCount = 0;
 }
 
 void L_Position()
