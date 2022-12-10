@@ -7,8 +7,9 @@ int LCount = 0;
 int WCount = 0;
 
 // 1: Waiting, 2: Launch
-int Position = 0;
+int Position = 1;
 
+// Servo設定
 VarSpeedServo Mainservo;
 VarSpeedServo Supplyservo;
 int MainServoPin = 5;
@@ -26,12 +27,15 @@ void setup()
 
     pinMode(2, INPUT_PULLUP);
     pinMode(3, INPUT_PULLUP);
+
+    Mainservo.write(0, 30, true);
+    Supplyservo.write(0, 30, true);
 }
 
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-    if (Position == 1 && digitalRead(2) == HIGH) {
+    if (Position == 1 && digitalRead(2) == LOW) {
         LCount++;
     } else {
         LCount = 0;
@@ -48,7 +52,7 @@ void loop()
 
     // 以下、WaitingとLaunchが逆になったバージョン
 
-    if (Position == 2 && digitalRead(3) == HIGH) {
+    if (Position == 2 && digitalRead(3) == LOW) {
         WCount++;
     } else {
         WCount = 0;
@@ -76,7 +80,6 @@ void L_Position()
     delay(1000);
     Mainservo.write(140, 30, true); //MainServo OPEN
     Mainservo_deg = Mainservo.read();
-    Serial.println("LUNCH");
 }
 
 void W_Position()
@@ -86,5 +89,4 @@ void W_Position()
     delay(1000);
     Mainservo.write(0, 30, true); //MainServo CLOSE
     Mainservo_deg = Mainservo.read();
-    Serial.println("WAITING");
 }
