@@ -3,9 +3,10 @@
 #include <LoRa.h>
 #include <ArduinoJson.h>
 #include <TaskManager.h>
-#include <movingAvg.h>
+// #include <movingAvg.h>
+// #include <MadgwickAHRS.h>
 #include "BME280Wrap.h"
-#include "MPU6050.h"
+#include "MPU6050Wrap.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
@@ -30,7 +31,7 @@ namespace device {
   BME280Wrap _bme280;
 
   // 加速度, 角速度センサ
-  MPU6050 _mpu6050;
+  // MPU6050Wrap _mpu6050;
 
   FlightPin _flightPin(2);
 
@@ -73,9 +74,16 @@ namespace internal {
   // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
   DescentDetector _descentDetector(0.35);
 
-  movingAvg _acceleration_x_avg_g(10);
-  movingAvg _acceleration_y_avg_g(10);
-  movingAvg _acceleration_z_avg_g(10);
+  // データ平滑化用
+  // movingAvg _acceleration_x_avg_g(10);
+  // movingAvg _acceleration_y_avg_g(10);
+  // movingAvg _acceleration_z_avg_g(10);
+  // movingAvg _gyro_x_avg_g(10);
+  // movingAvg _gyro_y_avg_g(10);
+  // movingAvg _gyro_z_avg_g(10);
+
+  // 姿勢角算出用
+  // Madgwick madgwick;
 }
 
 namespace flightData {
@@ -85,9 +93,12 @@ namespace flightData {
   float _acceleration_x_g;
   float _acceleration_y_g;
   float _acceleration_z_g;
-  float _gyro_x_degps;
-  float _gyro_y_degps;
-  float _gyro_z_degps;
+  // float _gyro_x_degps;
+  // float _gyro_y_degps;
+  // float _gyro_z_degps;
+  float _yaw;
+  float _pitch;
+  float _roll;
 }
 
 
@@ -100,9 +111,7 @@ void setup() {
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
 
-  device::_mpu6050.initialize();
-  // 加速度計測の分解能を指定。 FS16の場合は、出力を2048で割ると[G]になる
-  device::_mpu6050.setFullScaleAccelRange(MPU6050_ACCEL_FS_16);
+  // device::_mpu6050.initialize();
 
   device::_flightPin.initialize();
   device::_commandIndicator.initialize();
@@ -112,9 +121,14 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  internal::_acceleration_x_avg_g.begin();
-  internal::_acceleration_y_avg_g.begin();
-  internal::_acceleration_z_avg_g.begin();
+  // internal::_acceleration_x_avg_g.begin();
+  // internal::_acceleration_y_avg_g.begin();
+  // internal::_acceleration_z_avg_g.begin();
+  // internal::_gyro_x_avg_g.begin();
+  // internal::_gyro_y_avg_g.begin();
+  // internal::_gyro_z_avg_g.begin();
+
+  // internal::madgwick.begin(25);
 
   Tasks.add([]{
     device::_flightPin.update();
@@ -153,10 +167,6 @@ void setup() {
   downlinkEvent("INITIALIZED");
 
   reset();
-
-  Serial.print("x"); Serial.print(",");
-  Serial.print("y"); Serial.print(",");
-  Serial.println("z");
 }
 
 
@@ -173,19 +183,47 @@ void updateFlightData() {
 
   internal::_descentDetector.updateAltitude(flightData::_altitude_m);
   
-  int16_t ax, ay, az, gx, gy, gz;
-  device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  // int16_t ax, ay, az, gx, gy, gz;
+  // device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-  flightData::_acceleration_x_g =
-    internal::_acceleration_x_avg_g.reading(ax) / 2048.0;
-  flightData::_acceleration_y_g =
-    internal::_acceleration_y_avg_g.reading(ay) / 2048.0;
-  flightData::_acceleration_z_g =
-    internal::_acceleration_z_avg_g.reading(az) / 2048.0;
+  // flightData::_acceleration_x_g =
+  //   internal::_acceleration_x_avg_g.reading(ax) / 2048.0;
+  // flightData::_acceleration_y_g =
+  //   internal::_acceleration_y_avg_g.reading(ay) / 2048.0;
+  // flightData::_acceleration_z_g =
+  //   internal::_acceleration_z_avg_g.reading(az) / 2048.0;
 
-  flightData::_gyro_x_degps = gx / 16.4;
-  flightData::_gyro_y_degps = gy / 16.4;
-  flightData::_gyro_z_degps = gz / 16.4;
+  // flightData::_gyro_x_degps =
+  //   internal::_gyro_x_avg_g.reading(gx) / 131.0;
+  // flightData::_gyro_y_degps =
+  //   internal::_gyro_y_avg_g.reading(gy) / 131.0;
+  // flightData::_gyro_z_degps =
+  //   internal::_gyro_z_avg_g.reading(gz) / 131.0;
+
+  // internal::madgwick.updateIMU(
+  //   gx / 131.0,
+  //   gy / 131.0,
+  //   gz / 131.0,
+  //   ax / 2048.0,
+  //   ay / 2048.0,
+  //   az / 2048.0
+  // );
+
+  // flightData::_yaw = internal::madgwick.getYaw();
+  // flightData::_pitch = internal::madgwick.getPitch();
+  // flightData::_roll = internal::madgwick.getRoll();
+
+  // device::_mpu6050.update();
+  // flightData::_acceleration_x_g = device::_mpu6050.getAccelerationX();
+  // flightData::_acceleration_y_g = device::_mpu6050.getAccelerationY();
+  // flightData::_acceleration_z_g = device::_mpu6050.getAccelerationZ();
+  // flightData::_yaw = device::_mpu6050.getYaw();
+  // flightData::_pitch = device::_mpu6050.getPitch();
+  // flightData::_roll = device::_mpu6050.getRoll();
+
+  Serial.print(flightData::_yaw); Serial.print(",");
+  Serial.print(flightData::_pitch); Serial.print(",");
+  Serial.println(flightData::_roll);
 }
 
 
@@ -204,7 +242,7 @@ void writeLog() {
   // <不知火3の状態>,<ブザーの状態>,
   // <高度[m]>,<降下検出数>,
   // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
-  // <角速度X[rad/s]>,<角速度Y[rad/s]>,<角速度Z[rad/s]>\n
+  // <ヨー角[deg]>,<ピッチ角[deg]>,<ロール角[deg]>\n
 
   if (!isFlying()) return;
 
@@ -219,9 +257,9 @@ void writeLog() {
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g,
-    flightData::_gyro_x_degps,
-    flightData::_gyro_y_degps,
-    flightData::_gyro_z_degps);
+    flightData::_yaw,
+    flightData::_pitch,
+    flightData::_roll);
   Serial1.println(log);
 }
 
