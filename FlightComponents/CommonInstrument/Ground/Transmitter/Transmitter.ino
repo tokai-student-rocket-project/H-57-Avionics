@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 
 
-StaticJsonDocument<256> packet;
+StaticJsonDocument<512> packet;
 
 
 void setup() {

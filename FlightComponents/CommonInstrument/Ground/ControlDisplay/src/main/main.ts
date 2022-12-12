@@ -41,6 +41,7 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
   serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
+    console.log(data);
     try {
       const dataObject = JSON.parse(data);
 
@@ -58,6 +59,10 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         store.set('acceleration-x', dataObject.ax);
         store.set('acceleration-y', dataObject.ay);
         store.set('acceleration-z', dataObject.az);
+        store.set('yaw', dataObject.y);
+        store.set('pitch', dataObject.p);
+        store.set('roll', dataObject.r);
+        store.set('speed', dataObject.s);
         mainWindow?.webContents.send('flight-data-recieved');
       }
 

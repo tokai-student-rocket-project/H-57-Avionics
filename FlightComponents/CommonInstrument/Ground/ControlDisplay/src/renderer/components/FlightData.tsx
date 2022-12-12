@@ -11,43 +11,14 @@ const getColor = (mode: string, isAccent: boolean) => {
 
 const FlightData = () => {
   const [altitude, setAltitude] = useState<string>('0.0');
-  const [speed, setSpeed] = useState<string>('0.00');
-
-  const [oldTime, setOldTime] = useState<number>(0);
+  const [speed, setSpeed] = useState<string>('0.0');
 
   const [flightMode, setFlightMode] = useState<string>('');
-
-  const accelerationToSpeed = (
-    accelerationX: number,
-    accelerationY: number,
-    accelerationZ: number,
-    deltaTime: number,
-    oldSpeed: number
-  ): number => {
-    const deltaSpeed =
-      Math.sqrt(
-        accelerationX * accelerationX +
-          accelerationY * accelerationY +
-          accelerationZ * accelerationZ
-      ) * deltaTime;
-
-    return oldSpeed + deltaSpeed;
-  };
 
   useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
       setAltitude(window.electronAPI.store.get('altitude'));
-      setSpeed(
-        accelerationToSpeed(
-          Number(window.electronAPI.store.get('acceleration-x')) * 9.8,
-          Number(window.electronAPI.store.get('acceleration-y')) * 9.8,
-          (Number(window.electronAPI.store.get('acceleration-z')) - 1.0) * 9.8,
-          Number(window.electronAPI.store.get('flight-time')) - oldTime,
-          Number(speed)
-        ).toFixed(2)
-      );
-
-      setOldTime(Number(window.electronAPI.store.get('flight-time')));
+      setSpeed(window.electronAPI.store.get('speed'));
     });
 
     window.electronAPI.statusRecieved(() => {

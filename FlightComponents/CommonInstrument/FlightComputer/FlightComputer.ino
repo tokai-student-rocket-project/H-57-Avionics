@@ -6,13 +6,15 @@
 #include "BME280Wrap.h"
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
+#include <movingAvg.h>
+#include "Velocity.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
 
 
-StaticJsonDocument<256> upPacket;
-StaticJsonDocument<256> downPacket;
+StaticJsonDocument<512> upPacket;
+StaticJsonDocument<512> downPacket;
 
 
 enum class FlightMode {
@@ -75,6 +77,12 @@ namespace internal {
 
   // 姿勢角算出用のフィルタ
   Madgwick _madgwickFilter;
+
+  // 速度算出用
+  Velocity _velocity;
+  movingAvg _acceleration_x_average_g(50);
+  movingAvg _acceleration_y_average_g(50);
+  movingAvg _acceleration_z_average_g(50);
 }
 
 namespace flightData {
@@ -87,6 +95,7 @@ namespace flightData {
   float _yaw;
   float _pitch;
   float _roll;
+  float _speed_mps;
 }
 
 
@@ -115,6 +124,11 @@ void setup() {
   device::_mpu6050.setYGyroOffset(40);
 
   internal::_madgwickFilter.begin(100);
+
+  internal::_velocity.initialize();
+  internal::_acceleration_x_average_g.begin();
+  internal::_acceleration_y_average_g.begin();
+  internal::_acceleration_z_average_g.begin();
 
   device::_flightPin.initialize();
   device::_commandIndicator.initialize();
@@ -194,6 +208,14 @@ void updateFlightData() {
   flightData::_yaw = internal::_madgwickFilter.getYaw();
   flightData::_pitch = internal::_madgwickFilter.getPitch();
   flightData::_roll = internal::_madgwickFilter.getRoll();
+
+  flightData::_speed_mps = internal::_velocity.getSpeed(
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g,
+    internal::_acceleration_x_average_g.reading(ax) / 2048.0,
+    internal::_acceleration_y_average_g.reading(ay) / 2048.0,
+    internal::_acceleration_z_average_g.reading(az) / 2048.0);
 }
 
 
@@ -212,12 +234,12 @@ void writeLog() {
   // <不知火3の状態>,<ブザーの状態>,
   // <高度[m]>,<降下検出数>,
   // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
-  // <ヨー角[deg]>,<ピッチ角[deg]>,<ロール角[deg]>\n
+  // <ヨー角[deg]>,<ピッチ角[deg]>,<ロール角[deg]>,<速度[m/s]>\n
 
   if (!isFlying()) return;
 
   char log[256];
-  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
     (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<uint8_t>(internal::_flightMode),
     device::_shiranui3.getState() ? 1 : 0,
@@ -229,7 +251,8 @@ void writeLog() {
     flightData::_acceleration_z_g,
     flightData::_yaw,
     flightData::_pitch,
-    flightData::_roll);
+    flightData::_roll,
+    flightData::_speed_mps);
   Serial1.println(log);
 }
 
@@ -269,11 +292,15 @@ void writeStatusToDownPacket() {
 void writeFlightDataToDownPacket() {
   // パケット構造
   // {
-  //   "ft": "<飛行時間[s]>",     ... ft->FlightTime
-  //   "alt": "<高度[m]>",        ... alt->Altitude
-  //   "ax": "<加速度X[G]>",      ... ax->AccelerationX
-  //   "ay": "<加速度Y[G]>",      ... ay->AccelerationY
-  //   "az": "<加速度Z[G]>"       ... az->AccelerationZ
+  //   "ft": "<飛行時間[s]>",              ... ft->FlightTime
+  //   "alt": "<高度[m]>",                 ... alt->Altitude
+  //   "ax": "<加速度X[G]>",               ... ax->AccelerationX
+  //   "ay": "<加速度Y[G]>",               ... ay->AccelerationY
+  //   "az": "<加速度Z[G]>",               ... az->AccelerationZ
+  //   "y": "<ヨー角[deg]>",               ... y->yaw
+  //   "p" : "<ピッチ角[deg]>",            ... p->pitch
+  //   "r" : "<ロール角[deg]>",            ... r->roll
+  //   "s" : "<スピード[m/s]>"             ... s->speed
   // }
 
   if (!isFlying()) return;
@@ -283,6 +310,10 @@ void writeFlightDataToDownPacket() {
   downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
   downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
   downPacket["az"] = String(flightData::_acceleration_z_g, 2);
+  downPacket["y"] = String(flightData::_yaw, 2);
+  downPacket["p"] = String(flightData::_pitch, 2);
+  downPacket["r"] = String(flightData::_roll, 2);
+  downPacket["s"] = String(flightData::_speed_mps, 2);
 }
 
 
