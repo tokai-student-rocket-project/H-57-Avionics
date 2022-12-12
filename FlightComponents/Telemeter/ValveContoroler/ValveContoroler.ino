@@ -25,8 +25,8 @@ void setup()
     Mainservo.attach(MainServoPin);
     Supplyservo.attach(SupplyServoPin);
 
-    pinMode(2, INPUT_PULLUP);
-    pinMode(3, INPUT_PULLUP);
+    pinMode(2, INPUT_PULLUP); //WAITING
+    pinMode(3, INPUT_PULLUP); //LUNCH
 
     Mainservo.write(0, 30, true);
     Supplyservo.write(0, 30, true);
