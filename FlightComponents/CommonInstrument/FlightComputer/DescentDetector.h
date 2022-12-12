@@ -17,7 +17,7 @@ public:
   bool _isDescending;
 
   uint16_t _descentCount;
-  
+
 private:
   /// @brief メートルで指定。この値以上に減少しないと降下にならない
   const float DESCENT_DIFFERENT = 0.0;

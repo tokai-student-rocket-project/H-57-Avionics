@@ -3,10 +3,9 @@
 #include <LoRa.h>
 #include <ArduinoJson.h>
 #include <TaskManager.h>
-// #include <movingAvg.h>
-// #include <MadgwickAHRS.h>
 #include "BME280Wrap.h"
-#include "MPU6050Wrap.h"
+#include <MPU6050.h>
+#include <MadgwickAHRS.h>
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
@@ -31,7 +30,7 @@ namespace device {
   BME280Wrap _bme280;
 
   // 加速度, 角速度センサ
-  // MPU6050Wrap _mpu6050;
+  MPU6050 _mpu6050;
 
   FlightPin _flightPin(2);
 
@@ -74,16 +73,8 @@ namespace internal {
   // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
   DescentDetector _descentDetector(0.35);
 
-  // データ平滑化用
-  // movingAvg _acceleration_x_avg_g(10);
-  // movingAvg _acceleration_y_avg_g(10);
-  // movingAvg _acceleration_z_avg_g(10);
-  // movingAvg _gyro_x_avg_g(10);
-  // movingAvg _gyro_y_avg_g(10);
-  // movingAvg _gyro_z_avg_g(10);
-
-  // 姿勢角算出用
-  // Madgwick madgwick;
+  // 姿勢角算出用のフィルタ
+  Madgwick _madgwickFilter;
 }
 
 namespace flightData {
@@ -93,9 +84,6 @@ namespace flightData {
   float _acceleration_x_g;
   float _acceleration_y_g;
   float _acceleration_z_g;
-  // float _gyro_x_degps;
-  // float _gyro_y_degps;
-  // float _gyro_z_degps;
   float _yaw;
   float _pitch;
   float _roll;
@@ -111,7 +99,22 @@ void setup() {
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
 
-  // device::_mpu6050.initialize();
+  device::_mpu6050.initialize();
+  // +-16[G]。2048[LBS/G]
+  device::_mpu6050.setFullScaleAccelRange(MPU6050_IMU::ACCEL_FS::MPU6050_ACCEL_FS_16);
+  // +-2000[deg/s]。16.4[LBS/(deg/s)]
+  device::_mpu6050.setFullScaleGyroRange(MPU6050_IMU::GYRO_FS::MPU6050_GYRO_FS_2000);
+  device::_mpu6050.CalibrateAccel();
+  device::_mpu6050.CalibrateGyro();
+  // センサ固有のオフセット。mpu6050ライブラリのIMU_ZEROから求める
+  device::_mpu6050.setXAccelOffset(-1665);
+  device::_mpu6050.setYAccelOffset(-507);
+  device::_mpu6050.setZAccelOffset(1331);
+  device::_mpu6050.setXGyroOffset(13);
+  device::_mpu6050.setYGyroOffset(17);
+  device::_mpu6050.setYGyroOffset(40);
+
+  internal::_madgwickFilter.begin(100);
 
   device::_flightPin.initialize();
   device::_commandIndicator.initialize();
@@ -121,52 +124,43 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  // internal::_acceleration_x_avg_g.begin();
-  // internal::_acceleration_y_avg_g.begin();
-  // internal::_acceleration_z_avg_g.begin();
-  // internal::_gyro_x_avg_g.begin();
-  // internal::_gyro_y_avg_g.begin();
-  // internal::_gyro_z_avg_g.begin();
-
-  // internal::madgwick.begin(25);
-
-  Tasks.add([]{
+  Tasks.add([] {
     device::_flightPin.update();
-    updateFlightData();
-    updateIndicators();
-    updateFlightMode();
-    receiveCommand();
-    writeLog();
+  updateFlightData();
+  updateIndicators();
+  updateFlightMode();
+  receiveCommand();
+  writeLog();
 
-    if (canReset()) {
-      reset();
-      changeFlightMode(FlightMode::STANDBY);
-      downlinkEvent("RESET");
-    }
+  if (canReset()) {
+    reset();
+    changeFlightMode(FlightMode::STANDBY);
+    downlinkEvent("RESET");
+  }
 
-    if (canSeparateForce()) {
-      separate();
-      changeFlightMode(FlightMode::PARACHUTE);
-      downlinkEvent("FORCE-SEPARATED");
-    }
-  })->startFps(100);
+  if (canSeparateForce()) {
+    separate();
+    changeFlightMode(FlightMode::PARACHUTE);
+    downlinkEvent("FORCE-SEPARATED");
+  }
+    })->startFps(100);
 
-  Tasks.add([]{
-    writeStatusToDownPacket();
+    Tasks.add([] {
+      writeStatusToDownPacket();
     writeFlightDataToDownPacket();
     writeConfigToDownPacket();
     sendDownPacket();
-  })->startFps(2);
+      })->startFps(2);
 
-  // separate関数で使うタスク
-  Tasks.add("TurnOffShiranui3TurnOnBuzzer", []{    
-    device::_shiranui3.off();
-    device::_buzzer.on();
-  });
+      // separate関数で使うタスク
+      Tasks.add("TurnOffShiranui3TurnOnBuzzer", [] {
+        device::_shiranui3.off();
+      device::_buzzer.on();
+        });
 
-  downlinkEvent("INITIALIZED");
+      downlinkEvent("INITIALIZED");
 
-  reset();
+      reset();
 }
 
 
@@ -178,52 +172,28 @@ void loop() {
 /// @brief センサ類から各種データを読み出す
 void updateFlightData() {
   flightData::_temperature_degT = device::_bme280.getTemperature();
-  flightData::_pressure_Pa      = device::_bme280.getPressure();
-  flightData::_altitude_m       = device::_bme280.getAltitude();
+  flightData::_pressure_Pa = device::_bme280.getPressure();
+  flightData::_altitude_m = device::_bme280.getAltitude();
 
   internal::_descentDetector.updateAltitude(flightData::_altitude_m);
-  
-  // int16_t ax, ay, az, gx, gy, gz;
-  // device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-  // flightData::_acceleration_x_g =
-  //   internal::_acceleration_x_avg_g.reading(ax) / 2048.0;
-  // flightData::_acceleration_y_g =
-  //   internal::_acceleration_y_avg_g.reading(ay) / 2048.0;
-  // flightData::_acceleration_z_g =
-  //   internal::_acceleration_z_avg_g.reading(az) / 2048.0;
+  int16_t ax, ay, az, gx, gy, gz;
+  device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  flightData::_acceleration_x_g = ax / 2048.0;
+  flightData::_acceleration_y_g = ay / 2048.0;
+  flightData::_acceleration_z_g = az / 2048.0;
 
-  // flightData::_gyro_x_degps =
-  //   internal::_gyro_x_avg_g.reading(gx) / 131.0;
-  // flightData::_gyro_y_degps =
-  //   internal::_gyro_y_avg_g.reading(gy) / 131.0;
-  // flightData::_gyro_z_degps =
-  //   internal::_gyro_z_avg_g.reading(gz) / 131.0;
+  internal::_madgwickFilter.updateIMU(
+    gx / 16.4,
+    gy / 16.4,
+    gz / 16.4,
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g);
 
-  // internal::madgwick.updateIMU(
-  //   gx / 131.0,
-  //   gy / 131.0,
-  //   gz / 131.0,
-  //   ax / 2048.0,
-  //   ay / 2048.0,
-  //   az / 2048.0
-  // );
-
-  // flightData::_yaw = internal::madgwick.getYaw();
-  // flightData::_pitch = internal::madgwick.getPitch();
-  // flightData::_roll = internal::madgwick.getRoll();
-
-  // device::_mpu6050.update();
-  // flightData::_acceleration_x_g = device::_mpu6050.getAccelerationX();
-  // flightData::_acceleration_y_g = device::_mpu6050.getAccelerationY();
-  // flightData::_acceleration_z_g = device::_mpu6050.getAccelerationZ();
-  // flightData::_yaw = device::_mpu6050.getYaw();
-  // flightData::_pitch = device::_mpu6050.getPitch();
-  // flightData::_roll = device::_mpu6050.getRoll();
-
-  Serial.print(flightData::_yaw); Serial.print(",");
-  Serial.print(flightData::_pitch); Serial.print(",");
-  Serial.println(flightData::_roll);
+  flightData::_yaw = internal::_madgwickFilter.getYaw();
+  flightData::_pitch = internal::_madgwickFilter.getPitch();
+  flightData::_roll = internal::_madgwickFilter.getRoll();
 }
 
 
@@ -304,7 +274,6 @@ void writeFlightDataToDownPacket() {
   //   "ax": "<加速度X[G]>",      ... ax->AccelerationX
   //   "ay": "<加速度Y[G]>",      ... ay->AccelerationY
   //   "az": "<加速度Z[G]>"       ... az->AccelerationZ
-  
   // }
 
   if (!isFlying()) return;
@@ -358,7 +327,7 @@ void sendDownPacket() {
 /// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY
-      && internal::_flightMode != FlightMode::LAND;
+    && internal::_flightMode != FlightMode::LAND;
 }
 
 
@@ -366,7 +335,7 @@ bool isFlying() {
 /// @return True: 燃焼終了, False: 燃焼終了でない
 bool isBurnout() {
   return internal::_flightMode == FlightMode::THRUST
-      && millis() > internal::_launchTime_ms + config::burn_time_ms;
+    && millis() > internal::_launchTime_ms + config::burn_time_ms;
 }
 
 
@@ -374,8 +343,8 @@ bool isBurnout() {
 /// @return True: 着地, False: 着地でない
 bool isLanded() {
   return isFlying()
-      && internal::_flightMode != FlightMode::LAND
-      && millis() > internal::_launchTime_ms + config::landing_time_ms;
+    && internal::_flightMode != FlightMode::LAND
+    && millis() > internal::_launchTime_ms + config::landing_time_ms;
 }
 
 
@@ -383,7 +352,7 @@ bool isLanded() {
 /// @return True: 実行可能, False: 実行不可能
 bool canReset() {
   return internal::_flightMode != FlightMode::STANDBY
-      && !device::_flightPin.isReleased();
+    && !device::_flightPin.isReleased();
 }
 
 
@@ -391,8 +360,8 @@ bool canReset() {
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparate() {
   return internal::_flightMode == FlightMode::DESCENT
-      && millis() > internal::_launchTime_ms + config::separation_protection_time_ms
-      && flightData::_altitude_m <= config::separation_altitude_m;
+    && millis() > internal::_launchTime_ms + config::separation_protection_time_ms
+    && flightData::_altitude_m <= config::separation_altitude_m;
 }
 
 
@@ -400,8 +369,8 @@ bool canSeparate() {
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparateForce() {
   return isFlying()
-      && internal::_flightMode != FlightMode::PARACHUTE
-      && millis() > internal::_launchTime_ms + config::force_separation_time_ms;
+    && internal::_flightMode != FlightMode::PARACHUTE
+    && millis() > internal::_launchTime_ms + config::force_separation_time_ms;
 }
 
 
@@ -424,41 +393,41 @@ void reset() {
 /// @brief 状況に応じてフライトモードを進める
 void updateFlightMode() {
   switch (internal::_flightMode) {
-    case FlightMode::STANDBY:
-      if (device::_flightPin.isReleased()) {
-        internal::_launchTime_ms = millis();
-        changeFlightMode(FlightMode::THRUST);
-        downlinkEvent("LAUNCHED");
-      };
-      break;
+  case FlightMode::STANDBY:
+    if (device::_flightPin.isReleased()) {
+      internal::_launchTime_ms = millis();
+      changeFlightMode(FlightMode::THRUST);
+      downlinkEvent("LAUNCHED");
+    };
+    break;
 
-    case FlightMode::THRUST:
-      if (isBurnout()) {
-        changeFlightMode(FlightMode::CLIMB);
-        downlinkEvent("BURNOUT");
-      }
-      break;
+  case FlightMode::THRUST:
+    if (isBurnout()) {
+      changeFlightMode(FlightMode::CLIMB);
+      downlinkEvent("BURNOUT");
+    }
+    break;
 
-    case FlightMode::CLIMB:
-      if (internal::_descentDetector._isDescending) {
-        changeFlightMode(FlightMode::DESCENT);
-        downlinkEvent("DESCENT");
-      }
-      break;
+  case FlightMode::CLIMB:
+    if (internal::_descentDetector._isDescending) {
+      changeFlightMode(FlightMode::DESCENT);
+      downlinkEvent("DESCENT");
+    }
+    break;
 
-    case FlightMode::DESCENT:
-      if (canSeparate()) {
-        separate();
-        changeFlightMode(FlightMode::PARACHUTE);
-        downlinkEvent("SEPARATED");
-      }
-      break;
+  case FlightMode::DESCENT:
+    if (canSeparate()) {
+      separate();
+      changeFlightMode(FlightMode::PARACHUTE);
+      downlinkEvent("SEPARATED");
+    }
+    break;
 
-    case FlightMode::PARACHUTE:
-      if (isLanded()) {
-        changeFlightMode(FlightMode::LAND);
-        downlinkEvent("LANDED");
-      }
+  case FlightMode::PARACHUTE:
+    if (isLanded()) {
+      changeFlightMode(FlightMode::LAND);
+      downlinkEvent("LANDED");
+    }
   }
 }
 
@@ -486,22 +455,27 @@ void receiveCommand() {
 
   if (upPacket["t"] == "c") {
     if (upPacket["l"] == "a") {
-      config::separation_altitude_m = 
+      config::separation_altitude_m =
         upPacket["v"].as<double>() ? (double)upPacket["v"] : config::DEFAULT_SEPARATION_ALTITUDE_m;
-    } else if (upPacket["l"] == "p") {
+    }
+    else if (upPacket["l"] == "p") {
       device::_bme280.setReferencePressure(
         upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    } else if (upPacket["l"] == "b") {
-      config::burn_time_ms = 
+    }
+    else if (upPacket["l"] == "b") {
+      config::burn_time_ms =
         upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_BURN_TIME_ms;
-    } else if (upPacket["l"] == "sp") {
-      config::separation_protection_time_ms = 
+    }
+    else if (upPacket["l"] == "sp") {
+      config::separation_protection_time_ms =
         upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
-    } else if (upPacket["l"] == "fs") {
-      config::force_separation_time_ms = 
+    }
+    else if (upPacket["l"] == "fs") {
+      config::force_separation_time_ms =
         upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
-    } else if (upPacket["l"] == "l") {
-      config::landing_time_ms = 
+    }
+    else if (upPacket["l"] == "l") {
+      config::landing_time_ms =
         upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
     }
 

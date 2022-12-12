@@ -28,7 +28,8 @@ void TwoStateDevice::off() {
 void TwoStateDevice::setState(bool state) {
   if (state) {
     on();
-  } else {
+  }
+  else {
     off();
   }
 }
