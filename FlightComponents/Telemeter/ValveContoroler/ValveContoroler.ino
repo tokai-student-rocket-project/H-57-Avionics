@@ -12,12 +12,14 @@ int Position = 1;
 // Servo設定
 VarSpeedServo Mainservo;
 VarSpeedServo Supplyservo;
-int MainServoPin = 5;
-int SupplyServoPin = 6;
+int MainServoPin = 5; //Uno
+//int MainServoPin = 5; //Nano
+int SupplyServoPin = 6; //Uno
+//int SupplyServoPin = 6; //Nano
 float Supplyservo_deg;
 float Mainservo_deg;
 
-StaticJsonDocument<32> ServoDeg;
+StaticJsonDocument<64> ServoDeg;
 
 void setup()
 {
@@ -68,6 +70,7 @@ void loop()
 
     ServoDeg["mainservoDeg"] = String(Mainservo_deg, 2);
     ServoDeg["supplyservoDeg"] = String(Supplyservo_deg, 2);
+    Serial.println();
     serializeJson(ServoDeg, Serial);
 
     delay(10);
