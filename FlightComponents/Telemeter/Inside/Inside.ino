@@ -12,27 +12,21 @@
 #include <Servo.h>
 #include <ArduinoJson.h>
 
-// サーボの設定
-// Servo mainservo;
-// Servo supplyservo;
-float supplyservo_deg;
-float mainservo_deg;
-// int supply_min_deg = 0;
-// int supply_max_deg = 90;
-//  int main_min_deg = 0;
-//  int main_max_deg = 140;
-
 // GPSの設定
 float latitude;
 float longitude;
 float altitude;
 float speed;
 float satellites;
+float variation;
+float course;
 unsigned long Time;
 
 // Arduinojsonの設定
 StaticJsonDocument<1024> downPacket_tlm;
 StaticJsonDocument<256> servoPacket;
+float supplyservo_deg;
+float mainservo_deg;
 
 // LoRa addressの設定? <=2022/11/18時点では不明瞭
 byte localAddress = 0xBB; // address of this device
@@ -93,6 +87,8 @@ void loop()
     speed = GPS.speed();
     satellites = GPS.satellites();
     Time = GPS.getTime();
+    variation = GPS.variation();
+    course = GPS.course();
 
     downlinkFlightData_tlm();
 
@@ -117,6 +113,8 @@ void downlinkFlightData_tlm()
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
         downPacket_tlm["epochTime"] = String(Time, 10);
+        downPacket_tlm["variation"] = String(variation, 6);
+        downPacket_tlm["course"] = String(course, 6);
         downPacket_tlm["mainservoDeg"] = String(mainservo_deg, 1);
         downPacket_tlm["supplyservoDeg"] = String(supplyservo_deg, 1);
 
