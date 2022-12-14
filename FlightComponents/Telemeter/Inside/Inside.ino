@@ -103,10 +103,9 @@ void loop()
 
 void downlinkFlightData_tlm()
 {
-    /*
     if (!LoRa.begin(923E6))
         return;
-        */
+        
 
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
