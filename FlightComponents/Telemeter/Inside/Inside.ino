@@ -66,6 +66,7 @@ void setup()
     // 　状態確認用LED
     //  PinMode(PIN, OUTPUT);
     //  PinMode(PIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
@@ -110,8 +111,8 @@ void downlinkFlightData_tlm()
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
+        digitalWrite(LED_BUILTIN, LOW);
         downPacket_tlm.clear();
-        // downPacket_tlm["sensor"] = "gps";
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
         downPacket_tlm["satellites"] = String(satellites, 1);
@@ -125,6 +126,8 @@ void downlinkFlightData_tlm()
 
         Serial.println();
         serializeJson(downPacket_tlm, Serial);
+        
+        digitalWrite(LED_BUILTIN, HIGH);
         prev_SEND = curr_SEND;
     }
 }
