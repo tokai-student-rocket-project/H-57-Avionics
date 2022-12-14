@@ -85,6 +85,7 @@ void loop()
         // Create and send LoRa packet
         downlinkFlightData_tlm();
     }*/
+    GPS.available();
     latitude = GPS.latitude();
     longitude = GPS.longitude();
     altitude = GPS.altitude();
@@ -104,7 +105,7 @@ void downlinkFlightData_tlm()
     /*
     if (!LoRa.begin(923E6))
         return;
-*/
+        */
 
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
