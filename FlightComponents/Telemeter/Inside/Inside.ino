@@ -9,7 +9,6 @@
 #include <LoRa.h>
 #include <SPI.h>
 #include <Arduino_MKRGPS.h>
-#include <Servo.h>
 #include <ArduinoJson.h>
 
 // GPSの設定
@@ -20,9 +19,9 @@ float speed;
 float satellites;
 unsigned long Time;
 
-//MKRGPSShiedでは取得不可能
-//float variation;
-//float course;
+// MKRGPSShiedでは取得不可能
+// float variation;
+// float course;
 
 // Arduinojsonの設定
 StaticJsonDocument<1024> downPacket_tlm;
@@ -57,9 +56,9 @@ void setup()
     }
 
     prev_SEND = 0;
-    interval_SEND = 1000;
+    interval_SEND = 3000;
 
-    // 　状態確認用LED
+    // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
     //  PinMode(PIN, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
@@ -69,6 +68,7 @@ void loop()
 {
     // check if there is new GPS data available
     /*
+
     if (GPS.available())
     {
         // read GPS values
@@ -81,7 +81,9 @@ void loop()
 
         // Create and send LoRa packet
         downlinkFlightData_tlm();
-    }*/
+    }
+    */
+
     GPS.available();
     latitude = GPS.latitude();
     longitude = GPS.longitude();
@@ -89,23 +91,39 @@ void loop()
     speed = GPS.speed();
     satellites = GPS.satellites();
     Time = GPS.getTime();
-
-    //MKRGPSShieldでは取得不可能
-    //variation = GPS.variation();
-    //course = GPS.course();
-
     downlinkFlightData_tlm();
 
-    deserializeJson(servoPacket, Serial1);
+    // MKRGPSShieldでは取得不可能
+    // variation = GPS.variation();
+    // course = GPS.course();
+    
+
+    ServoData();
+    /*
+    deserializeJson(servoPacket, Serial);
     mainservo_deg = servoPacket["mainservoDeg"];
     supplyservo_deg = servoPacket["supplyservoDeg"];
+
+    */
+}
+
+void ServoData()
+{
+    unsigned long curr_SEND = millis();
+    if ((curr_SEND - prev_SEND) >= interval_SEND)
+    {
+        deserializeJson(servoPacket, Serial1);
+        mainservo_deg = servoPacket["mainservoDeg"];
+        supplyservo_deg = servoPacket["supplyservoDeg"];
+        prev_SEND = curr_SEND;
+    }
 }
 
 void downlinkFlightData_tlm()
 {
-    if (!LoRa.begin(923E6))
-        return;
-        
+
+    // if (!LoRa.begin(923E6))
+    // return;
 
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
@@ -119,9 +137,9 @@ void downlinkFlightData_tlm()
         downPacket_tlm["mainservoDeg"] = String(mainservo_deg, 1);
         downPacket_tlm["supplyservoDeg"] = String(supplyservo_deg, 1);
 
-        //MKRGPSShieldでは取得不可能
-        //downPacket_tlm["variation"] = String(variation, 6);
-        //downPacket_tlm["course"] = String(course, 6);
+        // MKRGPSShieldでは取得不可能
+        // downPacket_tlm["variation"] = String(variation, 6);
+        // downPacket_tlm["course"] = String(course, 6);
 
         LoRa.beginPacket();
         serializeJson(downPacket_tlm, LoRa);
@@ -129,7 +147,7 @@ void downlinkFlightData_tlm()
 
         Serial.println();
         serializeJson(downPacket_tlm, Serial);
-        
+
         digitalWrite(LED_BUILTIN, HIGH);
         prev_SEND = curr_SEND;
     }
