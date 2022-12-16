@@ -35,11 +35,15 @@ void loop()
 
   if (LoRa.parsePacket())
   {
+    digitalWrite(LED_BUILTIN, LOW);
     deserializeJson(packet, LoRa);
     char output[1024];
     serializeJson(packet, output);
     Serial.println(output);
+    digitalWrite(LED_BUILTIN, HIGH);
   }
+
+
   // onReceive(LoRa.parsePacket());
 
   // int Switch_value;
