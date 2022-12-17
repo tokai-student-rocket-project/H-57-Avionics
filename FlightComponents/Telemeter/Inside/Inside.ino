@@ -25,7 +25,7 @@ unsigned long Time;
 
 // Arduinojsonの設定
 StaticJsonDocument<1024> downPacket_tlm;
-StaticJsonDocument<256> servoPacket;
+
 float supplyservo_deg;
 float mainservo_deg;
 
@@ -39,7 +39,11 @@ unsigned long prev_SEND, interval_SEND;
 void setup()
 {
     // initialize serial communications and wait for port to open:
-    Serial.begin(9600);
+    Serial.begin(115200);
+    while (!Serial)
+        continue;
+
+    Serial1.begin(9600);
 
     if (!LoRa.begin(923E6))
     {
@@ -91,33 +95,96 @@ void loop()
     speed = GPS.speed();
     satellites = GPS.satellites();
     Time = GPS.getTime();
-    downlinkFlightData_tlm();
+    // downlinkFlightData_tlm();
 
     // MKRGPSShieldでは取得不可能
     // variation = GPS.variation();
     // course = GPS.course();
-    
 
-    ServoData();
     /*
     deserializeJson(servoPacket, Serial);
     mainservo_deg = servoPacket["mainservoDeg"];
     supplyservo_deg = servoPacket["supplyservoDeg"];
+    */
+
+    // unsigned long curr_SEND = millis();
+    // if ((curr_SEND - prev_SEND) >= interval_SEND)
+    //{
+    if (Serial.available())
+    {
+        StaticJsonDocument<256> servoPacket;
+        DeserializationError err = deserializeJson(servoPacket, Serial1);
+
+        if (err == DeserializationError::Ok)
+        {
+            Serial.print("MAIN");
+            Serial.println(servoPacket["mainservoDeg"].as<float>()/*.as<long>()*/);
+            Serial.print("SUPPLY");
+            Serial.println(servoPacket["supplyservoDeg"].as<float>()/*.as<long>()*/);
+        }
+        else
+        {
+            Serial.print("deserializeJson() returned ");
+            Serial.println(err.c_str());
+
+            while (Serial1.available() > 0)
+            Serial1.read();
+        }
+    }
+
+    /*
+
+    deserializeJson(servoPacket, Serial1);
+    mainservo_deg = servoPacket["mainservoDeg"];
+    supplyservo_deg = servoPacket["supplyservoDeg"];
 
     */
+    // prev_SEND = curr_SEND;
+
+    downlinkFlightData_tlm();
 }
+
+/*
 
 void ServoData()
 {
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
+        if (Serial1.available())
+        {
+            StaticJsonDocument<256> servoPacket;
+            DeserializationError err = deserializeJson(servoPacket, Serial1);
+
+            if (err == DeserializationError::ok)
+            {
+                Serial.print("Main");
+                Serial.println(servoPacket["main"].as<float>());
+                Serial.print("Supply");
+                Serial.println(servoPacket["supply"].as<float>());
+            }
+            else
+            {
+                Serial.print("deserializeJson() returned ");
+                Serial.println(err.c_str());
+
+                // Flush all bytes in the "link" serial port buffer
+                while (Serial1.available() > 0)
+                    Serial1.read();
+            }
+        }
+
+        /*
+
         deserializeJson(servoPacket, Serial1);
         mainservo_deg = servoPacket["mainservoDeg"];
         supplyservo_deg = servoPacket["supplyservoDeg"];
+
+
         prev_SEND = curr_SEND;
     }
 }
+*/
 
 void downlinkFlightData_tlm()
 {
