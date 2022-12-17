@@ -50,6 +50,9 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         store.set('flightpin-state', dataObject.f === '1' ? 'OPEN' : 'CLOSE');
         store.set('shiranui3-state', dataObject.s3 === '1' ? 'ON' : 'OFF');
         store.set('buzzer-state', dataObject.b === '1' ? 'ON' : 'OFF');
+        store.set('3.3v', dataObject.v33);
+        store.set('5v', dataObject.v5);
+        store.set('12v', dataObject.v12);
         mainWindow?.webContents.send('status-recieved');
       }
 

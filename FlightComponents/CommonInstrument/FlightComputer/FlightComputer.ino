@@ -113,8 +113,8 @@ void setup() {
   device::_mpu6050.setFullScaleAccelRange(MPU6050_IMU::ACCEL_FS::MPU6050_ACCEL_FS_16);
   // +-2000[deg/s]。16.4[LBS/(deg/s)]
   device::_mpu6050.setFullScaleGyroRange(MPU6050_IMU::GYRO_FS::MPU6050_GYRO_FS_2000);
-  device::_mpu6050.CalibrateAccel();
-  device::_mpu6050.CalibrateGyro();
+  // device::_mpu6050.CalibrateAccel();
+  // device::_mpu6050.CalibrateGyro();
   // センサ固有のオフセット。mpu6050ライブラリのIMU_ZEROから求める
   device::_mpu6050.setXAccelOffset(-1665);
   device::_mpu6050.setYAccelOffset(-507);
@@ -239,7 +239,7 @@ void writeLog() {
   if (!isFlying()) return;
 
   char log[256];
-  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f",
+  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
     (millis() - internal::_launchTime_ms) / 1000.0,
     static_cast<uint8_t>(internal::_flightMode),
     device::_shiranui3.getState() ? 1 : 0,
@@ -253,7 +253,7 @@ void writeLog() {
     flightData::_pitch,
     flightData::_roll,
     flightData::_speed_mps);
-  Serial1.println(log);
+  Serial1.print(log);
 }
 
 
@@ -278,13 +278,21 @@ void writeStatusToDownPacket() {
   //   "m": "<フライトモード>",         ... m->Mode
   //   "f": "<フライトピンの状態>",     ... f->FlightPin
   //   "s3": "<不知火Ⅲの状態>",        ... s3->Shiranui3
-  //   "b": "<ブザーの状態>"            ... b->Buzzer
+  //   "b": "<ブザーの状態>",           ... b->Buzzer
+  //   "v33": "<3.3V電圧測定>",         ... v33->3.3V
+  //   "v5" : "<5V電圧測定>",           ... v5->5V
+  //   "v12" : "<12V電圧測定>"          ... v12->12V
   // }
 
   downPacket["m"] = String(static_cast<uint8_t>(internal::_flightMode));
   downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
   downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
+
+  // 電圧測定
+  downPacket["v33"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 2);
+  downPacket["v5"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 2);
+  downPacket["v12"] = String(analogRead(A2) / 1024.0 * 3.3 * 5.00, 2);
 }
 
 
@@ -347,6 +355,9 @@ void sendDownPacket() {
   LoRa.beginPacket();
   serializeJson(downPacket, LoRa);
   LoRa.endPacket(true);
+
+  // serializeJson(downPacket, Serial);
+  // Serial.println("");
 
   device::_commandIndicator.off();
 
