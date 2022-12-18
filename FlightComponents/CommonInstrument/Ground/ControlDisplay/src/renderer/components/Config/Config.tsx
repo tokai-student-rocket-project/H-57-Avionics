@@ -128,7 +128,8 @@ const Config = () => {
           style={{ height: '32px' }}
         />
         <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
-          <FaTelegramPlane size={24} />
+          {/* <FaTelegramPlane size={24} /> */}
+          送信
         </Button>
       </div>
     </Card>

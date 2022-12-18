@@ -7,6 +7,7 @@
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
 #include <movingAvg.h>
+// #include "Logger.h"
 #include "Velocity.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
@@ -43,6 +44,8 @@ namespace device {
 
   TwoStateDevice _shiranui3(1);
   TwoStateDevice _buzzer(0);
+
+  // Logger _logger;
 }
 
 namespace config {
@@ -89,13 +92,16 @@ namespace flightData {
   float _temperature_degT;
   float _pressure_Pa;
   float _altitude_m;
+  float _speed_mps;
   float _acceleration_x_g;
   float _acceleration_y_g;
   float _acceleration_z_g;
+  float _gyro_x_degps;
+  float _gyro_y_degps;
+  float _gyro_z_degps;
   float _yaw;
   float _pitch;
   float _roll;
-  float _speed_mps;
 }
 
 
@@ -196,11 +202,14 @@ void updateFlightData() {
   flightData::_acceleration_x_g = ax / 2048.0;
   flightData::_acceleration_y_g = ay / 2048.0;
   flightData::_acceleration_z_g = az / 2048.0;
+  flightData::_gyro_x_degps = gx / 16.4;
+  flightData::_gyro_y_degps = gy / 16.4;
+  flightData::_gyro_z_degps = gz / 16.4;
 
   internal::_madgwickFilter.updateIMU(
-    gx / 16.4,
-    gy / 16.4,
-    gz / 16.4,
+    flightData::_gyro_x_degps,
+    flightData::_gyro_y_degps,
+    flightData::_gyro_z_degps,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g);
@@ -238,22 +247,24 @@ void writeLog() {
 
   if (!isFlying()) return;
 
-  char log[256];
-  sprintf(log, "%.2f,%d,%d,%d,%.2f,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-    (millis() - internal::_launchTime_ms) / 1000.0,
-    static_cast<uint8_t>(internal::_flightMode),
-    device::_shiranui3.getState() ? 1 : 0,
-    device::_buzzer.getState() ? 1 : 0,
-    flightData::_altitude_m,
-    internal::_descentDetector._descentCount,
-    flightData::_acceleration_x_g,
-    flightData::_acceleration_y_g,
-    flightData::_acceleration_z_g,
-    flightData::_yaw,
-    flightData::_pitch,
-    flightData::_roll,
-    flightData::_speed_mps);
-  Serial1.print(log);
+  // device::_logger.writeLog(
+  //   (millis() - internal::_launchTime_ms) / 1000.0,
+  //   static_cast<uint8_t>(internal::_flightMode),
+  //   device::_shiranui3.getState() ? 1 : 0,
+  //   device::_buzzer.getState() ? 1 : 0,
+  //   flightData::_altitude_m,
+  //   flightData::_speed_mps,
+  //   internal::_descentDetector._descentCount,
+  //   flightData::_acceleration_x_g,
+  //   flightData::_acceleration_y_g,
+  //   flightData::_acceleration_z_g,
+  //   flightData::_gyro_x_degps,
+  //   flightData::_gyro_y_degps,
+  //   flightData::_gyro_z_degps,
+  //   flightData::_yaw,
+  //   flightData::_pitch,
+  //   flightData::_roll
+  // );
 }
 
 
@@ -290,8 +301,8 @@ void writeStatusToDownPacket() {
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
 
   // 電圧測定
-  downPacket["v33"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 2);
-  downPacket["v5"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 2);
+  downPacket["v33"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 2);
+  downPacket["v5"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 2);
   downPacket["v12"] = String(analogRead(A2) / 1024.0 * 3.3 * 5.00, 2);
 }
 
@@ -356,8 +367,8 @@ void sendDownPacket() {
   serializeJson(downPacket, LoRa);
   LoRa.endPacket(true);
 
-  // serializeJson(downPacket, Serial);
-  // Serial.println("");
+  serializeJson(downPacket, Serial);
+  Serial.println("");
 
   device::_commandIndicator.off();
 
