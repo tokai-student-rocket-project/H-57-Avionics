@@ -40,8 +40,7 @@ void setup()
 {
     // initialize serial communications and wait for port to open:
     Serial.begin(115200);
-    while (!Serial)
-        continue;
+    
 
     Serial1.begin(9600);
 
@@ -60,7 +59,7 @@ void setup()
     }
 
     prev_SEND = 0;
-    interval_SEND = 3000;
+    interval_SEND = 500;
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
@@ -71,8 +70,8 @@ void setup()
 void loop()
 {
     // check if there is new GPS data available
-    /*
 
+    /*
     if (GPS.available())
     {
         // read GPS values
@@ -95,7 +94,6 @@ void loop()
     speed = GPS.speed();
     satellites = GPS.satellites();
     Time = GPS.getTime();
-    // downlinkFlightData_tlm();
 
     // MKRGPSShieldでは取得不可能
     // variation = GPS.variation();
@@ -110,36 +108,28 @@ void loop()
     // unsigned long curr_SEND = millis();
     // if ((curr_SEND - prev_SEND) >= interval_SEND)
     //{
-    if (Serial.available())
+
+    StaticJsonDocument<256> servoPacket;
+    DeserializationError err = deserializeJson(servoPacket, Serial1);
+
+    if (err == DeserializationError::Ok)
     {
-        StaticJsonDocument<256> servoPacket;
-        DeserializationError err = deserializeJson(servoPacket, Serial1);
-
-        if (err == DeserializationError::Ok)
-        {
-            Serial.print("MAIN");
-            Serial.println(servoPacket["mainservoDeg"].as<float>()/*.as<long>()*/);
-            Serial.print("SUPPLY");
-            Serial.println(servoPacket["supplyservoDeg"].as<float>()/*.as<long>()*/);
-        }
-        else
-        {
-            Serial.print("deserializeJson() returned ");
-            Serial.println(err.c_str());
-
-            while (Serial1.available() > 0)
-            Serial1.read();
-        }
+        //Serial.print("MAIN");
+        //Serial.println(servoPacket["mainservoDeg"].as<float>());
+        mainservo_deg = servoPacket["mainservoDeg"].as<float>();
+        //Serial.print("SUPPLY");
+        //Serial.println(servoPacket["supplyservoDeg"].as<float>());
+        supplyservo_deg = servoPacket["supplyservoDeg"].as<float>();
     }
+    else
+    {
+        Serial.println();
+        Serial.print("deserializeJson() returned ");
+        Serial.println(err.c_str());
 
-    /*
-
-    deserializeJson(servoPacket, Serial1);
-    mainservo_deg = servoPacket["mainservoDeg"];
-    supplyservo_deg = servoPacket["supplyservoDeg"];
-
-    */
-    // prev_SEND = curr_SEND;
+        while (Serial1.available() > 0)
+            Serial1.read();
+    }
 
     downlinkFlightData_tlm();
 }

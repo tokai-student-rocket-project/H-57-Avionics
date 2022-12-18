@@ -69,13 +69,15 @@ const Valve = () => {
 
   return (
     <Card title="VALVE" bordered={false} style={{ margin: '8px' }}>
-      <div style={{ marginTop: '24px' }}>
-        Position :
+      <div style={{ display: 'flex', marginTop: '24px' }}>
+        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+          ポジション
+        </span>
         <span
           style={{
-            marginLeft: '8px',
-            fontSize: '1.2em',
+            fontSize: '1.25em',
             color: servoPosition === 'INVALID' ? '#ed4245' : '#46c46d',
+            margin: 'auto 0 auto auto',
           }}
         >
           {servoPosition}
@@ -86,6 +88,7 @@ const Valve = () => {
           display: 'flex',
           justifyContent: 'center',
           position: 'relative',
+          marginTop: '16px',
         }}
       >
         <img width="100%" src={valve} alt="valve" />
