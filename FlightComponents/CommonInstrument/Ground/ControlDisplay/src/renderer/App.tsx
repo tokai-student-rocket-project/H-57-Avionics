@@ -10,6 +10,7 @@ import Telecom from './components/Telecom';
 import GPS from './components/GPS';
 import Valve from './components/Valve';
 import AltitudeIndicator from './components/AltitudeIndicator';
+import Electric from './components/Electric';
 
 const { Header, Content } = Layout;
 
@@ -59,6 +60,7 @@ const App = () => {
             </Row>
           </Col>
           <Col span={4}>
+            <Electric />
             <Status />
           </Col>
           <Col span={4}>

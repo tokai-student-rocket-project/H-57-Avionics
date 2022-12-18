@@ -1,4 +1,4 @@
-import { Card, Descriptions } from 'antd';
+import { Card } from 'antd';
 import { useState, useEffect } from 'react';
 
 const positiveColor = '#46c46d';
@@ -32,45 +32,48 @@ const Status = () => {
 
   return (
     <Card title="STATUS" style={{ margin: '8px' }} bordered={false}>
-      <Descriptions
-        style={{ marginTop: '24px' }}
-        column={1}
-        labelStyle={{ color: 'white' }}
-      >
-        <Descriptions.Item label="フライトピン">
-          <span
-            style={{
-              fontSize: '1.2em',
-              color: flightpinState === 'CLOSE' ? nagativeColor : positiveColor,
-            }}
-          >
-            {flightpinState}
-          </span>
-        </Descriptions.Item>
-        <Descriptions.Item label="不知火Ⅲ">
-          <span
-            style={{
-              fontSize: '1.2em',
-              color: shiranui3State === 'OFF' ? nagativeColor : positiveColor,
-            }}
-          >
-            {shiranui3State}
-          </span>
-        </Descriptions.Item>
-        <Descriptions.Item label="不知火Ⅳ">
-          <span style={{ fontSize: '1.2em', color: '#72767d' }}>N/A</span>
-        </Descriptions.Item>
-        <Descriptions.Item label="ブザー">
-          <span
-            style={{
-              fontSize: '1.2em',
-              color: buzzerState === 'OFF' ? nagativeColor : positiveColor,
-            }}
-          >
-            {buzzerState}
-          </span>
-        </Descriptions.Item>
-      </Descriptions>
+      <div style={{ display: 'flex', marginTop: '24px' }}>
+        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+          フライトピン
+        </span>
+        <span
+          style={{
+            fontSize: '1.25em',
+            color: flightpinState === 'CLOSE' ? nagativeColor : positiveColor,
+            margin: 'auto 0 auto auto',
+          }}
+        >
+          {flightpinState}
+        </span>
+      </div>
+      <div style={{ display: 'flex', marginTop: '8px' }}>
+        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+          不知火Ⅲ
+        </span>
+        <span
+          style={{
+            fontSize: '1.25em',
+            color: shiranui3State === 'OFF' ? nagativeColor : positiveColor,
+            margin: 'auto 0 auto auto',
+          }}
+        >
+          {shiranui3State}
+        </span>
+      </div>
+      <div style={{ display: 'flex', marginTop: '8px' }}>
+        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+          ブザー
+        </span>
+        <span
+          style={{
+            fontSize: '1.25em',
+            color: buzzerState === 'OFF' ? nagativeColor : positiveColor,
+            margin: 'auto 0 auto auto',
+          }}
+        >
+          {buzzerState}
+        </span>
+      </div>
     </Card>
   );
 };
