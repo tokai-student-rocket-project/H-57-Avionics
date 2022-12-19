@@ -30,8 +30,8 @@ float supplyservo_deg;
 float mainservo_deg;
 
 // LoRa addressの設定? <=2022/11/18時点では不明瞭
-byte localAddress = 0xBB; // address of this device
-byte destination = 0xFF;  // where we are sending data to
+//byte localAddress = 0xBB; // address of this device
+//byte destination = 0xFF;  // where we are sending data to
 
 // millis()の設定
 unsigned long prev_SEND, interval_SEND;
@@ -40,38 +40,23 @@ void setup()
 {
     // initialize serial communications and wait for port to open:
     Serial.begin(115200);
-    
-
     Serial1.begin(9600);
-
-    if (!LoRa.begin(923E6))
-    {
-        Serial.println("Starting LoRa failed!");
-        while (1)
-            ;
-    }
-
-    if (!GPS.begin())
-    {
-        Serial.println("Failed to initialize GPS!");
-        while (1)
-            ;
-    }
+    GPS.begin();
+    LoRa.begin(924E6);
 
     prev_SEND = 0;
     interval_SEND = 500;
 
     // 状態確認用LED
-    //  PinMode(PIN, OUTPUT);
-    //  PinMode(PIN, OUTPUT);
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
 {
     // check if there is new GPS data available
-
-    /*
+    digitalWrite(4, LOW);
     if (GPS.available())
     {
         // read GPS values
@@ -81,51 +66,35 @@ void loop()
         speed = GPS.speed();
         satellites = GPS.satellites();
         Time = GPS.getTime();
-
-        // Create and send LoRa packet
-        downlinkFlightData_tlm();
     }
-    */
 
-    GPS.available();
-    latitude = GPS.latitude();
-    longitude = GPS.longitude();
-    altitude = GPS.altitude();
-    speed = GPS.speed();
-    satellites = GPS.satellites();
-    Time = GPS.getTime();
+    /*
+     GPS.available();
+     latitude = GPS.latitude();
+     longitude = GPS.longitude();
+     altitude = GPS.altitude();
+     speed = GPS.speed();
+     satellites = GPS.satellites();
+     Time = GPS.getTime();
+    */
 
     // MKRGPSShieldでは取得不可能
     // variation = GPS.variation();
     // course = GPS.course();
-
-    /*
-    deserializeJson(servoPacket, Serial);
-    mainservo_deg = servoPacket["mainservoDeg"];
-    supplyservo_deg = servoPacket["supplyservoDeg"];
-    */
-
-    // unsigned long curr_SEND = millis();
-    // if ((curr_SEND - prev_SEND) >= interval_SEND)
-    //{
 
     StaticJsonDocument<256> servoPacket;
     DeserializationError err = deserializeJson(servoPacket, Serial1);
 
     if (err == DeserializationError::Ok)
     {
-        //Serial.print("MAIN");
-        //Serial.println(servoPacket["mainservoDeg"].as<float>());
         mainservo_deg = servoPacket["mainservoDeg"].as<float>();
-        //Serial.print("SUPPLY");
-        //Serial.println(servoPacket["supplyservoDeg"].as<float>());
         supplyservo_deg = servoPacket["supplyservoDeg"].as<float>();
     }
     else
     {
-        Serial.println();
-        Serial.print("deserializeJson() returned ");
-        Serial.println(err.c_str());
+        //Serial.println();
+        //Serial.print("deserializeJson() returned ");
+        //Serial.println(err.c_str());
 
         while (Serial1.available() > 0)
             Serial1.read();
@@ -185,7 +154,7 @@ void downlinkFlightData_tlm()
     unsigned long curr_SEND = millis();
     if ((curr_SEND - prev_SEND) >= interval_SEND)
     {
-        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(5, HIGH);
         downPacket_tlm.clear();
         downPacket_tlm["lat"] = String(latitude, 8);
         downPacket_tlm["lon"] = String(longitude, 8);
@@ -205,7 +174,7 @@ void downlinkFlightData_tlm()
         Serial.println();
         serializeJson(downPacket_tlm, Serial);
 
-        digitalWrite(LED_BUILTIN, HIGH);
+        digitalWrite(5, LOW);
         prev_SEND = curr_SEND;
     }
 }
