@@ -1,17 +1,15 @@
-#include <EEPROM_24xx1025.h>
 #include <Wire.h>
 
-#define BUFFER_LENGTH 32
-#define EEPROM1025_WRITE_BUFF_SIZE 30
-#define EEPROM1025_READ_BUFF_SIZE 32
 
-/// @brief EEPROMロガーの抽象化クラス
+/// @brief EEPROMロガーの抽象化クラス。https://github.com/citriena/EEPROM_24xx1025 からの移植
 class Logger
 {
 private:
-  EEPROM_24xx1025* _eeprom = new EEPROM_24xx1025(EPR_ADDR0, EPR_ADDR1, EPR_ADDR2, EPR_ADDR3);
 
+  uint8_t _addresses[8] = { 0x50, 0x54, 0x51, 0x55, 0x52, 0x56, 0x53, 0x57 };
   int32_t _offset;
+
+  void write(int32_t address, char b[]);
 
 public:
   void generatePacket(
