@@ -78,9 +78,10 @@ void loop()
         Position = 1;
         delay(300);
     }
+
     StaticJsonDocument<64> servoPacket;
-    servoPacket["mainservoDeg"] = Supplyservo_deg;
-    servoPacket["supplyservoDeg"] = Mainservo_deg;
+    servoPacket["mainservoDeg"] = Mainservo_deg;
+    servoPacket["supplyservoDeg"] = Supplyservo_deg;
     Serial.println();
     serializeJson(servoPacket, Serial);
 
@@ -89,18 +90,29 @@ void loop()
 
 void L_Position()
 {
+    Mainservo.write(140, 60, true);
+    Mainservo_deg = Mainservo.read();
+    // 燃焼実験の際はコメントアウト
+    /*
     Supplyservo.write(90, 60, true); // SupplyServo CLOSE
     Supplyservo_deg = Supplyservo.read();
     delay(1000);
-    Mainservo.write(140, 30, true); // MainServo OPEN
+    Mainservo.write(140, 80, true); // MainServo OPEN
     Mainservo_deg = Mainservo.read();
+    */
 }
 
 void W_Position()
 {
+    Mainservo.write(0, 30, true);
+    Mainservo_deg = Mainservo.read();
+
+    // 以下、燃焼実験中はコメントアウト
+    /*
     Supplyservo.write(0, 60, true); // SupplyServo OPEN
     Supplyservo_deg = Supplyservo.read();
     delay(1000);
     Mainservo.write(0, 30, true); // MainServo CLOSE
     Mainservo_deg = Mainservo.read();
+    */
 }
