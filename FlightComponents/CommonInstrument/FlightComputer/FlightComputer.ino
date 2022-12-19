@@ -7,7 +7,7 @@
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
 #include <movingAvg.h>
-// #include "Logger.h"
+#include "Logger.h"
 #include "Velocity.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
@@ -45,7 +45,7 @@ namespace device {
   TwoStateDevice _shiranui3(1);
   TwoStateDevice _buzzer(0);
 
-  // Logger _logger;
+  Logger _logger;
 }
 
 namespace config {
@@ -301,9 +301,9 @@ void writeStatusToDownPacket() {
   downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
 
   // 電圧測定
-  downPacket["v33"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 2);
-  downPacket["v5"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 2);
-  downPacket["v12"] = String(analogRead(A2) / 1024.0 * 3.3 * 5.00, 2);
+  downPacket["v33"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 1);
+  downPacket["v5"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 1);
+  downPacket["v12"] = String(analogRead(A2) / 1024.0 * 3.3 * 5.00, 1);
 }
 
 

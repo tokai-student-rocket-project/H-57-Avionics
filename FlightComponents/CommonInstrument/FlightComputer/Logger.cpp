@@ -1,13 +1,7 @@
 
 #include <Wire.h>
 #include <Arduino.h>
-#include <EEPROM_24xx1025.h>
 #include "Logger.h"
-
-
-#define BUFFER_LENGTH 32
-#define EEPROM1025_WRITE_BUFF_SIZE 30
-#define EEPROM1025_READ_BUFF_SIZE 32
 
 
 /// @brief パケットを生成する
@@ -60,7 +54,7 @@ void Logger::writeLog(
   float pitch,
   float roll
 ) {
-  char packet[256];
+  char packet[128];
   Logger::generatePacket(
     packet,
     flightTime, flightMode,
@@ -74,10 +68,20 @@ void Logger::writeLog(
 
   int16_t packetSize = sizeof(packet) / sizeof(packet[0]);
 
-  for (int16_t packetOffset = 0; packetOffset < packetSize; packetOffset++)
-  {
-    _eeprom->write(_offset + packetOffset, packet[packetOffset]);
-  }
+  Logger::write(_offset, packet);
+  Serial.print(packet);
 
   _offset += packetSize;
+}
+
+
+void Logger::write(int32_t address, char b[]) {
+  uint8_t blockAddress = (uint8_t)(address >> 16);
+  uint16_t innerAddress = (uint16_t)(address & 0x0000FFFF);
+
+  Wire.beginTransmission(_addresses[blockAddress]);
+  Wire.write(highByte(innerAddress));
+  Wire.write(lowByte(innerAddress));
+  Wire.write(&b[0], 128);
+  Wire.endTransmission();
 }
