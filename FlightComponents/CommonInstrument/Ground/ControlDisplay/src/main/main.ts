@@ -38,7 +38,7 @@ let serialportTelemeter: SerialPort | null = null;
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
 
-  serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
+  serialport = new SerialPort({ path: serialportPath, baudRate: 500000 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
     console.log(data);
@@ -59,9 +59,6 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       if (dataObject.ft) {
         store.set('flight-time', dataObject.ft);
         store.set('altitude', dataObject.alt);
-        store.set('acceleration-x', dataObject.ax);
-        store.set('acceleration-y', dataObject.ay);
-        store.set('acceleration-z', dataObject.az);
         store.set('yaw', dataObject.y);
         store.set('pitch', dataObject.p);
         store.set('roll', dataObject.r);
@@ -79,7 +76,11 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         mainWindow?.webContents.send('config-recieved');
       }
 
-      if (dataObject.t === 'r') {
+      if (dataObject.e) {
+        mainWindow?.webContents.send('event-recieved', dataObject.e);
+      }
+
+      if (dataObject.rssi) {
         store.set('rssi', dataObject.rssi);
         mainWindow?.webContents.send('rssi-recieved');
       }

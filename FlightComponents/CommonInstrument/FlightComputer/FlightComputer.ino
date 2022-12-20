@@ -2,7 +2,8 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <ArduinoJson.h>
-#include <TaskManager.h>
+#include <IntervalCounter.h>
+#include <OneShotTimer.h>
 #include "BME280Wrap.h"
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
@@ -12,10 +13,10 @@
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
+#include "Telemeter.h"
 
 
 StaticJsonDocument<512> upPacket;
-StaticJsonDocument<512> downPacket;
 
 
 enum class FlightMode {
@@ -46,6 +47,7 @@ namespace device {
   TwoStateDevice _buzzer(0);
 
   Logger _logger;
+  Telemeter _telemeter;
 }
 
 namespace config {
@@ -71,6 +73,13 @@ namespace config {
 }
 
 namespace internal {
+  // タイマー
+  IntervalCounter _downlinkInterval1(0.5);
+  IntervalCounter _downlinkInterval2(0.5);
+  IntervalCounter _logicInterval(0.01);
+  OneShotTimer _offsetShot(0.25);
+  OneShotTimer _separateShot(3.0);
+
   FlightMode _flightMode;
   // 離床した瞬間の時間を保存しておく変数
   uint32_t _launchTime_ms;
@@ -144,8 +153,53 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  Tasks.add([] {
-    device::_flightPin.update();
+  // ロジック用タイマー 0.01秒間隔
+  internal::_logicInterval.onUpdate([&]() {
+    logic();
+    });
+  internal::_logicInterval.start();
+
+  // ダウンリンク用タイマー1 0.5秒間隔
+  internal::_downlinkInterval1.onUpdate([&]() {
+    downlinkStatus();
+    });
+  internal::_downlinkInterval1.start();
+
+  // ダウンリンク用タイマー2 0.5秒間隔
+  internal::_downlinkInterval2.onUpdate([&]() {
+    downlinkFlightData();
+  downlinkConfig();
+    });
+
+  // ダウンリンク用タイマー1と2を0.25秒ずらす
+  internal::_offsetShot.onUpdate([&]() {
+    internal::_downlinkInterval2.start();
+    });
+  internal::_offsetShot.start();
+
+  // 分離3秒後に電磁弁をオフにする
+  internal::_separateShot.onUpdate([&]() {
+    device::_shiranui3.off();
+  device::_buzzer.on();
+    });
+
+  downlinkEvent("INITIALIZED");
+
+  reset();
+}
+
+
+void loop() {
+  internal::_logicInterval.update();
+  internal::_downlinkInterval1.update();
+  internal::_downlinkInterval2.update();
+  internal::_offsetShot.update();
+  internal::_separateShot.update();
+}
+
+
+void logic() {
+  device::_flightPin.update();
   updateFlightData();
   updateIndicators();
   updateFlightMode();
@@ -163,29 +217,6 @@ void setup() {
     changeFlightMode(FlightMode::PARACHUTE);
     downlinkEvent("FORCE-SEPARATED");
   }
-    })->startFps(100);
-
-    Tasks.add([] {
-      writeStatusToDownPacket();
-    writeFlightDataToDownPacket();
-    writeConfigToDownPacket();
-    sendDownPacket();
-      })->startFps(2);
-
-      // separate関数で使うタスク
-      Tasks.add("TurnOffShiranui3TurnOnBuzzer", [] {
-        device::_shiranui3.off();
-      device::_buzzer.on();
-        });
-
-      downlinkEvent("INITIALIZED");
-
-      reset();
-}
-
-
-void loop() {
-  Tasks.update();
 }
 
 
@@ -271,108 +302,69 @@ void writeLog() {
 /// @brief イベントをダウンリンクで送信する
 /// @param event イベント
 void downlinkEvent(String event) {
-  // パケット構造
-  // {
-  //   "e":"<イベント>"
-  //  }
-
-  downPacket["e"] = event;
-
-  sendDownPacket();
-}
-
-
-/// @brief ステータスをパケットに書き込む
-void writeStatusToDownPacket() {
-  // パケット構造
-  // {
-  //   "m": "<フライトモード>",         ... m->Mode
-  //   "f": "<フライトピンの状態>",     ... f->FlightPin
-  //   "s3": "<不知火Ⅲの状態>",        ... s3->Shiranui3
-  //   "b": "<ブザーの状態>",           ... b->Buzzer
-  //   "v33": "<3.3V電圧測定>",         ... v33->3.3V
-  //   "v5" : "<5V電圧測定>",           ... v5->5V
-  //   "v12" : "<12V電圧測定>"          ... v12->12V
-  // }
-
-  downPacket["m"] = String(static_cast<uint8_t>(internal::_flightMode));
-  downPacket["f"] = device::_flightPin.isReleased() ? "1" : "0";
-  downPacket["s3"] = device::_shiranui3.getState() ? "1" : "0";
-  downPacket["b"] = device::_buzzer.getState() ? "1" : "0";
-
-  // 電圧測定
-  downPacket["v33"] = String(analogRead(A1) / 1024.0 * 3.3 * 1.37, 1);
-  downPacket["v5"] = String(analogRead(A0) / 1024.0 * 3.3 * 2.08, 1);
-  downPacket["v12"] = String(analogRead(A2) / 1024.0 * 3.3 * 5.00, 1);
-}
-
-
-/// @brief フライトデータをパケットに書き込む
-void writeFlightDataToDownPacket() {
-  // パケット構造
-  // {
-  //   "ft": "<飛行時間[s]>",              ... ft->FlightTime
-  //   "alt": "<高度[m]>",                 ... alt->Altitude
-  //   "ax": "<加速度X[G]>",               ... ax->AccelerationX
-  //   "ay": "<加速度Y[G]>",               ... ay->AccelerationY
-  //   "az": "<加速度Z[G]>",               ... az->AccelerationZ
-  //   "y": "<ヨー角[deg]>",               ... y->yaw
-  //   "p" : "<ピッチ角[deg]>",            ... p->pitch
-  //   "r" : "<ロール角[deg]>",            ... r->roll
-  //   "s" : "<スピード[m/s]>"             ... s->speed
-  // }
-
-  if (!isFlying()) return;
-
-  downPacket["ft"] = String((millis() - internal::_launchTime_ms) / 1000.0, 2);
-  downPacket["alt"] = String(flightData::_altitude_m, 1);
-  downPacket["ax"] = String(flightData::_acceleration_x_g, 2);
-  downPacket["ay"] = String(flightData::_acceleration_y_g, 2);
-  downPacket["az"] = String(flightData::_acceleration_z_g, 2);
-  downPacket["y"] = String(flightData::_yaw, 2);
-  downPacket["p"] = String(flightData::_pitch, 2);
-  downPacket["r"] = String(flightData::_roll, 2);
-  downPacket["s"] = String(flightData::_speed_mps, 2);
-}
-
-
-/// @brief コンフィグをパケットに書き込む
-void writeConfigToDownPacket() {
-  // パケット構造
-  // {
-  //   "a": "<指定分離高度[m]>"         ... a->Altitude
-  //   "p": "<基準気圧[hPa]>",          ... p->Pressure
-  //   "bt": "<想定燃焼時間[s]>",       ... bt->BurnTime
-  //   "sp": "<分離保護時間[s]>",       ... sp->SeparationProtectionTime
-  //   "fs": "<強制分離時間[s]>",       ... fs->ForceSeparationTime
-  //   "l": "<想定着地時間[s]>"         ... l->LandingTime
-  // }
-
-  if (isFlying()) return;
-
-  downPacket["a"] = String(config::separation_altitude_m, 1);
-  downPacket["p"] = String(device::_bme280.getReferencePressure() / 100.0, 1);
-  downPacket["bt"] = String(config::burn_time_ms / 1000.0, 2);
-  downPacket["sp"] = String(config::separation_protection_time_ms / 1000.0, 2);
-  downPacket["fs"] = String(config::force_separation_time_ms / 1000.0, 2);
-  downPacket["l"] = String(config::landing_time_ms / 1000.0, 2);
-}
-
-
-/// @brief downPacketの内容を送信する。
-void sendDownPacket() {
   device::_commandIndicator.on();
 
-  LoRa.beginPacket();
-  serializeJson(downPacket, LoRa);
-  LoRa.endPacket(true);
-
-  serializeJson(downPacket, Serial);
-  Serial.println("");
+  device::_telemeter.sendEvent(
+    event
+  );
 
   device::_commandIndicator.off();
+}
 
-  downPacket.clear();
+
+/// @brief ステータスをダウンリンクで送信する
+void downlinkStatus() {
+  device::_commandIndicator.on();
+
+  device::_telemeter.sendStatus(
+    static_cast<uint8_t>(internal::_flightMode),
+    device::_flightPin.isReleased(),
+    device::_shiranui3.getState(),
+    device::_buzzer.getState(),
+    analogRead(A1) / 1024.0 * 3.3 * 1.37,
+    analogRead(A0) / 1024.0 * 3.3 * 2.08,
+    analogRead(A2) / 1024.0 * 3.3 * 5.00
+  );
+
+  device::_commandIndicator.off();
+}
+
+
+/// @brief フライトデータをダウンリンクで送信する
+void downlinkFlightData() {
+  if (!isFlying()) return;
+
+  device::_commandIndicator.on();
+
+  device::_telemeter.sendFlightData(
+    (millis() - internal::_launchTime_ms) / 1000.0,
+    flightData::_altitude_m,
+    flightData::_speed_mps,
+    flightData::_yaw,
+    flightData::_pitch,
+    flightData::_roll
+  );
+
+  device::_commandIndicator.off();
+}
+
+
+/// @brief コンフィグをダウンリンクで送信する
+void downlinkConfig() {
+  if (isFlying()) return;
+
+  device::_commandIndicator.on();
+
+  device::_telemeter.sendConfig(
+    config::separation_altitude_m,
+    device::_bme280.getReferencePressure() / 100.0,
+    config::burn_time_ms / 1000.0,
+    config::separation_protection_time_ms / 1000.0,
+    config::force_separation_time_ms / 1000.0,
+    config::landing_time_ms / 1000.0
+  );
+
+  device::_commandIndicator.off();
 }
 
 
@@ -431,8 +423,8 @@ bool canSeparateForce() {
 void separate() {
   device::_shiranui3.on();
 
-  if (!Tasks.getTaskByName("TurnOffShiranui3TurnOnBuzzer")->isRunning())
-    Tasks.getTaskByName("TurnOffShiranui3TurnOnBuzzer")->startOnceAfterSec(3.0);
+  if (!internal::_separateShot.isRunning())
+    internal::_separateShot.start();
 }
 
 
@@ -491,9 +483,6 @@ void changeFlightMode(FlightMode nextMode) {
   if (internal::_flightMode == nextMode) return;
 
   internal::_flightMode = nextMode;
-
-  writeStatusToDownPacket();
-  sendDownPacket();
 }
 
 
@@ -536,7 +525,4 @@ void receiveCommand() {
   }
 
   device::_commandIndicator.off();
-
-  writeConfigToDownPacket();
-  sendDownPacket();
 }
