@@ -39,8 +39,9 @@ const BlinkIndicator = () => {
       blink(setGpsDownState);
     });
 
-    window.electronAPI.eventRecieved(() => {
+    window.electronAPI.eventRecieved((_, event) => {
       blink(setEventDownState);
+      console.log(event);
     });
 
     return () => {
