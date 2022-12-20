@@ -9,7 +9,11 @@ private:
   uint8_t configLabel = 0x03;
   uint8_t eventLabel = 0x04;
 
-  void sendPacket(const uint8_t* data, const size_t size);
+  uint8_t _buffer[256];
+  uint32_t _offset;
+
+  void reservePacket(const uint8_t* data, const size_t size);
+  void sendPacket();
 
 public:
   void sendStatus(

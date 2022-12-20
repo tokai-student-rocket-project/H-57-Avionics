@@ -74,10 +74,8 @@ namespace config {
 
 namespace internal {
   // タイマー
-  IntervalCounter _downlinkInterval1(0.5);
-  IntervalCounter _downlinkInterval2(0.5);
+  IntervalCounter _downlinkInterval(0.5);
   IntervalCounter _logicInterval(0.01);
-  OneShotTimer _offsetShot(0.25);
   OneShotTimer _separateShot(3.0);
 
   FlightMode _flightMode;
@@ -160,22 +158,12 @@ void setup() {
   internal::_logicInterval.start();
 
   // ダウンリンク用タイマー1 0.5秒間隔
-  internal::_downlinkInterval1.onUpdate([&]() {
+  internal::_downlinkInterval.onUpdate([&]() {
     downlinkStatus();
-    });
-  internal::_downlinkInterval1.start();
-
-  // ダウンリンク用タイマー2 0.5秒間隔
-  internal::_downlinkInterval2.onUpdate([&]() {
-    downlinkFlightData();
+  downlinkFlightData();
   downlinkConfig();
     });
-
-  // ダウンリンク用タイマー1と2を0.25秒ずらす
-  internal::_offsetShot.onUpdate([&]() {
-    internal::_downlinkInterval2.start();
-    });
-  internal::_offsetShot.start();
+  internal::_downlinkInterval.start();
 
   // 分離3秒後に電磁弁をオフにする
   internal::_separateShot.onUpdate([&]() {
@@ -191,9 +179,7 @@ void setup() {
 
 void loop() {
   internal::_logicInterval.update();
-  internal::_downlinkInterval1.update();
-  internal::_downlinkInterval2.update();
-  internal::_offsetShot.update();
+  internal::_downlinkInterval.update();
   internal::_separateShot.update();
 }
 

@@ -4,11 +4,23 @@
 #include "Telemeter.h"
 
 
+void Telemeter::reservePacket(const uint8_t* data, const size_t size) {
+  if (_offset + size >= 256) sizeof(_buffer) / sizeof(_buffer[0]);
 
-void Telemeter::sendPacket(const uint8_t* data, const size_t size) {
+  for (uint32_t i = 0; i < size; i++)
+  {
+    _buffer[_offset + i] = data[i];
+  }
+
+  _offset += size;
+}
+
+
+void Telemeter::sendPacket() {
   if (LoRa.beginPacket()) {
-    LoRa.write(data, size);
+    LoRa.write(_buffer, _offset);
     LoRa.endPacket(true);
+    _offset = 0;
   }
 }
 
@@ -25,7 +37,8 @@ void Telemeter::sendStatus(
     v33Voltage, v5Voltage, v12Voltage
   );
 
-  sendPacket(packet.data.data(), packet.data.size());
+  reservePacket(packet.data.data(), packet.data.size());
+  sendPacket();
 }
 
 
@@ -41,7 +54,7 @@ void Telemeter::sendFlightData(
     yaw, pitch, roll
   );
 
-  sendPacket(packet.data.data(), packet.data.size());
+  reservePacket(packet.data.data(), packet.data.size());
 }
 
 
@@ -63,7 +76,7 @@ void Telemeter::sendConfig(
     landingTime
   );
 
-  sendPacket(packet.data.data(), packet.data.size());
+  reservePacket(packet.data.data(), packet.data.size());
 }
 
 void Telemeter::sendEvent(
@@ -74,5 +87,5 @@ void Telemeter::sendEvent(
     event
   );
 
-  sendPacket(packet.data.data(), packet.data.size());
+  reservePacket(packet.data.data(), packet.data.size());
 }
