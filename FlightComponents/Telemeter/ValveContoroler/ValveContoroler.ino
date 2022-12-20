@@ -32,6 +32,7 @@ void setup()
 
     pinMode(2, INPUT_PULLUP); // WAITING
     pinMode(3, INPUT_PULLUP); // LUNCH
+    pinMode(LED_BUILTIN, OUTPUT);
 
     Mainservo.write(0, 30, true);
     Supplyservo.write(0, 30, true);
@@ -82,37 +83,26 @@ void loop()
     StaticJsonDocument<64> servoPacket;
     servoPacket["mainservoDeg"] = Mainservo_deg;
     servoPacket["supplyservoDeg"] = Supplyservo_deg;
+
     Serial.println();
     serializeJson(servoPacket, Serial);
-
-    delay(10);
 }
-
 void L_Position()
 {
-    Mainservo.write(140, 60, true);
-    Mainservo_deg = Mainservo.read();
-    // 燃焼実験の際はコメントアウト
-    /*
     Supplyservo.write(90, 60, true); // SupplyServo CLOSE
     Supplyservo_deg = Supplyservo.read();
     delay(1000);
-    Mainservo.write(140, 80, true); // MainServo OPEN
+    Mainservo.write(140, 30, true); // MainServo OPEN
     Mainservo_deg = Mainservo.read();
-    */
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void W_Position()
 {
-    Mainservo.write(0, 30, true);
-    Mainservo_deg = Mainservo.read();
-
-    // 以下、燃焼実験中はコメントアウト
-    /*
     Supplyservo.write(0, 60, true); // SupplyServo OPEN
     Supplyservo_deg = Supplyservo.read();
     delay(1000);
     Mainservo.write(0, 30, true); // MainServo CLOSE
     Mainservo_deg = Mainservo.read();
-    */
+    digitalWrite(LED_BUILTIN, LOW);
 }
