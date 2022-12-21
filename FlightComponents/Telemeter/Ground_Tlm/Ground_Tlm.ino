@@ -6,7 +6,7 @@
 #include <LoRa.h>
 #include <ArduinoJson.h>
 
-StaticJsonDocument<512> packet;
+StaticJsonDocument<1024> packet;
 
 void setup()
 {
@@ -28,7 +28,7 @@ void loop()
   if (LoRa.parsePacket())
   {
     deserializeJson(packet, LoRa);
-    char output[512];
+    char output[1024];
     serializeJson(packet, output);
     digitalWrite(LED_BUILTIN, HIGH);
     Serial.println(output);

@@ -10,6 +10,8 @@
 #include <SPI.h>
 #include <Arduino_MKRGPS.h>
 #include <ArduinoJson.h>
+#include "StreamUtils.h"
+
 
 // GPSの設定
 float latitude;
@@ -30,18 +32,18 @@ float supplyservo_deg;
 float mainservo_deg;
 
 // LoRa addressの設定? <=2022/11/18時点では不明瞭
-byte localAddress = 0xBB; // address of this device
-byte destination = 0xFF;  // where we are sending data to
+// byte localAddress = 0xBB; // address of this device
+// byte destination = 0xFF;  // where we are sending data to
 
 // millis()の設定
 unsigned long prev_SEND, interval_SEND;
-
 
 void setup()
 {
     // initialize serial communications and wait for port to open:
     Serial.begin(115200);
-
+    // while (!Serial)
+    //     continue;
     Serial1.begin(9600);
 
     if (!LoRa.begin(923E6))
@@ -60,8 +62,7 @@ void setup()
     }
 
     prev_SEND = 0;
-    interval_SEND = 1000;
-
+    interval_SEND = 2000;
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
@@ -74,7 +75,7 @@ void loop()
 
     // check if there is new GPS data available
 
-    if (GPS.available() > 0)
+    if (GPS.available())
     {
         // read GPS values
         latitude = GPS.latitude();
@@ -87,10 +88,11 @@ void loop()
         // downlinkFlightData_tlm();
     }
 
-    if (Serial1.available() > 0)
+     if (Serial1.available() > 0)
+    //while (Serial1.available() < 10)
     {
 
-        StaticJsonDocument<256> servoPacket;
+        StaticJsonDocument<1024> servoPacket;
         DeserializationError err = deserializeJson(servoPacket, Serial1);
 
         if (err == DeserializationError::Ok)
@@ -101,7 +103,7 @@ void loop()
         }
         else
         {
-            Serial.print("deserializeJson() returned ");
+            // Serial.print("deserializeJson() returned ");
             Serial.println(err.c_str());
             digitalWrite(5, LOW);
 
@@ -109,6 +111,26 @@ void loop()
                 Serial1.read();
         }
     }
+
+    /*
+    if (Serial1.available())
+    {
+        StaticJsonDocument<256> servoPacket;
+        DeserializationError err = deserializeJson(servoPacket, Serial1);
+        digitalWrite(5, LOW);
+
+        if (err)
+        {
+            digitalWrite(5, HIGH);
+            Serial.println(err.c_str());
+
+            while (Serial1.available() > 0)
+                Serial1.read();
+
+            return;
+        }
+    }
+    */
 
     downlinkFlightData_tlm();
 }

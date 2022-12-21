@@ -22,10 +22,10 @@ float Mainservo_deg;
 void setup()
 {
     Serial.begin(115200);
-    while (!Serial)
-        continue;
-
+    // while (!Serial)
+    //     continue;
     Serial.begin(9600);
+    // Serial.begin(115200);
 
     Mainservo.attach(MainServoPin);
     Supplyservo.attach(SupplyServoPin);
@@ -86,6 +86,8 @@ void loop()
 
     Serial.println();
     serializeJson(servoPacket, Serial);
+
+    delay(10);
 }
 void L_Position()
 {
