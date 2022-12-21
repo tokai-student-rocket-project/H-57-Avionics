@@ -91,19 +91,26 @@ void loop()
 }
 void L_Position()
 {
-    Supplyservo.write(90, 60, true); // SupplyServo CLOSE
-    Supplyservo_deg = Supplyservo.read();
-    delay(1000);
-    Mainservo.write(140, 30, true); // MainServo OPEN
+    /*燃焼、コールドフロー試験用にコメントアウト*/
+    //Supplyservo.write(90, 60, true); // SupplyServo CLOSE
+    //Supplyservo_deg = Supplyservo.read();
+    //delay(1000);
+    Mainservo.write(140, 30, true); // MainServo OPENw
     Mainservo_deg = Mainservo.read();
     digitalWrite(LED_BUILTIN, HIGH);
+    //2022/12/21
+    //コールドフロー試験
+    //Mainservo.write(140, 30, true); 角度140°、速度30にて成功
+    //成功を踏まえて...
+    //速度を早くするべきかどうか検討する必要あり。 
 }
 
 void W_Position()
 {
-    Supplyservo.write(0, 60, true); // SupplyServo OPEN
-    Supplyservo_deg = Supplyservo.read();
-    delay(1000);
+    /*燃焼、コールドフロー試験用にコメントアウト*/
+    //Supplyservo.write(0, 60, true); // SupplyServo OPEN
+    //Supplyservo_deg = Supplyservo.read();
+    //delay(1000);
     Mainservo.write(0, 30, true); // MainServo CLOSE
     Mainservo_deg = Mainservo.read();
     digitalWrite(LED_BUILTIN, LOW);
