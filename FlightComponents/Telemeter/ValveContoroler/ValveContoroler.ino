@@ -21,7 +21,7 @@ float Mainservo_deg;
 
 void setup()
 {
-    Serial.begin(115200);
+    //Serial.begin(115200);
     // while (!Serial)
     //     continue;
     Serial.begin(9600);
@@ -95,7 +95,8 @@ void L_Position()
     //Supplyservo.write(90, 60, true); // SupplyServo CLOSE
     //Supplyservo_deg = Supplyservo.read();
     //delay(1000);
-    Mainservo.write(140, 30, true); // MainServo OPENw
+    delay(500);
+    Mainservo.write(140, 80, true); // MainServo OPEN
     Mainservo_deg = Mainservo.read();
     digitalWrite(LED_BUILTIN, HIGH);
     //2022/12/21
@@ -103,6 +104,12 @@ void L_Position()
     //Mainservo.write(140, 30, true); 角度140°、速度30にて成功
     //成功を踏まえて...
     //速度を早くするべきかどうか検討する必要あり。 
+    //
+    //2022/12/23
+    //燃焼実験
+    //Mainservo.write(140, 80, true);角度140°、速度80、GSEカウント0から0.5s後に設定して実験
+    //
+    //
 }
 
 void W_Position()
