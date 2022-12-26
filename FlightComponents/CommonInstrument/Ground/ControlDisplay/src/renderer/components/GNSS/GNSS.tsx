@@ -35,7 +35,7 @@ const ChangeCenter = (props: ChangeCenterProps) => {
   return null;
 };
 
-const GPS = () => {
+const GNSS = () => {
   const [latitude, setLatitude] = useState<number>(42.514179);
   const [longitude, setLongitude] = useState<number>(143.439731);
   const [center, setCenter] = useState<L.LatLngExpression>([
@@ -63,7 +63,7 @@ const GPS = () => {
 
   return (
     <Card
-      title="GPS"
+      title="GNSS"
       bordered={false}
       style={{ margin: '8px' }}
       extra={
@@ -169,4 +169,4 @@ const GPS = () => {
   );
 };
 
-export default GPS;
+export default GNSS;

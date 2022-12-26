@@ -7,7 +7,7 @@ import FlightData from './components/FlightData';
 import Badge from './components/Badge';
 import FlightMode from './components/FlightMode';
 import Telecom from './components/Telecom';
-import GPS from './components/GPS';
+import GNSS from './components/GNSS';
 import Valve from './components/Valve';
 import AltitudeIndicator from './components/AltitudeIndicator';
 import Electric from './components/Electric';
@@ -33,7 +33,7 @@ const App = () => {
         </Row>
       </Header>
 
-      <Content>
+      <Content style={{ padding: '0 16px' }}>
         <Row>
           <Col span={8}>
             <Row>
@@ -55,7 +55,7 @@ const App = () => {
             </Row>
             <Row>
               <Col span={24}>
-                <GPS />
+                <GNSS />
               </Col>
             </Row>
           </Col>
