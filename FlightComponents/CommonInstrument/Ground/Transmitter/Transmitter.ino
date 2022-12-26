@@ -99,34 +99,37 @@ void loop() {
   }
 
 
-  // DeserializationError result = deserializeJson(upPacket, Serial);
-  // if (result == DeserializationError::Ok) {
-  //   if (upPacket["t"] != 'C') return;
+  int available = Serial.available();
+  if (available) {
+    deserializeJson(upPacket, Serial);
 
-  //   float payload = upPacket["v"].as<float>();
+    if (upPacket["t"] != "c") return;
 
-  //   // 指定分離高度
-  //   if (upPacket["l"] == 'a') sendCommand(0x00, payload);
-  //   // 基準気圧
-  //   if (upPacket["l"] == 'p') sendCommand(0x01, payload);
-  //   // 想定燃焼時間
-  //   if (upPacket["l"] == 'b') sendCommand(0x02, payload);
-  //   // 分離保護時間
-  //   if (upPacket["l"] == 'sp') sendCommand(0x03, payload);
-  //   // 強制分離時間
-  //   if (upPacket["l"] == 'fs') sendCommand(0x04, payload);
-  //   // 想定着地時間
-  //   if (upPacket["l"] == 'l') sendCommand(0x05, payload);
+    float payload = upPacket["v"].as<float>();
 
-  //   upPacket.clear();
-  // }
+    // 指定分離高度
+    if (upPacket["l"] == "a") sendCommand(0x00, payload);
+    // 基準気圧
+    if (upPacket["l"] == "p") sendCommand(0x01, payload);
+    // 想定燃焼時間
+    if (upPacket["l"] == "bt") sendCommand(0x02, payload);
+    // 分離保護時間
+    if (upPacket["l"] == "sp") sendCommand(0x03, payload);
+    // 強制分離時間
+    if (upPacket["l"] == "fs") sendCommand(0x04, payload);
+    // 想定着地時間
+    if (upPacket["l"] == "l") sendCommand(0x05, payload);
+
+    upPacket.clear();
+  }
 }
 
 
 void sendCommand(uint8_t command, float payload) {
-  // LoRa.beginPacket();
-  // MsgPacketizer::send(LoRa, 0xF3, command, payload);
-  // LoRa.endPacket();
+  if (LoRa.beginPacket()) {
+    MsgPacketizer::send(LoRa, 0xF3, command, payload);
+    LoRa.endPacket();
+  }
 }
 
 

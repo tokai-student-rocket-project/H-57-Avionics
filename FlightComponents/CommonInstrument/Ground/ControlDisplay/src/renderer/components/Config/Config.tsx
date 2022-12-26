@@ -1,8 +1,7 @@
 import { Card, Col, Row, Statistic, Select, Button, Input } from 'antd';
 import { useState, useEffect } from 'react';
-import { FaTelegramPlane } from 'react-icons/fa';
 
-const units = { a: 'm', p: 'hPa', b: 'sec', sp: 'sec', fs: 'sec', l: 'sec' };
+const units = { a: 'm', p: 'hPa', bt: 'sec', sp: 'sec', fs: 'sec', l: 'sec' };
 
 const Config = () => {
   const [separationAltitude, setSeparationAltitude] = useState<string>('');
@@ -43,7 +42,7 @@ const Config = () => {
       window.electronAPI.sendConfig(selectedLabel, value);
     if (selectedLabel === 'p')
       window.electronAPI.sendConfig(selectedLabel, value);
-    if (selectedLabel === 'b')
+    if (selectedLabel === 'bt')
       window.electronAPI.sendConfig(selectedLabel, value);
     if (selectedLabel === 'sp')
       window.electronAPI.sendConfig(selectedLabel, value);
@@ -116,7 +115,7 @@ const Config = () => {
           options={[
             { value: 'a', label: '指定分離高度' },
             { value: 'p', label: '基準気圧' },
-            { value: 'b', label: '想定燃焼時間' },
+            { value: 'bt', label: '想定燃焼時間' },
             { value: 'sp', label: '分離保護時間' },
             { value: 'fs', label: '強制分離時間' },
             { value: 'l', label: '想定着地時' },
@@ -128,7 +127,6 @@ const Config = () => {
           style={{ height: '32px' }}
         />
         <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
-          {/* <FaTelegramPlane size={24} /> */}
           送信
         </Button>
       </div>

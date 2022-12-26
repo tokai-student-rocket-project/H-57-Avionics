@@ -152,15 +152,15 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
-  // MsgPacketizer::subscribe(LoRa, 0xF3,
-  //   [](
-  //     uint8_t command,
-  //     float payload
-  //     )
-  //   {
-  //     if (!isFlying()) executeCommand(command, payload);
-  //   }
-  // );
+  MsgPacketizer::subscribe(LoRa, 0xF3,
+    [](
+      uint8_t command,
+      float payload
+      )
+    {
+      if (!isFlying()) executeCommand(command, payload);
+    }
+  );
 
   // ロジック用タイマー 0.01秒間隔
   internal::_logicInterval.onUpdate([&]() {
@@ -173,7 +173,10 @@ void setup() {
     downlinkStatus();
   downlinkFlightData();
   downlinkConfig();
+
+  device::_commandIndicator.on();
   device::_telemeter.sendDownlink();
+  device::_commandIndicator.off();
     });
   internal::_downlinkInterval.start();
 
@@ -203,9 +206,9 @@ void logic() {
   updateFlightMode();
   writeLog();
 
-  // if (LoRa.parsePacket()) {
-  //   MsgPacketizer::parse();
-  // }
+  if (LoRa.parsePacket()) {
+    MsgPacketizer::parse();
+  }
 
   if (canReset()) {
     reset();
@@ -303,20 +306,14 @@ void writeLog() {
 /// @brief イベントをダウンリンクで送信する
 /// @param event イベント
 void downlinkEvent(String event) {
-  device::_commandIndicator.on();
-
   device::_telemeter.sendEvent(
     event
   );
-
-  device::_commandIndicator.off();
 }
 
 
 /// @brief ステータスをダウンリンクで送信する
 void downlinkStatus() {
-  device::_commandIndicator.on();
-
   device::_telemeter.sendStatus(
     static_cast<uint8_t>(internal::_flightMode),
     device::_flightPin.isReleased(),
@@ -326,16 +323,12 @@ void downlinkStatus() {
     analogRead(A0) / 1024.0 * 3.3 * 2.08,
     analogRead(A2) / 1024.0 * 3.3 * 5.00
   );
-
-  device::_commandIndicator.off();
 }
 
 
 /// @brief フライトデータをダウンリンクで送信する
 void downlinkFlightData() {
   if (!isFlying()) return;
-
-  device::_commandIndicator.on();
 
   device::_telemeter.sendFlightData(
     (millis() - internal::_launchTime_ms) / 1000.0,
@@ -345,16 +338,12 @@ void downlinkFlightData() {
     flightData::_pitch,
     flightData::_roll
   );
-
-  device::_commandIndicator.off();
 }
 
 
 /// @brief コンフィグをダウンリンクで送信する
 void downlinkConfig() {
   if (isFlying()) return;
-
-  device::_commandIndicator.on();
 
   device::_telemeter.sendConfig(
     config::separation_altitude_m,
@@ -364,8 +353,6 @@ void downlinkConfig() {
     config::force_separation_time_ms / 1000.0,
     config::landing_time_ms / 1000.0
   );
-
-  device::_commandIndicator.off();
 }
 
 
