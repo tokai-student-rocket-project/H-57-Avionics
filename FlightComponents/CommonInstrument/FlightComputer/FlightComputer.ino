@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <IntervalCounter.h>
 #include <OneShotTimer.h>
+#include <MsgPacketizer.h>
 #include "BME280Wrap.h"
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
@@ -151,6 +152,16 @@ void setup() {
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
 
+  // MsgPacketizer::subscribe(LoRa, 0xF3,
+  //   [](
+  //     uint8_t command,
+  //     float payload
+  //     )
+  //   {
+  //     if (!isFlying()) executeCommand(command, payload);
+  //   }
+  // );
+
   // ロジック用タイマー 0.01秒間隔
   internal::_logicInterval.onUpdate([&]() {
     logic();
@@ -162,6 +173,7 @@ void setup() {
     downlinkStatus();
   downlinkFlightData();
   downlinkConfig();
+  device::_telemeter.sendDownlink();
     });
   internal::_downlinkInterval.start();
 
@@ -189,8 +201,11 @@ void logic() {
   updateFlightData();
   updateIndicators();
   updateFlightMode();
-  receiveCommand();
   writeLog();
+
+  // if (LoRa.parsePacket()) {
+  //   MsgPacketizer::parse();
+  // }
 
   if (canReset()) {
     reset();
@@ -472,43 +487,42 @@ void changeFlightMode(FlightMode nextMode) {
 }
 
 
-/// @brief アップリンクを受信していれば処理をする
-void receiveCommand() {
-  if (isFlying()) return;
-  if (!LoRa.parsePacket()) return;
-
+/// @brief コマンドを実行する
+/// @param command 0x00:指定分離高度
+/// @param command 0x01:基準気圧
+/// @param command 0x02:想定燃焼時間
+/// @param command 0x03:分離保護時間
+/// @param command 0x04 強制分離時間
+/// @param command 0x05:想定着地時間
+/// @param payload 
+void executeCommand(uint8_t command, float payload) {
   device::_commandIndicator.on();
 
-  deserializeJson(upPacket, LoRa);
-
-  if (upPacket["t"] == "c") {
-    if (upPacket["l"] == "a") {
-      config::separation_altitude_m =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] : config::DEFAULT_SEPARATION_ALTITUDE_m;
-    }
-    else if (upPacket["l"] == "p") {
-      device::_bme280.setReferencePressure(
-        upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    }
-    else if (upPacket["l"] == "b") {
-      config::burn_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_BURN_TIME_ms;
-    }
-    else if (upPacket["l"] == "sp") {
-      config::separation_protection_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
-    }
-    else if (upPacket["l"] == "fs") {
-      config::force_separation_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
-    }
-    else if (upPacket["l"] == "l") {
-      config::landing_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
-    }
-
-    upPacket.clear();
+  switch (command)
+  {
+  case 0x00: // 指定分離高度
+    config::separation_altitude_m = payload ? payload * 1000.0 : config::DEFAULT_SEPARATION_ALTITUDE_m;
+    break;
+  case 0x01: // 基準気圧
+    device::_bme280.setReferencePressure(payload ? payload * 100.0 : device::_bme280.getPressure());
+    break;
+  case 0x02: // 想定燃焼時間
+    config::burn_time_ms = payload ? payload * 1000.0 : config::DEFAULT_BURN_TIME_ms;
+    break;
+  case 0x03: // 分離保護時間
+    config::separation_protection_time_ms = payload ? payload * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
+    break;
+  case 0x04: // 強制分離時間
+    config::force_separation_time_ms = payload ? payload * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
+    break;
+  case 0x05: // 想定着地時間
+    config::landing_time_ms = payload ? payload * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
+    break;
+  default:
+    break;
   }
 
   device::_commandIndicator.off();
+
+  downlinkEvent("CONFIG-UPDATED");
 }

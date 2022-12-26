@@ -4,7 +4,8 @@
 #include <MsgPacketizer.h>
 
 
-StaticJsonDocument<512> packet;
+StaticJsonDocument<512> downlinkPacket;
+StaticJsonDocument<512> upPacket;
 
 
 void setup() {
@@ -23,17 +24,15 @@ void setup() {
       float v12State
       )
     {
-      packet.clear();
-  packet["m"] = String(flightMode);
-  packet["f"] = flightPinState ? "1" : "0";
-  packet["s3"] = shiranui3State ? "1" : "0";
-  packet["b"] = buzzerState ? "1" : "0";
-  packet["v33"] = String(v33State, 1);
-  packet["v5"] = String(v5State, 1);
-  packet["v12"] = String(v12State, 1);
-  packet["rssi"] = String(LoRa.packetRssi());
-  serializeJson(packet, Serial);
-  Serial.println("");
+      downlinkPacket["m"] = String(flightMode);
+  downlinkPacket["f"] = flightPinState ? "1" : "0";
+  downlinkPacket["s3"] = shiranui3State ? "1" : "0";
+  downlinkPacket["b"] = buzzerState ? "1" : "0";
+  downlinkPacket["v33"] = String(v33State, 1);
+  downlinkPacket["v5"] = String(v5State, 1);
+  downlinkPacket["v12"] = String(v12State, 1);
+  downlinkPacket["rssi"] = String(LoRa.packetRssi());
+  sendDownlinkPacket();
     }
   );
 
@@ -48,16 +47,14 @@ void setup() {
       float roll
       )
     {
-      packet.clear();
-  packet["ft"] = String(flightTime, 2);
-  packet["alt"] = String(altitude, 1);
-  packet["s"] = String(speed, 2);
-  packet["y"] = String(yaw, 2);
-  packet["p"] = String(pitch, 2);
-  packet["r"] = String(roll, 2);
-  packet["rssi"] = String(LoRa.packetRssi());
-  serializeJson(packet, Serial);
-  Serial.println("");
+      downlinkPacket["ft"] = String(flightTime, 2);
+  downlinkPacket["alt"] = String(altitude, 1);
+  downlinkPacket["s"] = String(speed, 2);
+  downlinkPacket["y"] = String(yaw, 2);
+  downlinkPacket["p"] = String(pitch, 2);
+  downlinkPacket["r"] = String(roll, 2);
+  downlinkPacket["rssi"] = String(LoRa.packetRssi());
+  sendDownlinkPacket();
     }
   );
 
@@ -72,16 +69,14 @@ void setup() {
       float landingTime
       )
     {
-      packet.clear();
-  packet["a"] = String(separationAltitude, 1);
-  packet["p"] = String(basePressure, 1);
-  packet["bt"] = String(burnTime, 2);
-  packet["sp"] = String(separationProtectionTime, 2);
-  packet["fs"] = String(forceSeparationTime, 2);
-  packet["l"] = String(landingTime, 2);
-  packet["rssi"] = String(LoRa.packetRssi());
-  serializeJson(packet, Serial);
-  Serial.println("");
+      downlinkPacket["a"] = String(separationAltitude, 1);
+  downlinkPacket["p"] = String(basePressure, 1);
+  downlinkPacket["bt"] = String(burnTime, 2);
+  downlinkPacket["sp"] = String(separationProtectionTime, 2);
+  downlinkPacket["fs"] = String(forceSeparationTime, 2);
+  downlinkPacket["l"] = String(landingTime, 2);
+  downlinkPacket["rssi"] = String(LoRa.packetRssi());
+  sendDownlinkPacket();
     }
   );
 
@@ -91,10 +86,8 @@ void setup() {
       String event
       )
     {
-      packet.clear();
-  packet["e"] = event;
-  serializeJson(packet, Serial);
-  Serial.println("");
+      downlinkPacket["e"] = event;
+  sendDownlinkPacket();
     }
   );
 }
@@ -105,9 +98,40 @@ void loop() {
     MsgPacketizer::parse();
   }
 
-  if (Serial.available() > 0) {
-    LoRa.beginPacket();
-    LoRa.print(Serial.readStringUntil('\n'));
-    LoRa.endPacket();
-  }
+
+  // DeserializationError result = deserializeJson(upPacket, Serial);
+  // if (result == DeserializationError::Ok) {
+  //   if (upPacket["t"] != 'C') return;
+
+  //   float payload = upPacket["v"].as<float>();
+
+  //   // 指定分離高度
+  //   if (upPacket["l"] == 'a') sendCommand(0x00, payload);
+  //   // 基準気圧
+  //   if (upPacket["l"] == 'p') sendCommand(0x01, payload);
+  //   // 想定燃焼時間
+  //   if (upPacket["l"] == 'b') sendCommand(0x02, payload);
+  //   // 分離保護時間
+  //   if (upPacket["l"] == 'sp') sendCommand(0x03, payload);
+  //   // 強制分離時間
+  //   if (upPacket["l"] == 'fs') sendCommand(0x04, payload);
+  //   // 想定着地時間
+  //   if (upPacket["l"] == 'l') sendCommand(0x05, payload);
+
+  //   upPacket.clear();
+  // }
+}
+
+
+void sendCommand(uint8_t command, float payload) {
+  // LoRa.beginPacket();
+  // MsgPacketizer::send(LoRa, 0xF3, command, payload);
+  // LoRa.endPacket();
+}
+
+
+void sendDownlinkPacket() {
+  serializeJson(downlinkPacket, Serial);
+  Serial.println("");
+  downlinkPacket.clear();
 }

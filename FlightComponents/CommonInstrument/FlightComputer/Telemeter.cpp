@@ -5,9 +5,9 @@
 
 
 void Telemeter::reservePacket(const uint8_t* data, const size_t size) {
-  if (_offset + size >= 256) sizeof(_buffer) / sizeof(_buffer[0]);
+  if (_offset + size > sizeof(_buffer) / sizeof(_buffer[0])) return;
 
-  for (uint32_t i = 0; i < size; i++)
+  for (size_t i = 0; i < size; i++)
   {
     _buffer[_offset + i] = data[i];
   }
@@ -16,7 +16,7 @@ void Telemeter::reservePacket(const uint8_t* data, const size_t size) {
 }
 
 
-void Telemeter::sendPacket() {
+void Telemeter::sendDownlink() {
   if (LoRa.beginPacket()) {
     LoRa.write(_buffer, _offset);
     LoRa.endPacket(true);
@@ -38,7 +38,6 @@ void Telemeter::sendStatus(
   );
 
   reservePacket(packet.data.data(), packet.data.size());
-  sendPacket();
 }
 
 

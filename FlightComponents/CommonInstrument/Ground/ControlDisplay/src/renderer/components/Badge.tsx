@@ -51,7 +51,7 @@ const Badge = () => {
         }}
       >
         <Title style={{ color: 'white', marginBottom: '0' }} level={1}>
-          H - 57
+          COLDFLOW
         </Title>
       </div>
       <div

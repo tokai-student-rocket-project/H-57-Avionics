@@ -13,9 +13,10 @@ private:
   uint32_t _offset;
 
   void reservePacket(const uint8_t* data, const size_t size);
-  void sendPacket();
 
 public:
+  void sendDownlink();
+
   void sendStatus(
     uint8_t flightMode,
     bool flightPinState,
