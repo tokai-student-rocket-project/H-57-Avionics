@@ -212,6 +212,7 @@ void logic() {
 
   if (canReset()) {
     reset();
+    device::_logger.initialize();
     changeFlightMode(FlightMode::STANDBY);
     downlinkEvent("RESET");
   }
@@ -282,24 +283,24 @@ void writeLog() {
 
   if (!isFlying()) return;
 
-  // device::_logger.writeLog(
-  //   (millis() - internal::_launchTime_ms) / 1000.0,
-  //   static_cast<uint8_t>(internal::_flightMode),
-  //   device::_shiranui3.getState() ? 1 : 0,
-  //   device::_buzzer.getState() ? 1 : 0,
-  //   flightData::_altitude_m,
-  //   flightData::_speed_mps,
-  //   internal::_descentDetector._descentCount,
-  //   flightData::_acceleration_x_g,
-  //   flightData::_acceleration_y_g,
-  //   flightData::_acceleration_z_g,
-  //   flightData::_gyro_x_degps,
-  //   flightData::_gyro_y_degps,
-  //   flightData::_gyro_z_degps,
-  //   flightData::_yaw,
-  //   flightData::_pitch,
-  //   flightData::_roll
-  // );
+  device::_logger.writeLog(
+    (millis() - internal::_launchTime_ms) / 1000.0,
+    static_cast<uint8_t>(internal::_flightMode),
+    device::_shiranui3.getState() ? 1 : 0,
+    device::_buzzer.getState() ? 1 : 0,
+    flightData::_altitude_m,
+    flightData::_speed_mps,
+    internal::_descentDetector._descentCount,
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g,
+    flightData::_gyro_x_degps,
+    flightData::_gyro_y_degps,
+    flightData::_gyro_z_degps,
+    flightData::_yaw,
+    flightData::_pitch,
+    flightData::_roll
+  );
 }
 
 
