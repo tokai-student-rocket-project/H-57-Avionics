@@ -87,12 +87,12 @@ const GNSS = () => {
     >
       <Row style={{ margin: '24px 0px' }}>
         <Col span={12} style={{ display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: '1.2em' }}>{`${DegToDms(
+          <span style={{ fontSize: '1.5em' }}>{`${DegToDms(
             Math.abs(latitude)
           )}${Math.sign(latitude) === -1 ? 'S' : 'N'}`}</span>
         </Col>
         <Col span={12} style={{ display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: '1.2em' }}>{`${DegToDms(
+          <span style={{ fontSize: '1.5em' }}>{`${DegToDms(
             Math.abs(longitude)
           )}${Math.sign(longitude) === -1 ? 'W' : 'E'}`}</span>
         </Col>

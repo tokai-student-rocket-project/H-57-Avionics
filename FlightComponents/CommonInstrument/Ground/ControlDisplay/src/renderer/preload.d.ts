@@ -9,7 +9,12 @@ declare global {
       flightDataRecieved(callback: () => void): void;
       configRecieved(callback: () => void): void;
       eventRecieved(
-        callback: (_: never, event: string, flightTime: string) => void
+        callback: (
+          _: never,
+          id: number,
+          flightTime: number,
+          event: string
+        ) => void
       ): void;
       rssiRecieved(callback: () => void): void;
 

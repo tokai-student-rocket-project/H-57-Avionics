@@ -83,10 +83,14 @@ void setup() {
   // Event
   MsgPacketizer::subscribe(LoRa, 0x04,
     [](
+      uint32_t id,
+      float flightTime,
       String event
       )
     {
-      downlinkPacket["e"] = event;
+      downlinkPacket["id"] = id;
+  downlinkPacket["eft"] = flightTime;
+  downlinkPacket["e"] = event;
   sendDownlinkPacket();
     }
   );

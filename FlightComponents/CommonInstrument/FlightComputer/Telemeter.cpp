@@ -79,12 +79,17 @@ void Telemeter::sendConfig(
 }
 
 void Telemeter::sendEvent(
+  float flightTime,
   String event
 ) {
   const auto& packet = MsgPacketizer::encode(
     eventLabel,
+    _event_count,
+    flightTime,
     event
   );
+
+  _event_count++;
 
   reservePacket(packet.data.data(), packet.data.size());
 }

@@ -12,6 +12,8 @@ private:
   uint8_t _buffer[256];
   uint32_t _offset;
 
+  uint32_t _event_count;
+
   void reservePacket(const uint8_t* data, const size_t size);
 
 public:
@@ -46,6 +48,7 @@ public:
   );
 
   void sendEvent(
+    float flightTime,
     String event
   );
 };

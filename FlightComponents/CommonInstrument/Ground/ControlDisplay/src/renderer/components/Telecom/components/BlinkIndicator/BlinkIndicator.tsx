@@ -39,9 +39,8 @@ const BlinkIndicator = () => {
       blink(setGpsDownState);
     });
 
-    window.electronAPI.eventRecieved((_, event) => {
+    window.electronAPI.eventRecieved(() => {
       blink(setEventDownState);
-      console.log(event);
     });
 
     return () => {
@@ -50,6 +49,7 @@ const BlinkIndicator = () => {
       window.electronAPI.remove('status-recieved');
       window.electronAPI.remove('rssi-recieved');
       window.electronAPI.remove('teremetry-recieved');
+      window.electronAPI.remove('event-recieved');
     };
   }, []);
 

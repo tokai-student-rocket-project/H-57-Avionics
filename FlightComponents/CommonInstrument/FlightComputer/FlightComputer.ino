@@ -119,6 +119,8 @@ void setup() {
   Serial1.begin(115200);
   LoRa.begin(920E6);
 
+  downlinkEvent("INITIALIZE");
+
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
 
@@ -186,9 +188,9 @@ void setup() {
   device::_buzzer.on();
     });
 
-  downlinkEvent("INITIALIZED");
-
   reset();
+
+  downlinkEvent("START");
 }
 
 
@@ -211,16 +213,16 @@ void logic() {
   }
 
   if (canReset()) {
+    downlinkEvent("RESET");
     reset();
     device::_logger.initialize();
     changeFlightMode(FlightMode::STANDBY);
-    downlinkEvent("RESET");
   }
 
   if (canSeparateForce()) {
+    downlinkEvent("FORCE-SEPARATE");
     separate();
     changeFlightMode(FlightMode::PARACHUTE);
-    downlinkEvent("FORCE-SEPARATED");
   }
 }
 
@@ -284,7 +286,7 @@ void writeLog() {
   if (!isFlying()) return;
 
   device::_logger.writeLog(
-    (millis() - internal::_launchTime_ms) / 1000.0,
+    flightTime(),
     static_cast<uint8_t>(internal::_flightMode),
     device::_shiranui3.getState() ? 1 : 0,
     device::_buzzer.getState() ? 1 : 0,
@@ -308,6 +310,7 @@ void writeLog() {
 /// @param event イベント
 void downlinkEvent(String event) {
   device::_telemeter.sendEvent(
+    flightTime(),
     event
   );
 }
@@ -332,7 +335,7 @@ void downlinkFlightData() {
   if (!isFlying()) return;
 
   device::_telemeter.sendFlightData(
-    (millis() - internal::_launchTime_ms) / 1000.0,
+    flightTime(),
     flightData::_altitude_m,
     flightData::_speed_mps,
     flightData::_yaw,
@@ -354,6 +357,14 @@ void downlinkConfig() {
     config::force_separation_time_ms / 1000.0,
     config::landing_time_ms / 1000.0
   );
+}
+
+/// @brief 飛行時間を返す。飛行中でなければ -1.0 を返す
+/// @return 飛行時間 [s]
+float flightTime() {
+  if (!isFlying()) return -1.0;
+
+  return (millis() - internal::_launchTime_ms) / 1000.0;
 }
 
 
@@ -431,36 +442,36 @@ void updateFlightMode() {
     if (device::_flightPin.isReleased()) {
       internal::_launchTime_ms = millis();
       changeFlightMode(FlightMode::THRUST);
-      downlinkEvent("LAUNCHED");
+      downlinkEvent("LAUNCH");
     };
     break;
 
   case FlightMode::THRUST:
     if (isBurnout()) {
-      changeFlightMode(FlightMode::CLIMB);
       downlinkEvent("BURNOUT");
+      changeFlightMode(FlightMode::CLIMB);
     }
     break;
 
   case FlightMode::CLIMB:
     if (internal::_descentDetector._isDescending) {
-      changeFlightMode(FlightMode::DESCENT);
       downlinkEvent("DESCENT");
+      changeFlightMode(FlightMode::DESCENT);
     }
     break;
 
   case FlightMode::DESCENT:
     if (canSeparate()) {
+      downlinkEvent("SEPARATE");
       separate();
       changeFlightMode(FlightMode::PARACHUTE);
-      downlinkEvent("SEPARATED");
     }
     break;
 
   case FlightMode::PARACHUTE:
     if (isLanded()) {
+      downlinkEvent("LAND");
       changeFlightMode(FlightMode::LAND);
-      downlinkEvent("LANDED");
     }
   }
 }
@@ -486,10 +497,12 @@ void changeFlightMode(FlightMode nextMode) {
 void executeCommand(uint8_t command, float payload) {
   device::_commandIndicator.on();
 
+  downlinkEvent("CONFIG-UPDATE");
+
   switch (command)
   {
   case 0x00: // 指定分離高度
-    config::separation_altitude_m = payload ? payload * 1000.0 : config::DEFAULT_SEPARATION_ALTITUDE_m;
+    config::separation_altitude_m = payload ? payload : config::DEFAULT_SEPARATION_ALTITUDE_m;
     break;
   case 0x01: // 基準気圧
     device::_bme280.setReferencePressure(payload ? payload * 100.0 : device::_bme280.getPressure());
@@ -511,6 +524,4 @@ void executeCommand(uint8_t command, float payload) {
   }
 
   device::_commandIndicator.off();
-
-  downlinkEvent("CONFIG-UPDATED");
 }

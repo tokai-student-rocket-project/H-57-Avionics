@@ -77,7 +77,12 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       }
 
       if (dataObject.e) {
-        mainWindow?.webContents.send('event-recieved', dataObject.e);
+        mainWindow?.webContents.send(
+          'event-recieved',
+          Number(dataObject.id),
+          Number(dataObject.eft),
+          dataObject.e
+        );
       }
 
       if (dataObject.rssi) {
