@@ -5,6 +5,8 @@
 class Logger
 {
 private:
+  const size_t _PAGE_SIZE = 128;
+
   uint8_t _addresses[8] = { 0x50, 0x54, 0x51, 0x55, 0x52, 0x56, 0x53, 0x57 };
   size_t _packetCount = 0;
 

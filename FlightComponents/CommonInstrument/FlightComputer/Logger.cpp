@@ -24,7 +24,7 @@ void Logger::writeLog(
   float roll
 ) {
   const auto& packet = MsgPacketizer::encode(
-    0x00,
+    0x12,
     flightTime, flightMode,
     StateShiranui3, StateBuzzer,
     altitude, speed,
@@ -34,14 +34,14 @@ void Logger::writeLog(
     yaw, pitch, roll
   );
 
-  Logger::write(_packetCount, (unsigned char*)packet.data.data(), 128);
+  Logger::write(_packetCount, (unsigned char*)packet.data.data(), packet.data.size());
 
   _packetCount++;
 }
 
 
 void Logger::write(const size_t packetCount, const uint8_t* data, const size_t size) {
-  size_t address = packetCount * size;
+  size_t address = packetCount * Logger::_PAGE_SIZE;
   uint8_t blockAddress = (uint8_t)(address >> 16);
   uint16_t innerAddress = (uint16_t)(address & 0x0000FFFF);
 
@@ -51,6 +51,7 @@ void Logger::write(const size_t packetCount, const uint8_t* data, const size_t s
   Wire.write(data, size);
   Wire.endTransmission();
 }
+
 
 void Logger::initialize() {
   _packetCount = 0;
