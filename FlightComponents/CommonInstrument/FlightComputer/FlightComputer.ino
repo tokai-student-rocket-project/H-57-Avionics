@@ -10,7 +10,6 @@
 #include <MadgwickAHRS.h>
 #include <movingAvg.h>
 #include "Logger.h"
-#include "Velocity.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
@@ -88,19 +87,12 @@ namespace internal {
 
   // 姿勢角算出用のフィルタ
   Madgwick _madgwickFilter;
-
-  // 速度算出用
-  Velocity _velocity;
-  movingAvg _acceleration_x_average_g(50);
-  movingAvg _acceleration_y_average_g(50);
-  movingAvg _acceleration_z_average_g(50);
 }
 
 namespace flightData {
   float _temperature_degT;
   float _pressure_Pa;
   float _altitude_m;
-  float _speed_mps;
   float _acceleration_x_g;
   float _acceleration_y_g;
   float _acceleration_z_g;
@@ -140,11 +132,6 @@ void setup() {
   device::_mpu6050.setYGyroOffset(40);
 
   internal::_madgwickFilter.begin(100);
-
-  internal::_velocity.initialize();
-  internal::_acceleration_x_average_g.begin();
-  internal::_acceleration_y_average_g.begin();
-  internal::_acceleration_z_average_g.begin();
 
   device::_flightPin.initialize();
   device::_commandIndicator.initialize();
@@ -255,14 +242,6 @@ void updateFlightData() {
   flightData::_yaw = internal::_madgwickFilter.getYaw();
   flightData::_pitch = internal::_madgwickFilter.getPitch();
   flightData::_roll = internal::_madgwickFilter.getRoll();
-
-  flightData::_speed_mps = internal::_velocity.getSpeed(
-    flightData::_acceleration_x_g,
-    flightData::_acceleration_y_g,
-    flightData::_acceleration_z_g,
-    internal::_acceleration_x_average_g.reading(ax) / 2048.0,
-    internal::_acceleration_y_average_g.reading(ay) / 2048.0,
-    internal::_acceleration_z_average_g.reading(az) / 2048.0);
 }
 
 
@@ -276,13 +255,6 @@ void updateIndicators() {
 
 // ロガーにフライトデータを書き込む
 void writeLog() {
-  // パケット構造
-  // <飛行時間[s]>,<フライトモード>,
-  // <不知火3の状態>,<ブザーの状態>,
-  // <高度[m]>,<降下検出数>,
-  // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
-  // <ヨー角[deg]>,<ピッチ角[deg]>,<ロール角[deg]>,<速度[m/s]>\n
-
   if (!isFlying()) return;
 
   device::_logger.writeLog(
@@ -291,7 +263,6 @@ void writeLog() {
     device::_shiranui3.getState() ? 1 : 0,
     device::_buzzer.getState() ? 1 : 0,
     flightData::_altitude_m,
-    flightData::_speed_mps,
     internal::_descentDetector._descentCount,
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
@@ -337,7 +308,7 @@ void downlinkFlightData() {
   device::_telemeter.sendFlightData(
     flightTime(),
     flightData::_altitude_m,
-    flightData::_speed_mps,
+    flightData::_acceleration_x_g + flightData::_acceleration_y_g + flightData::_acceleration_z_g,
     flightData::_yaw,
     flightData::_pitch,
     flightData::_roll

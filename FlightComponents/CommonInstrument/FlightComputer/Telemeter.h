@@ -32,7 +32,7 @@ public:
   void sendFlightData(
     float flightTime,
     float altitude,
-    float speed,
+    float acceleration,
     float yaw,
     float pitch,
     float roll

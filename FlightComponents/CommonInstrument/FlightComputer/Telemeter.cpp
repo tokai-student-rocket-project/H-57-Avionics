@@ -43,13 +43,13 @@ void Telemeter::sendStatus(
 
 void Telemeter::sendFlightData(
   float flightTime,
-  float altitude, float speed,
+  float altitude, float acceleration,
   float yaw, float pitch, float roll
 ) {
   const auto& packet = MsgPacketizer::encode(
     flightDataLabel,
     flightTime,
-    altitude, speed,
+    altitude, acceleration,
     yaw, pitch, roll
   );
 

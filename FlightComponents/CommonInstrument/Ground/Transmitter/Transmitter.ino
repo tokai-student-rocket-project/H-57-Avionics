@@ -41,7 +41,7 @@ void setup() {
     [](
       float flightTime,
       float altitude,
-      float speed,
+      float acceleration,
       float yaw,
       float pitch,
       float roll
@@ -49,7 +49,7 @@ void setup() {
     {
       downlinkPacket["ft"] = String(flightTime, 2);
   downlinkPacket["alt"] = String(altitude, 1);
-  downlinkPacket["s"] = String(speed, 2);
+  downlinkPacket["ac"] = String(acceleration, 2);
   downlinkPacket["y"] = String(yaw, 2);
   downlinkPacket["p"] = String(pitch, 2);
   downlinkPacket["r"] = String(roll, 2);

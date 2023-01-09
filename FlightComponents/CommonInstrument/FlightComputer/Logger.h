@@ -21,7 +21,6 @@ public:
     uint8_t StateShiranui3,
     uint8_t StateBuzzer,
     float altitude,
-    float speed,
     uint16_t descentCount,
     float accelerationX,
     float accelerationY,
