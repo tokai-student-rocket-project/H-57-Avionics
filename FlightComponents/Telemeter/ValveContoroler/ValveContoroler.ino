@@ -63,7 +63,6 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-
     if (Position == 2 && digitalRead(3) == LOW)
     {
         WCount++;
@@ -82,6 +81,7 @@ void loop()
         delay(300);
     }
 
+    //
     StaticJsonDocument<64> servoPacket;
     servoPacket["mainservoDeg"] = Mainservo_deg;
     servoPacket["supplyservoDeg"] = Supplyservo_deg;
@@ -89,12 +89,12 @@ void loop()
     Serial.println();
     serializeJson(servoPacket, Serial);
 
-    //Serial.print(WCount);
-    //Serial.print(",");
-    //Serial.println(LCount);
+    // Serial.print(WCount);
+    // Serial.print(",");
+    // Serial.println(LCount);
 
-    delay(2); //250Hz 
-    //delay(10);
+    delay(2); // 250Hz
+    // delay(10);
 }
 void L_Position()
 {
@@ -104,14 +104,15 @@ void L_Position()
     delay(10);
 
     /* --この下消去予定-- */
-    //delay(450);
-    //delay(500); //250Hz, delay(500), 点火処理時間:2.457s
-    // delay(1000); //250Hz, delay(1000), 点火処理時間:3.00s
-    
+    // delay(450);
+    // delay(500); //250Hz, delay(500), 点火処理時間:2.457s
+    //  delay(1000); //250Hz, delay(1000), 点火処理時間:3.00s
+    /* ----------------- */
+
     Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s
     Mainservo_deg = Mainservo.read();
     digitalWrite(LED_BUILTIN, HIGH);
-    
+
     // 2022/12/21
     // コールドフロー試験
     // Mainservo.write(140, 30, true); 角度140°、速度30にて成功
@@ -123,6 +124,15 @@ void L_Position()
     // Mainservo.write(140,50, true);角度140°、速度50で実験
     // 点火成功！
     //
+    // 2023/1/11
+    // コールドフロー試験
+    // Supplyservo.write(60, 60, true);
+    // Supplyservo_deg = Supplyservo.read();
+    // delay(10);
+    // Mainservo.write(140, 50, true);
+    // Mainservo_deg = Mainservo.read();
+    // digitalWrite(LED_BUILTIN, HIGH);
+    // 上記の動作でコールドフロー試験を成功させることが出来た。やったね！
 }
 
 void W_Position()
