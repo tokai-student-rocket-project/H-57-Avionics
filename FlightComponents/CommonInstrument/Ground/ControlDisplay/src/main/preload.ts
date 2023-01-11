@@ -15,7 +15,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   configRecieved: (callback: () => void) =>
     ipcRenderer.on('config-recieved', callback),
   eventRecieved: (
-    callback: (_: IpcRendererEvent, event: string, flightTime: string) => void
+    callback: (
+      _: IpcRendererEvent,
+      id: number,
+      flightTime: number,
+      event: string
+    ) => void
   ) => ipcRenderer.on('event-recieved', callback),
   rssiRecieved: (callback: () => void) =>
     ipcRenderer.on('rssi-recieved', callback),

@@ -4,12 +4,12 @@
 #include <ArduinoJson.h>
 #include <IntervalCounter.h>
 #include <OneShotTimer.h>
+#include <MsgPacketizer.h>
 #include "BME280Wrap.h"
 #include <MPU6050.h>
 #include <MadgwickAHRS.h>
 #include <movingAvg.h>
 #include "Logger.h"
-#include "Velocity.h"
 #include "FlightPin.h"
 #include "TwoStateDevice.h"
 #include "DescentDetector.h"
@@ -87,19 +87,12 @@ namespace internal {
 
   // 姿勢角算出用のフィルタ
   Madgwick _madgwickFilter;
-
-  // 速度算出用
-  Velocity _velocity;
-  movingAvg _acceleration_x_average_g(50);
-  movingAvg _acceleration_y_average_g(50);
-  movingAvg _acceleration_z_average_g(50);
 }
 
 namespace flightData {
   float _temperature_degT;
   float _pressure_Pa;
   float _altitude_m;
-  float _speed_mps;
   float _acceleration_x_g;
   float _acceleration_y_g;
   float _acceleration_z_g;
@@ -117,6 +110,8 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(115200);
   LoRa.begin(920E6);
+
+  downlinkEvent("INITIALIZE");
 
   device::_bme280.initialize();
   device::_bme280.setReferencePressure(device::_bme280.getPressure());
@@ -138,11 +133,6 @@ void setup() {
 
   internal::_madgwickFilter.begin(100);
 
-  internal::_velocity.initialize();
-  internal::_acceleration_x_average_g.begin();
-  internal::_acceleration_y_average_g.begin();
-  internal::_acceleration_z_average_g.begin();
-
   device::_flightPin.initialize();
   device::_commandIndicator.initialize();
   device::_protectionIndicator.initialize();
@@ -150,6 +140,16 @@ void setup() {
   device::_separationIndicator.initialize();
   device::_shiranui3.initialize();
   device::_buzzer.initialize();
+
+  MsgPacketizer::subscribe(LoRa, 0xF3,
+    [](
+      uint8_t command,
+      float payload
+      )
+    {
+      if (!isFlying()) executeCommand(command, payload);
+    }
+  );
 
   // ロジック用タイマー 0.01秒間隔
   internal::_logicInterval.onUpdate([&]() {
@@ -162,6 +162,10 @@ void setup() {
     downlinkStatus();
   downlinkFlightData();
   downlinkConfig();
+
+  device::_commandIndicator.on();
+  device::_telemeter.sendDownlink();
+  device::_commandIndicator.off();
     });
   internal::_downlinkInterval.start();
 
@@ -171,9 +175,9 @@ void setup() {
   device::_buzzer.on();
     });
 
-  downlinkEvent("INITIALIZED");
-
   reset();
+
+  downlinkEvent("START");
 }
 
 
@@ -189,19 +193,23 @@ void logic() {
   updateFlightData();
   updateIndicators();
   updateFlightMode();
-  receiveCommand();
   writeLog();
 
+  if (LoRa.parsePacket()) {
+    MsgPacketizer::parse();
+  }
+
   if (canReset()) {
-    reset();
-    changeFlightMode(FlightMode::STANDBY);
     downlinkEvent("RESET");
+    reset();
+    device::_logger.initialize();
+    changeFlightMode(FlightMode::STANDBY);
   }
 
   if (canSeparateForce()) {
+    downlinkEvent("FORCE-SEPARATE");
     separate();
     changeFlightMode(FlightMode::PARACHUTE);
-    downlinkEvent("FORCE-SEPARATED");
   }
 }
 
@@ -234,14 +242,6 @@ void updateFlightData() {
   flightData::_yaw = internal::_madgwickFilter.getYaw();
   flightData::_pitch = internal::_madgwickFilter.getPitch();
   flightData::_roll = internal::_madgwickFilter.getRoll();
-
-  flightData::_speed_mps = internal::_velocity.getSpeed(
-    flightData::_acceleration_x_g,
-    flightData::_acceleration_y_g,
-    flightData::_acceleration_z_g,
-    internal::_acceleration_x_average_g.reading(ax) / 2048.0,
-    internal::_acceleration_y_average_g.reading(ay) / 2048.0,
-    internal::_acceleration_z_average_g.reading(az) / 2048.0);
 }
 
 
@@ -255,53 +255,40 @@ void updateIndicators() {
 
 // ロガーにフライトデータを書き込む
 void writeLog() {
-  // パケット構造
-  // <飛行時間[s]>,<フライトモード>,
-  // <不知火3の状態>,<ブザーの状態>,
-  // <高度[m]>,<降下検出数>,
-  // <加速度X[G]>,<加速度Y[G]>,<加速度Z[G]>,
-  // <ヨー角[deg]>,<ピッチ角[deg]>,<ロール角[deg]>,<速度[m/s]>\n
-
   if (!isFlying()) return;
 
-  // device::_logger.writeLog(
-  //   (millis() - internal::_launchTime_ms) / 1000.0,
-  //   static_cast<uint8_t>(internal::_flightMode),
-  //   device::_shiranui3.getState() ? 1 : 0,
-  //   device::_buzzer.getState() ? 1 : 0,
-  //   flightData::_altitude_m,
-  //   flightData::_speed_mps,
-  //   internal::_descentDetector._descentCount,
-  //   flightData::_acceleration_x_g,
-  //   flightData::_acceleration_y_g,
-  //   flightData::_acceleration_z_g,
-  //   flightData::_gyro_x_degps,
-  //   flightData::_gyro_y_degps,
-  //   flightData::_gyro_z_degps,
-  //   flightData::_yaw,
-  //   flightData::_pitch,
-  //   flightData::_roll
-  // );
+  device::_logger.writeLog(
+    flightTime(),
+    static_cast<uint8_t>(internal::_flightMode),
+    device::_shiranui3.getState() ? 1 : 0,
+    device::_buzzer.getState() ? 1 : 0,
+    flightData::_altitude_m,
+    internal::_descentDetector._descentCount,
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g,
+    flightData::_gyro_x_degps,
+    flightData::_gyro_y_degps,
+    flightData::_gyro_z_degps,
+    flightData::_yaw,
+    flightData::_pitch,
+    flightData::_roll
+  );
 }
 
 
 /// @brief イベントをダウンリンクで送信する
 /// @param event イベント
 void downlinkEvent(String event) {
-  device::_commandIndicator.on();
-
   device::_telemeter.sendEvent(
+    flightTime(),
     event
   );
-
-  device::_commandIndicator.off();
 }
 
 
 /// @brief ステータスをダウンリンクで送信する
 void downlinkStatus() {
-  device::_commandIndicator.on();
-
   device::_telemeter.sendStatus(
     static_cast<uint8_t>(internal::_flightMode),
     device::_flightPin.isReleased(),
@@ -311,8 +298,6 @@ void downlinkStatus() {
     analogRead(A0) / 1024.0 * 3.3 * 2.08,
     analogRead(A2) / 1024.0 * 3.3 * 5.00
   );
-
-  device::_commandIndicator.off();
 }
 
 
@@ -320,26 +305,20 @@ void downlinkStatus() {
 void downlinkFlightData() {
   if (!isFlying()) return;
 
-  device::_commandIndicator.on();
-
   device::_telemeter.sendFlightData(
-    (millis() - internal::_launchTime_ms) / 1000.0,
+    flightTime(),
     flightData::_altitude_m,
-    flightData::_speed_mps,
+    flightData::_acceleration_x_g + flightData::_acceleration_y_g + flightData::_acceleration_z_g,
     flightData::_yaw,
     flightData::_pitch,
     flightData::_roll
   );
-
-  device::_commandIndicator.off();
 }
 
 
 /// @brief コンフィグをダウンリンクで送信する
 void downlinkConfig() {
   if (isFlying()) return;
-
-  device::_commandIndicator.on();
 
   device::_telemeter.sendConfig(
     config::separation_altitude_m,
@@ -349,8 +328,14 @@ void downlinkConfig() {
     config::force_separation_time_ms / 1000.0,
     config::landing_time_ms / 1000.0
   );
+}
 
-  device::_commandIndicator.off();
+/// @brief 飛行時間を返す。飛行中でなければ -1.0 を返す
+/// @return 飛行時間 [s]
+float flightTime() {
+  if (!isFlying()) return -1.0;
+
+  return (millis() - internal::_launchTime_ms) / 1000.0;
 }
 
 
@@ -428,36 +413,36 @@ void updateFlightMode() {
     if (device::_flightPin.isReleased()) {
       internal::_launchTime_ms = millis();
       changeFlightMode(FlightMode::THRUST);
-      downlinkEvent("LAUNCHED");
+      downlinkEvent("LAUNCH");
     };
     break;
 
   case FlightMode::THRUST:
     if (isBurnout()) {
-      changeFlightMode(FlightMode::CLIMB);
       downlinkEvent("BURNOUT");
+      changeFlightMode(FlightMode::CLIMB);
     }
     break;
 
   case FlightMode::CLIMB:
     if (internal::_descentDetector._isDescending) {
-      changeFlightMode(FlightMode::DESCENT);
       downlinkEvent("DESCENT");
+      changeFlightMode(FlightMode::DESCENT);
     }
     break;
 
   case FlightMode::DESCENT:
     if (canSeparate()) {
+      downlinkEvent("SEPARATE");
       separate();
       changeFlightMode(FlightMode::PARACHUTE);
-      downlinkEvent("SEPARATED");
     }
     break;
 
   case FlightMode::PARACHUTE:
     if (isLanded()) {
+      downlinkEvent("LAND");
       changeFlightMode(FlightMode::LAND);
-      downlinkEvent("LANDED");
     }
   }
 }
@@ -472,42 +457,41 @@ void changeFlightMode(FlightMode nextMode) {
 }
 
 
-/// @brief アップリンクを受信していれば処理をする
-void receiveCommand() {
-  if (isFlying()) return;
-  if (!LoRa.parsePacket()) return;
-
+/// @brief コマンドを実行する
+/// @param command 0x00:指定分離高度
+/// @param command 0x01:基準気圧
+/// @param command 0x02:想定燃焼時間
+/// @param command 0x03:分離保護時間
+/// @param command 0x04 強制分離時間
+/// @param command 0x05:想定着地時間
+/// @param payload 
+void executeCommand(uint8_t command, float payload) {
   device::_commandIndicator.on();
 
-  deserializeJson(upPacket, LoRa);
+  downlinkEvent("CONFIG-UPDATE");
 
-  if (upPacket["t"] == "c") {
-    if (upPacket["l"] == "a") {
-      config::separation_altitude_m =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] : config::DEFAULT_SEPARATION_ALTITUDE_m;
-    }
-    else if (upPacket["l"] == "p") {
-      device::_bme280.setReferencePressure(
-        upPacket["v"].as<double>() ? ((double)upPacket["v"] * 100.0) : device::_bme280.getPressure());
-    }
-    else if (upPacket["l"] == "b") {
-      config::burn_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_BURN_TIME_ms;
-    }
-    else if (upPacket["l"] == "sp") {
-      config::separation_protection_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
-    }
-    else if (upPacket["l"] == "fs") {
-      config::force_separation_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
-    }
-    else if (upPacket["l"] == "l") {
-      config::landing_time_ms =
-        upPacket["v"].as<double>() ? (double)upPacket["v"] * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
-    }
-
-    upPacket.clear();
+  switch (command)
+  {
+  case 0x00: // 指定分離高度
+    config::separation_altitude_m = payload ? payload : config::DEFAULT_SEPARATION_ALTITUDE_m;
+    break;
+  case 0x01: // 基準気圧
+    device::_bme280.setReferencePressure(payload ? payload * 100.0 : device::_bme280.getPressure());
+    break;
+  case 0x02: // 想定燃焼時間
+    config::burn_time_ms = payload ? payload * 1000.0 : config::DEFAULT_BURN_TIME_ms;
+    break;
+  case 0x03: // 分離保護時間
+    config::separation_protection_time_ms = payload ? payload * 1000.0 : config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
+    break;
+  case 0x04: // 強制分離時間
+    config::force_separation_time_ms = payload ? payload * 1000.0 : config::DEFAULT_FORCE_SEPARATION_TIME_ms;
+    break;
+  case 0x05: // 想定着地時間
+    config::landing_time_ms = payload ? payload * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
+    break;
+  default:
+    break;
   }
 
   device::_commandIndicator.off();

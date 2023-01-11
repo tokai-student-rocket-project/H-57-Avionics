@@ -10,15 +10,17 @@ const getColor = (mode: string, isAccent: boolean) => {
 };
 
 const FlightData = () => {
-  const [altitude, setAltitude] = useState<string>('0.0');
-  const [speed, setSpeed] = useState<string>('0.0');
+  const [altitude, setAltitude] = useState<number>();
+  const [acceleration, setAcceleration] = useState<number>();
 
   const [flightMode, setFlightMode] = useState<string>('');
 
   useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
-      setAltitude(window.electronAPI.store.get('altitude'));
-      setSpeed(window.electronAPI.store.get('speed'));
+      setAltitude(Number(window.electronAPI.store.get('altitude')));
+      setAcceleration(
+        Number(window.electronAPI.store.get('acceleration')) * 9.80665
+      );
     });
 
     window.electronAPI.statusRecieved(() => {
@@ -55,16 +57,16 @@ const FlightData = () => {
           <Statistic
             valueStyle={{ color: 'white' }}
             title="Altitude"
-            value={altitude}
+            value={altitude?.toFixed(1)}
             suffix="m"
           />
         </Col>
         <Col span={12}>
           <Statistic
             valueStyle={{ color: 'white' }}
-            title="Speed"
-            value={speed}
-            suffix="m/s"
+            title="Acceleration"
+            value={acceleration?.toFixed(1)}
+            suffix="m/s^2"
           />
         </Col>
       </Row>

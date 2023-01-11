@@ -10,7 +10,7 @@ const getColor = (mode: string, isAccent: boolean) => {
 };
 
 const FlightMode = () => {
-  const [flightMode, setFlightMode] = useState<string>('');
+  const [flightMode, setFlightMode] = useState<string>('EXPERIMENT');
 
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {

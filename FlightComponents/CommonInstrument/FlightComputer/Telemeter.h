@@ -12,10 +12,13 @@ private:
   uint8_t _buffer[256];
   uint32_t _offset;
 
+  uint32_t _event_count;
+
   void reservePacket(const uint8_t* data, const size_t size);
-  void sendPacket();
 
 public:
+  void sendDownlink();
+
   void sendStatus(
     uint8_t flightMode,
     bool flightPinState,
@@ -29,7 +32,7 @@ public:
   void sendFlightData(
     float flightTime,
     float altitude,
-    float speed,
+    float acceleration,
     float yaw,
     float pitch,
     float roll
@@ -45,6 +48,7 @@ public:
   );
 
   void sendEvent(
+    float flightTime,
     String event
   );
 };

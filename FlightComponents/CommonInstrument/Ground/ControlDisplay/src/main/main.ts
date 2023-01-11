@@ -62,7 +62,7 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
         store.set('yaw', dataObject.y);
         store.set('pitch', dataObject.p);
         store.set('roll', dataObject.r);
-        store.set('speed', dataObject.s);
+        store.set('acceleration', dataObject.ac);
         mainWindow?.webContents.send('flight-data-recieved');
       }
 
@@ -77,7 +77,12 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
       }
 
       if (dataObject.e) {
-        mainWindow?.webContents.send('event-recieved', dataObject.e);
+        mainWindow?.webContents.send(
+          'event-recieved',
+          Number(dataObject.id),
+          Number(dataObject.eft),
+          dataObject.e
+        );
       }
 
       if (dataObject.rssi) {

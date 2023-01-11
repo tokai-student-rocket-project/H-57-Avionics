@@ -35,7 +35,7 @@ const ChangeCenter = (props: ChangeCenterProps) => {
   return null;
 };
 
-const GPS = () => {
+const GNSS = () => {
   const [latitude, setLatitude] = useState<number>(42.514179);
   const [longitude, setLongitude] = useState<number>(143.439731);
   const [center, setCenter] = useState<L.LatLngExpression>([
@@ -63,7 +63,7 @@ const GPS = () => {
 
   return (
     <Card
-      title="GPS"
+      title="GNSS"
       bordered={false}
       style={{ margin: '8px' }}
       extra={
@@ -87,12 +87,12 @@ const GPS = () => {
     >
       <Row style={{ margin: '24px 0px' }}>
         <Col span={12} style={{ display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: '1.2em' }}>{`${DegToDms(
+          <span style={{ fontSize: '1.5em' }}>{`${DegToDms(
             Math.abs(latitude)
           )}${Math.sign(latitude) === -1 ? 'S' : 'N'}`}</span>
         </Col>
         <Col span={12} style={{ display: 'flex', justifyContent: 'center' }}>
-          <span style={{ fontSize: '1.2em' }}>{`${DegToDms(
+          <span style={{ fontSize: '1.5em' }}>{`${DegToDms(
             Math.abs(longitude)
           )}${Math.sign(longitude) === -1 ? 'W' : 'E'}`}</span>
         </Col>
@@ -169,4 +169,4 @@ const GPS = () => {
   );
 };
 
-export default GPS;
+export default GNSS;
