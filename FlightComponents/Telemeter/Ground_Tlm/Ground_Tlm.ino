@@ -30,8 +30,10 @@ void loop()
     deserializeJson(packet, LoRa);
     char output[1024];
     serializeJson(packet, output);
+    
     digitalWrite(LED_BUILTIN, HIGH);
     Serial.println(output);
+    
     Serial.print(" || RSSI: "); // 通信強度がわかります。
     Serial.println(LoRa.packetRssi());
     Serial.println();
