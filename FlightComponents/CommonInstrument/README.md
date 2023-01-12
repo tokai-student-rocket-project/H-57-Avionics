@@ -1,6 +1,22 @@
 # 新型共通計器
 
-```
+## 概要
+
+## 仕様
+
+### ハードウェア
+
+詳細は[こちら](./Hardware/README.md)を参照してください。
+
+### ソフトウェア
+
+## 運用方法
+
+---
+
+## 生産者表示
+
+```text
                                     ....
                               .dMMMMMMMMMNa,,
                              .MMMMMMMMMMMMMMMML
@@ -13,7 +29,7 @@
                             JMuVwvzwOC+7COwrrrzuMMF
                              qzZ11>>>>;>>>>>>?vVWWL
                              (Oz?>>??>><>;>>>?=OWSI
-                             .v=?1>??====<>+1??+kX'
+       私が作りました>       .v=?1>??====<>+1??+kX'
                               !z11??=11?????++=d\
                                (Orzlll=???=zz=zO
                                .?OOv1??====zvOd}
@@ -41,18 +57,6 @@
      ?MMNHqHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM;
       MMMMNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM#db
 ```
-
-## 概要
-
-## 仕様
-
-### ハードウェア
-
-詳細は[こちら](./Hardware/README.md)を参照してください。
-
-### ソフトウェア
-
-## 運用方法
 
 ---
 
