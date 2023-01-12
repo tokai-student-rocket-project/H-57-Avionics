@@ -127,6 +127,8 @@ PCBgogo  > 基板製作サービス > 自動お見積り
 
 基板設計は[製造基準](https://www.pcbgogo.jp/Capabilities/FR_4_PCB_Capabilities.html)を参考にしてください。
 
+[Buildフォルダ](./Build)にガーバーデータが保存されています。
+
 ### 部品実装
 
 ## セットアップ方法
