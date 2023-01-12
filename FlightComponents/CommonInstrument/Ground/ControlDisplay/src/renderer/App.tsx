@@ -12,6 +12,7 @@ import GNSS from './components/GNSS';
 import Valve from './components/Valve';
 import AltitudeIndicator from './components/AltitudeIndicator';
 import Electric from './components/Electric';
+import Mission from './components/Mission';
 
 const { Header, Content } = Layout;
 
@@ -92,12 +93,19 @@ const App = () => {
                 </Col>
               </Row>
             </Col>
-            <Col span={4}>
-              <Electric />
-              <Status />
-            </Col>
-            <Col span={4}>
-              <Valve />
+            <Col span={8}>
+              <Row>
+                <Mission />
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Electric />
+                  <Status />
+                </Col>
+                <Col span={12}>
+                  <Valve />
+                </Col>
+              </Row>
             </Col>
           </Row>
         </Content>
