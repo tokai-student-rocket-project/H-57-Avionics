@@ -28,16 +28,17 @@ void setup()
     // Serial.begin(115200);
 
     Mainservo.attach(MainServoPin);
+    Mainservo.write(20, 30, true); // 不感体に近い為初期値を20度ずらした。 0 -=> 20, 140 -=> 160
     Supplyservo.attach(SupplyServoPin);
+    // Supplyservo.attach(SupplyServoPin, 1520, 2480);
+    // Supplyservo.attach(SupplyServoPin, 1520, 560);
+    Supplyservo.write(20, 30, true); // 不感体に近い為初期値を20度ずらした。 0 -=> 20, 60 -=> 80
 
     pinMode(2, INPUT_PULLUP); // WAITING
     pinMode(3, INPUT_PULLUP); // LUNCH
     pinMode(LED_BUILTIN, OUTPUT);
 
     delay(1000);
-
-    Mainservo.write(0, 10, true);
-    Supplyservo.write(0, 30, true);
 }
 
 void loop()
@@ -98,9 +99,9 @@ void loop()
 }
 void L_Position()
 {
-    /*燃焼、コールドフロー試験用にコメントアウト*/
-    Supplyservo.write(60, 60, true); // SupplyServo CLOSE　//Fill弁が閉まる時間:0.54s
-    Supplyservo_deg = Supplyservo.read();
+    Supplyservo.write(80, 0, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
+    // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
+
     delay(10);
 
     /* --この下消去予定-- */
@@ -109,10 +110,13 @@ void L_Position()
     //  delay(1000); //250Hz, delay(1000), 点火処理時間:3.00s
     /* ----------------- */
 
-    Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s
-    Mainservo_deg = Mainservo.read();
+    // Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s //失敗
+    Mainservo.write(160, 160, true); // Mainservo OPEN //Main弁が閉まる時間:
+
     digitalWrite(LED_BUILTIN, HIGH);
 
+    Supplyservo_deg = Supplyservo.read();
+    Mainservo_deg = Mainservo.read();
     // 2022/12/21
     // コールドフロー試験
     // Mainservo.write(140, 30, true); 角度140°、速度30にて成功
@@ -137,10 +141,11 @@ void L_Position()
 
 void W_Position()
 {
-    Supplyservo.write(0, 60, true); // SupplyServo OPEN
-    Supplyservo_deg = Supplyservo.read();
-    delay(1000);
-    Mainservo.write(0, 30, true); // MainServo CLOSE
-    Mainservo_deg = Mainservo.read();
+    Supplyservo.write(20, 30, true); // SupplyServo OPEN
+    // delay(1000); //消去予定
+    Mainservo.write(20, 30, true); // MainServo CLOSE
+    
     digitalWrite(LED_BUILTIN, LOW);
+    Supplyservo_deg = Supplyservo.read();
+    Mainservo_deg = Mainservo.read();
 }
