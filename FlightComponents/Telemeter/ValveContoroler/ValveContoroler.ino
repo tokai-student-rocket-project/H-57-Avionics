@@ -13,9 +13,9 @@ int Position = 1;
 VarSpeedServo Mainservo;
 VarSpeedServo Supplyservo;
 int MainServoPin = 5; // Uno
-// int MainServoPin = 5; //Nano
+// int MainServoPin = 9; // Nano
 int SupplyServoPin = 6; // Uno
-// int SupplyServoPin = 6; //Nano
+// int SupplyServoPin = 10; // Nano
 float Supplyservo_deg;
 float Mainservo_deg;
 
@@ -144,7 +144,7 @@ void W_Position()
     Supplyservo.write(20, 30, true); // SupplyServo OPEN
     // delay(1000); //消去予定
     Mainservo.write(20, 30, true); // MainServo CLOSE
-    
+
     digitalWrite(LED_BUILTIN, LOW);
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
