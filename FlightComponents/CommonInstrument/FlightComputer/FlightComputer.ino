@@ -38,7 +38,7 @@ namespace device {
 
   FlightPin _flightPin(2);
 
-  TwoStateDevice _commandIndicator(LED_BUILTIN);
+  TwoStateDevice _commandIndicator(6);
   TwoStateDevice _protectionIndicator(3);
   TwoStateDevice _flightIndicator(4);
   TwoStateDevice _separationIndicator(5);
@@ -257,23 +257,23 @@ void updateIndicators() {
 void writeLog() {
   if (!isFlying()) return;
 
-  device::_logger.writeLog(
-    flightTime(),
-    static_cast<uint8_t>(internal::_flightMode),
-    device::_shiranui3.getState() ? 1 : 0,
-    device::_buzzer.getState() ? 1 : 0,
-    flightData::_altitude_m,
-    internal::_descentDetector._descentCount,
-    flightData::_acceleration_x_g,
-    flightData::_acceleration_y_g,
-    flightData::_acceleration_z_g,
-    flightData::_gyro_x_degps,
-    flightData::_gyro_y_degps,
-    flightData::_gyro_z_degps,
-    flightData::_yaw,
-    flightData::_pitch,
-    flightData::_roll
-  );
+  // device::_logger.writeLog(
+  //   flightTime(),
+  //   static_cast<uint8_t>(internal::_flightMode),
+  //   device::_shiranui3.getState() ? 1 : 0,
+  //   device::_buzzer.getState() ? 1 : 0,
+  //   flightData::_altitude_m,
+  //   internal::_descentDetector._descentCount,
+  //   flightData::_acceleration_x_g,
+  //   flightData::_acceleration_y_g,
+  //   flightData::_acceleration_z_g,
+  //   flightData::_gyro_x_degps,
+  //   flightData::_gyro_y_degps,
+  //   flightData::_gyro_z_degps,
+  //   flightData::_yaw,
+  //   flightData::_pitch,
+  //   flightData::_roll
+  // );
 }
 
 
@@ -294,9 +294,9 @@ void downlinkStatus() {
     device::_flightPin.isReleased(),
     device::_shiranui3.getState(),
     device::_buzzer.getState(),
-    analogRead(A1) / 1024.0 * 3.3 * 1.37,
-    analogRead(A0) / 1024.0 * 3.3 * 2.08,
-    analogRead(A2) / 1024.0 * 3.3 * 5.00
+    analogRead(A6) / 1024.0 * 3.3 * 1.37, // 3.3V
+    analogRead(A5) / 1024.0 * 3.3 * 2.08, // 5V
+    analogRead(A4) / 1024.0 * 3.3 * 5.00  // 12V
   );
 }
 
