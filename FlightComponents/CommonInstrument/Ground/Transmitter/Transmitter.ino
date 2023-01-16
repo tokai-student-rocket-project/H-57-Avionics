@@ -10,7 +10,7 @@ StaticJsonDocument<512> upPacket;
 
 void setup() {
   Serial.begin(115200);
-  LoRa.begin(920E6);
+  LoRa.begin(923.8E6);
 
   // Status
   MsgPacketizer::subscribe(LoRa, 0x01,

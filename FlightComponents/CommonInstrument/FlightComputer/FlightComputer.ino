@@ -109,7 +109,7 @@ void setup() {
   Wire.begin();
   Serial.begin(115200);
   Serial1.begin(115200);
-  LoRa.begin(920E6);
+  LoRa.begin(923.8E6);
 
   downlinkEvent("INITIALIZE");
 
