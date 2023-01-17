@@ -2,18 +2,21 @@ import { Card } from 'antd';
 import { useState, useEffect } from 'react';
 
 const getV33Color = (voltage: number) => {
+  if (voltage === 0) return '#ed4245';
   if (voltage < 2.38) return '#faa61a';
   if (voltage > 3.46) return '#faa61a';
   return '#46c46d';
 };
 
 const getV5Color = (voltage: number) => {
+  if (voltage === 0) return '#ed4245';
   if (voltage < 4.5) return '#faa61a';
   if (voltage > 5.5) return '#faa61a';
   return '#46c46d';
 };
 
 const getV12Color = (voltage: number) => {
+  if (voltage === 0) return '#ed4245';
   if (voltage < 10.8) return '#faa61a';
   if (voltage > 13.2) return '#faa61a';
   return '#46c46d';
