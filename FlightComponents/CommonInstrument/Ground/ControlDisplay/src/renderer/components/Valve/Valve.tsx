@@ -54,11 +54,11 @@ const Valve = () => {
   useEffect(() => {
     window.electronAPI.telemetryRecieved(() => {
       setMainServoDegrees(
-        Number(window.electronAPI.store.get('mainservo-degrees'))
+        Number(window.electronAPI.store.get('mainservo-degrees') - 20.0)
       );
 
       setSupplyServoDegrees(
-        Number(window.electronAPI.store.get('supplyservo-degrees'))
+        Number(window.electronAPI.store.get('supplyservo-degrees') - 20.0)
       );
     });
 
