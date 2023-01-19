@@ -16,7 +16,8 @@ const BlinkIndicator = () => {
   const [configDownState, setConfigDownState] = useState<boolean>(false);
   const [statusDownState, setStatusDownState] = useState<boolean>(false);
   const [eventDownState, setEventDownState] = useState<boolean>(false);
-  const [gpsDownState, setGpsDownState] = useState<boolean>(false);
+  const [gnssDownState, setGnssDownState] = useState<boolean>(false);
+  const [valveDownState, setValveDownState] = useState<boolean>(false);
 
   useEffect(() => {
     window.electronAPI.configSended(() => {
@@ -35,8 +36,12 @@ const BlinkIndicator = () => {
       blink(setStatusDownState);
     });
 
-    window.electronAPI.telemetryRecieved(() => {
-      blink(setGpsDownState);
+    window.electronAPI.gnssRecieved(() => {
+      blink(setGnssDownState);
+    });
+
+    window.electronAPI.valveRecieved(() => {
+      blink(setValveDownState);
     });
 
     window.electronAPI.eventRecieved(() => {
@@ -48,7 +53,8 @@ const BlinkIndicator = () => {
       window.electronAPI.remove('config-recieved');
       window.electronAPI.remove('status-recieved');
       window.electronAPI.remove('rssi-recieved');
-      window.electronAPI.remove('teremetry-recieved');
+      window.electronAPI.remove('gnss-recieved');
+      window.electronAPI.remove('valve-recieved');
       window.electronAPI.remove('event-recieved');
     };
   }, []);
@@ -72,8 +78,10 @@ const BlinkIndicator = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>Event :</span>
         <Indicator isActive={eventDownState} />
-        <span>GPS :</span>
-        <Indicator isActive={gpsDownState} />
+        <span>GNSS :</span>
+        <Indicator isActive={gnssDownState} />
+        <span>VALVE :</span>
+        <Indicator isActive={valveDownState} />
       </div>
     </>
   );

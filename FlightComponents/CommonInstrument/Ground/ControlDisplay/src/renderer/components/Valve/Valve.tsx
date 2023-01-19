@@ -16,18 +16,18 @@ const getValve = (
 ): string => {
   if (mainServoDegrees === 0.0) {
     if (supplyServoDegrees === 0.0) return mcso;
-    if (supplyServoDegrees === 90.0) return mcsc;
+    if (supplyServoDegrees === 60.0) return mcsc;
     return mcsi;
   }
 
-  if (mainServoDegrees === 90.0) {
+  if (mainServoDegrees === 140.0) {
     if (supplyServoDegrees === 0.0) return moso;
-    if (supplyServoDegrees === 90.0) return mosc;
+    if (supplyServoDegrees === 60.0) return mosc;
     return mosi;
   }
 
   if (supplyServoDegrees === 0.0) return miso;
-  if (supplyServoDegrees === 90.0) return misc;
+  if (supplyServoDegrees === 60.0) return misc;
   return misi;
 };
 
@@ -42,7 +42,7 @@ const Valve = () => {
   useEffect(() => {
     if (mainServoDegrees === 0 && supplyServoDegrees === 0) {
       setServoPosition('WAITING');
-    } else if (mainServoDegrees === 90 && supplyServoDegrees === 90) {
+    } else if (mainServoDegrees === 140 && supplyServoDegrees === 60) {
       setServoPosition('LAUNCH');
     } else {
       setServoPosition('INVALID');
@@ -52,18 +52,18 @@ const Valve = () => {
   }, [mainServoDegrees, supplyServoDegrees]);
 
   useEffect(() => {
-    window.electronAPI.telemetryRecieved(() => {
+    window.electronAPI.valveRecieved(() => {
       setMainServoDegrees(
-        Number(window.electronAPI.store.get('mainservo-degrees') - 20.0)
+        Number(window.electronAPI.store.get('mainservo-degrees')) - 20.0
       );
 
       setSupplyServoDegrees(
-        Number(window.electronAPI.store.get('supplyservo-degrees') - 20.0)
+        Number(window.electronAPI.store.get('supplyservo-degrees')) - 20.0
       );
     });
 
     return () => {
-      window.electronAPI.remove('telemetry-recieved');
+      window.electronAPI.remove('valve-recieved');
     };
   }, []);
 

@@ -34,9 +34,11 @@ void loop()
     digitalWrite(LED_BUILTIN, HIGH);
     Serial.println(output);
     
+    /*
     Serial.print(" || RSSI: "); // 通信強度がわかります。
     Serial.println(LoRa.packetRssi());
     Serial.println();
+    */
   }
   else
   {

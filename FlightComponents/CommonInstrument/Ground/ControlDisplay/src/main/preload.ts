@@ -30,8 +30,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   configSended: (callback: () => void) =>
     ipcRenderer.on('config-sended', callback),
 
-  telemetryRecieved: (callback: () => void) =>
-    ipcRenderer.on('telemetry-recieved', callback),
+  gnssRecieved: (callback: () => void) =>
+    ipcRenderer.on('gnss-recieved', callback),
+
+  valveRecieved: (callback: () => void) =>
+    ipcRenderer.on('valve-recieved', callback),
 
   remove: (channel: string) => ipcRenderer.removeAllListeners(channel),
 

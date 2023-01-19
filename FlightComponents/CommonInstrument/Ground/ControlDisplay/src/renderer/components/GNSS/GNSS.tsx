@@ -45,7 +45,7 @@ const GNSS = () => {
   const [sattelites, setSattelites] = useState<number>(4);
 
   useEffect(() => {
-    window.electronAPI.telemetryRecieved(() => {
+    window.electronAPI.gnssRecieved(() => {
       setLatitude(Number(window.electronAPI.store.get('latitude')));
       setLongitude(Number(window.electronAPI.store.get('longitude')));
       setSattelites(Number(window.electronAPI.store.get('satellites')));
@@ -56,7 +56,7 @@ const GNSS = () => {
       ]);
 
       return () => {
-        window.electronAPI.remove('telemetry-recieved');
+        window.electronAPI.remove('gnss-recieved');
       };
     });
   }, []);

@@ -21,7 +21,8 @@ declare global {
       sendConfig(label: string, value: string): void;
       configSended(callback: () => void): void;
 
-      telemetryRecieved(callback: () => void): void;
+      gnssRecieved(callback: () => void): void;
+      valveRecieved(callback: () => void): void;
 
       remove(channel: string): void;
 

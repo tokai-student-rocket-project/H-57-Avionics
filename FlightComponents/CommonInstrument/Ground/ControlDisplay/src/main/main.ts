@@ -108,24 +108,30 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
 
   serialportTelemeter = new SerialPort({
     path: serialportPath,
-    baudRate: 9600,
+    baudRate: 115200,
   });
   const parser = serialportTelemeter.pipe(new ReadlineParser());
   parser.on('data', (data) => {
     console.log(data);
-
     try {
-      const dataObject = JSON.parse(data);
 
+    const dataObject = JSON.parse(data);
+
+    if (dataObject.lat) {
       store.set('latitude', dataObject.lat);
       store.set('longitude', dataObject.lon);
       store.set('satellites', dataObject.satellites);
+      mainWindow?.webContents.send('gnss-recieved');
+    }
+
+    if (dataObject.mainservoDeg) {
       store.set('mainservo-degrees', dataObject.mainservoDeg);
       store.set('supplyservo-degrees', dataObject.supplyservoDeg);
-      mainWindow?.webContents.send('telemetry-recieved');
-    } catch (error) {
-      console.log(error);
+      mainWindow?.webContents.send('valve-recieved');
     }
+  } catch (error) {
+    console.log(error);
+  }
   });
 });
 
