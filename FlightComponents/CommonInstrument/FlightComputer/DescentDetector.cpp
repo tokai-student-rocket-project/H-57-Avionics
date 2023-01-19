@@ -1,17 +1,13 @@
 #include <Arduino.h>
 #include "DescentDetector.h"
 
-/// @brief コンストラクタ
-/// @param sensitivity 大きいほど強い平滑化(0~1)
-DescentDetector::DescentDetector(float sensitivity) {
-  _sensitivity = sensitivity;
-}
+
 /// @brief 高度を更新します。値に応じて_isDescendinも更新されます
 /// @param altitude 高度
 void DescentDetector::updateAltitude(float altitude)
 {
   // 指数平滑化移動平均
-  _average = _averageOrigin + _sensitivity * (altitude - _averageOrigin);
+  _average = _averageOrigin + SENSITIVITY * (altitude - _averageOrigin);
 
   // 平滑化された高度が減少すれば_descentCountをインクリメントする
   // 減少しなければリセット

@@ -5,12 +5,11 @@
 #include <IntervalCounter.h>
 #include <OneShotTimer.h>
 #include <MsgPacketizer.h>
-#include "BME280Wrap.h"
+#include "Altimeter.h"
 #include "IMU.h"
 #include "Logger.h"
 #include "PullupPin.h"
 #include "OutputPin.h"
-#include "DescentDetector.h"
 #include "Telemeter.h"
 
 
@@ -26,7 +25,7 @@ enum class FlightMode {
 
 namespace device {
   // 気圧, 気温, 湿度センサ
-  BME280Wrap _bme280;
+  Altimeter _altimeter;
 
   // 加速度, 角速度センサ
   IMU _imu;
@@ -76,9 +75,6 @@ namespace internal {
   FlightMode _flightMode;
   // 離床した瞬間の時間を保存しておく変数
   uint32_t _launchTime_ms;
-
-  // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
-  DescentDetector _descentDetector(0.35);
 }
 
 namespace flightData {
@@ -107,7 +103,7 @@ void setup() {
 
   downlinkEvent("INITIALIZE");
 
-  device::_bme280.initialize();
+  device::_altimeter.initialize();
   device::_imu.initialize(-1665, -507, 1331, 13, 17, 40);;
 
   MsgPacketizer::subscribe(LoRa, 0xF3,
@@ -185,11 +181,9 @@ void logic() {
 
 /// @brief センサ類から各種データを読み出す
 void updateFlightData() {
-  flightData::_temperature_degT = device::_bme280.getTemperature();
-  flightData::_pressure_Pa = device::_bme280.getPressure();
-  flightData::_altitude_m = device::_bme280.getAltitude();
-
-  internal::_descentDetector.updateAltitude(flightData::_altitude_m);
+  flightData::_temperature_degT = device::_altimeter.getTemperature();
+  flightData::_pressure_Pa = device::_altimeter.getPressure();
+  flightData::_altitude_m = device::_altimeter.getAltitude();
 
   device::_imu.getData(
     &flightData::_acceleration_x_g,
@@ -285,7 +279,7 @@ void downlinkConfig() {
 
   device::_telemeter.sendConfig(
     config::separation_altitude_m,
-    device::_bme280.getReferencePressure() / 100.0,
+    device::_altimeter.getReferencePressure() / 100.0,
     config::burn_time_ms / 1000.0,
     config::separation_protection_time_ms / 1000.0,
     config::force_separation_time_ms / 1000.0,
@@ -389,7 +383,7 @@ void updateFlightMode() {
     break;
 
   case FlightMode::CLIMB:
-    if (internal::_descentDetector._isDescending) {
+    if (device::_altimeter.isDescending()) {
       downlinkEvent("DESCENT");
       changeFlightMode(FlightMode::DESCENT);
     }
@@ -440,7 +434,7 @@ void executeCommand(uint8_t command, float payload) {
     config::separation_altitude_m = payload ? payload : config::DEFAULT_SEPARATION_ALTITUDE_m;
     break;
   case 0x01: // 基準気圧
-    device::_bme280.setReferencePressure(payload ? payload * 100.0 : device::_bme280.getPressure());
+    device::_altimeter.setReferencePressure(payload ? payload * 100.0 : device::_altimeter.getPressure());
     break;
   case 0x02: // 想定燃焼時間
     config::burn_time_ms = payload ? payload * 1000.0 : config::DEFAULT_BURN_TIME_ms;

@@ -5,10 +5,6 @@
 class DescentDetector
 {
 public:
-  /// @brief コンストラクタ
-  /// @param sensitivity 大きいほど強い平滑化(0~1)
-  DescentDetector(float sensitivity);
-
   /// @brief 高度を更新します。値に応じて_isDescendinも更新されます
   /// @param altitude 高度
   void updateAltitude(float altitude);
@@ -23,8 +19,9 @@ private:
   const float DESCENT_DIFFERENT = 0.0;
   /// @brief 回数で指定。この値以上に連続で減少しないと降下にならない
   const uint16_t MINIMUM_DESCENT_COUNT = 10;
+  // 高度平滑化の強度。手元の試験では0.35がちょうどよかった。
+  const float SENSITIVITY = 0.35;
 
-  float _sensitivity;
   float _average;
   float _averageOrigin;
 };
