@@ -10,8 +10,8 @@
 #include <MadgwickAHRS.h>
 #include <movingAvg.h>
 #include "Logger.h"
-#include "FlightPin.h"
-#include "TwoStateDevice.h"
+#include "PullupPin.h"
+#include "OutputPin.h"
 #include "DescentDetector.h"
 #include "Telemeter.h"
 
@@ -36,15 +36,15 @@ namespace device {
   // 加速度, 角速度センサ
   MPU6050 _mpu6050;
 
-  FlightPin _flightPin(2);
+  PullupPin _flightPin(2);
 
-  TwoStateDevice _commandIndicator(6);
-  TwoStateDevice _protectionIndicator(3);
-  TwoStateDevice _flightIndicator(4);
-  TwoStateDevice _separationIndicator(5);
+  OutputPin _commandIndicator(6);
+  OutputPin _protectionIndicator(3);
+  OutputPin _flightIndicator(4);
+  OutputPin _separationIndicator(5);
 
-  TwoStateDevice _shiranui3(1);
-  TwoStateDevice _buzzer(0);
+  OutputPin _shiranui3(1);
+  OutputPin _buzzer(0);
 
   Logger _logger;
   Telemeter _telemeter;
@@ -132,14 +132,6 @@ void setup() {
   device::_mpu6050.setYGyroOffset(40);
 
   internal::_madgwickFilter.begin(100);
-
-  device::_flightPin.initialize();
-  device::_commandIndicator.initialize();
-  device::_protectionIndicator.initialize();
-  device::_flightIndicator.initialize();
-  device::_separationIndicator.initialize();
-  device::_shiranui3.initialize();
-  device::_buzzer.initialize();
 
   MsgPacketizer::subscribe(LoRa, 0xF3,
     [](
@@ -247,9 +239,9 @@ void updateFlightData() {
 
 /// @brief 状況によってLEDを切り替える
 void updateIndicators() {
-  device::_protectionIndicator.setState(isFlying() && millis() < internal::_launchTime_ms + config::separation_protection_time_ms);
-  device::_flightIndicator.setState(isFlying());
-  device::_separationIndicator.setState(internal::_flightMode == FlightMode::PARACHUTE);
+  device::_protectionIndicator.set(isFlying() && millis() < internal::_launchTime_ms + config::separation_protection_time_ms);
+  device::_flightIndicator.set(isFlying());
+  device::_separationIndicator.set(internal::_flightMode == FlightMode::PARACHUTE);
 }
 
 
@@ -291,9 +283,9 @@ void downlinkEvent(String event) {
 void downlinkStatus() {
   device::_telemeter.sendStatus(
     static_cast<uint8_t>(internal::_flightMode),
-    device::_flightPin.isReleased(),
-    device::_shiranui3.getState(),
-    device::_buzzer.getState(),
+    device::_flightPin.isOpen(),
+    device::_shiranui3.isOn(),
+    device::_buzzer.isOn(),
     analogRead(A6) / 1024.0 * 3.3 * 1.37, // 3.3V
     analogRead(A5) / 1024.0 * 3.3 * 2.08, // 5V
     analogRead(A4) / 1024.0 * 3.3 * 5.00  // 12V
@@ -368,7 +360,7 @@ bool isLanded() {
 /// @return True: 実行可能, False: 実行不可能
 bool canReset() {
   return internal::_flightMode != FlightMode::STANDBY
-    && !device::_flightPin.isReleased();
+    && !device::_flightPin.isOpen();
 }
 
 
@@ -410,7 +402,7 @@ void reset() {
 void updateFlightMode() {
   switch (internal::_flightMode) {
   case FlightMode::STANDBY:
-    if (device::_flightPin.isReleased()) {
+    if (device::_flightPin.isOpen()) {
       internal::_launchTime_ms = millis();
       changeFlightMode(FlightMode::THRUST);
       downlinkEvent("LAUNCH");
