@@ -6,17 +6,12 @@
 #include <OneShotTimer.h>
 #include <MsgPacketizer.h>
 #include "BME280Wrap.h"
-#include <MPU6050.h>
-#include <MadgwickAHRS.h>
-#include <movingAvg.h>
+#include "IMU.h"
 #include "Logger.h"
 #include "PullupPin.h"
 #include "OutputPin.h"
 #include "DescentDetector.h"
 #include "Telemeter.h"
-
-
-StaticJsonDocument<512> upPacket;
 
 
 enum class FlightMode {
@@ -34,7 +29,10 @@ namespace device {
   BME280Wrap _bme280;
 
   // 加速度, 角速度センサ
-  MPU6050 _mpu6050;
+  IMU _imu;
+
+  Logger _logger;
+  Telemeter _telemeter;
 
   PullupPin _flightPin(2);
 
@@ -45,9 +43,6 @@ namespace device {
 
   OutputPin _shiranui3(1);
   OutputPin _buzzer(0);
-
-  Logger _logger;
-  Telemeter _telemeter;
 }
 
 namespace config {
@@ -84,9 +79,6 @@ namespace internal {
 
   // 引数は高度平滑化の強度。手元の試験では0.35がちょうどよかった。
   DescentDetector _descentDetector(0.35);
-
-  // 姿勢角算出用のフィルタ
-  Madgwick _madgwickFilter;
 }
 
 namespace flightData {
@@ -109,29 +101,14 @@ void setup() {
   Wire.begin();
   Serial.begin(115200);
   Serial1.begin(115200);
+
+  // LoRa 40ch
   LoRa.begin(923.8E6);
 
   downlinkEvent("INITIALIZE");
 
   device::_bme280.initialize();
-  device::_bme280.setReferencePressure(device::_bme280.getPressure());
-
-  device::_mpu6050.initialize();
-  // +-16[G]。2048[LBS/G]
-  device::_mpu6050.setFullScaleAccelRange(MPU6050_IMU::ACCEL_FS::MPU6050_ACCEL_FS_16);
-  // +-2000[deg/s]。16.4[LBS/(deg/s)]
-  device::_mpu6050.setFullScaleGyroRange(MPU6050_IMU::GYRO_FS::MPU6050_GYRO_FS_2000);
-  // device::_mpu6050.CalibrateAccel();
-  // device::_mpu6050.CalibrateGyro();
-  // センサ固有のオフセット。mpu6050ライブラリのIMU_ZEROから求める
-  device::_mpu6050.setXAccelOffset(-1665);
-  device::_mpu6050.setYAccelOffset(-507);
-  device::_mpu6050.setZAccelOffset(1331);
-  device::_mpu6050.setXGyroOffset(13);
-  device::_mpu6050.setYGyroOffset(17);
-  device::_mpu6050.setYGyroOffset(40);
-
-  internal::_madgwickFilter.begin(100);
+  device::_imu.initialize(-1665, -507, 1331, 13, 17, 40);;
 
   MsgPacketizer::subscribe(LoRa, 0xF3,
     [](
@@ -214,26 +191,17 @@ void updateFlightData() {
 
   internal::_descentDetector.updateAltitude(flightData::_altitude_m);
 
-  int16_t ax, ay, az, gx, gy, gz;
-  device::_mpu6050.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-  flightData::_acceleration_x_g = ax / 2048.0;
-  flightData::_acceleration_y_g = ay / 2048.0;
-  flightData::_acceleration_z_g = az / 2048.0;
-  flightData::_gyro_x_degps = gx / 16.4;
-  flightData::_gyro_y_degps = gy / 16.4;
-  flightData::_gyro_z_degps = gz / 16.4;
-
-  internal::_madgwickFilter.updateIMU(
-    flightData::_gyro_x_degps,
-    flightData::_gyro_y_degps,
-    flightData::_gyro_z_degps,
-    flightData::_acceleration_x_g,
-    flightData::_acceleration_y_g,
-    flightData::_acceleration_z_g);
-
-  flightData::_yaw = internal::_madgwickFilter.getYaw();
-  flightData::_pitch = internal::_madgwickFilter.getPitch();
-  flightData::_roll = internal::_madgwickFilter.getRoll();
+  device::_imu.getData(
+    &flightData::_acceleration_x_g,
+    &flightData::_acceleration_y_g,
+    &flightData::_acceleration_z_g,
+    &flightData::_gyro_x_degps,
+    &flightData::_gyro_y_degps,
+    &flightData::_gyro_z_degps,
+    &flightData::_yaw,
+    &flightData::_pitch,
+    &flightData::_roll
+  );
 }
 
 
@@ -286,6 +254,9 @@ void downlinkStatus() {
     device::_flightPin.isOpen(),
     device::_shiranui3.isOn(),
     device::_buzzer.isOn(),
+
+    // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
+    // 電圧係数 = 基準電圧 / 2.4
     analogRead(A6) / 1024.0 * 3.3 * 1.37, // 3.3V
     analogRead(A5) / 1024.0 * 3.3 * 2.08, // 5V
     analogRead(A4) / 1024.0 * 3.3 * 5.00  // 12V
@@ -403,7 +374,8 @@ void updateFlightMode() {
   switch (internal::_flightMode) {
   case FlightMode::STANDBY:
     if (device::_flightPin.isOpen()) {
-      internal::_launchTime_ms = millis();
+      // フライトピンのチャタリング対策で10回連続を取るため、0.1secのタイムラグが出る。
+      internal::_launchTime_ms = millis() - 100;
       changeFlightMode(FlightMode::THRUST);
       downlinkEvent("LAUNCH");
     };
