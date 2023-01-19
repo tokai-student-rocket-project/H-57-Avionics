@@ -74,13 +74,13 @@ const BlinkIndicator = () => {
         <Indicator isActive={configDownState} />
         <span>Status :</span>
         <Indicator isActive={statusDownState} />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>Event :</span>
         <Indicator isActive={eventDownState} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <span>GNSS :</span>
         <Indicator isActive={gnssDownState} />
-        <span>VALVE :</span>
+        <span>Valve :</span>
         <Indicator isActive={valveDownState} />
       </div>
     </>
