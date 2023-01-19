@@ -22,8 +22,11 @@ public:
   /// @brief ピンの状態を更新
   void update();
 
-  /// @brief 状態を返す
+  /// @brief チャタリング対策済みの現在の状態を返す
   bool isOpen();
+
+  /// @brief チャタリング対策をしていない現在の状態を返す
+  bool isOpenActually();
 };
 
 #endif

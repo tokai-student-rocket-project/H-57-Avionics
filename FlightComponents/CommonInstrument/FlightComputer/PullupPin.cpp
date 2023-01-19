@@ -31,7 +31,12 @@ void PullupPin::update() {
 }
 
 
-/// @brief 状態を返す
+/// @brief チャタリング対策済みの現在の状態を返す
 bool PullupPin::isOpen() {
   return _isOpen;
+}
+
+/// @brief チャタリング対策をしていない現在の状態を返す
+bool PullupPin::isOpenActually() {
+  return digitalRead(_pinNumber) == HIGH;
 }

@@ -53,7 +53,7 @@ void setup() {
 }
 
 
-constexpr size_t PACKET_SIZE = 68;
+constexpr size_t PACKET_SIZE = 63;
 constexpr size_t PAGE_SIZE = 128;
 int32_t address = 0;
 uint8_t packet[63];

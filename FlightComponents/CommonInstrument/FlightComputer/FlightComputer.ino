@@ -33,6 +33,8 @@ namespace device {
   Logger _logger;
   Telemeter _telemeter;
 
+  PullupPin _dataDumpModePin(7);
+  PullupPin _noLogModePin(8);
   PullupPin _flightPin(2);
 
   OutputPin _commandIndicator(6);
@@ -98,13 +100,19 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(115200);
 
+  // 7番ピンが短絡されていたらデータダンプを開始
+  if (!device::_dataDumpModePin.isOpenActually()) {
+    while (!Serial);
+    device::_logger.dumpLog();
+  }
+
   // LoRa 40ch
   LoRa.begin(923.8E6);
 
   downlinkEvent("INITIALIZE");
 
   device::_altimeter.initialize();
-  device::_imu.initialize(-1665, -507, 1331, 13, 17, 40);;
+  device::_imu.initialize(-1665, -507, 1331, 13, 17, 40);
 
   MsgPacketizer::subscribe(LoRa, 0xF3,
     [](
@@ -211,23 +219,29 @@ void updateIndicators() {
 void writeLog() {
   if (!isFlying()) return;
 
-  // device::_logger.writeLog(
-  //   flightTime(),
-  //   static_cast<uint8_t>(internal::_flightMode),
-  //   device::_shiranui3.getState() ? 1 : 0,
-  //   device::_buzzer.getState() ? 1 : 0,
-  //   flightData::_altitude_m,
-  //   internal::_descentDetector._descentCount,
-  //   flightData::_acceleration_x_g,
-  //   flightData::_acceleration_y_g,
-  //   flightData::_acceleration_z_g,
-  //   flightData::_gyro_x_degps,
-  //   flightData::_gyro_y_degps,
-  //   flightData::_gyro_z_degps,
-  //   flightData::_yaw,
-  //   flightData::_pitch,
-  //   flightData::_roll
-  // );
+  // 8番ピンが短絡されていたら書き込みを行わない
+  // EEPROM書き込み回数の温存用
+  if (!device::_noLogModePin.isOpenActually()) {
+    return;
+  }
+
+  device::_logger.writeLog(
+    flightTime(),
+    static_cast<uint8_t>(internal::_flightMode),
+    device::_shiranui3.isOn(),
+    device::_buzzer.isOn(),
+    flightData::_altitude_m,
+    device::_altimeter.isDescending(),
+    flightData::_acceleration_x_g,
+    flightData::_acceleration_y_g,
+    flightData::_acceleration_z_g,
+    flightData::_gyro_x_degps,
+    flightData::_gyro_y_degps,
+    flightData::_gyro_z_degps,
+    flightData::_yaw,
+    flightData::_pitch,
+    flightData::_roll
+  );
 }
 
 
