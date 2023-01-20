@@ -31,7 +31,12 @@ type ChangeCenterProps = {
 const ChangeCenter = (props: ChangeCenterProps) => {
   const { center } = props;
   const map = useMap();
-  map.setView(center);
+
+  try {
+    map.setView(center);
+    // eslint-disable-next-line no-empty
+  } catch {}
+
   return null;
 };
 
