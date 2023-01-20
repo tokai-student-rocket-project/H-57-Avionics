@@ -204,8 +204,6 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll
   );
-
-  Serial.println(flightData::_altitude_m);
 }
 
 
