@@ -1,12 +1,17 @@
 /*
-  地上でGPSを受信するArduinoです。
+  Writer?:Hiroki TSUTSUMI(1CES2116)
+  Rocket:H-57
+  MCU Series:Arduino
+  MCU:SAMD21
+
+  GPS,バルブ位置を取得し、送信する機能を持っています。
 */
 
 #include <SPI.h>
 #include <LoRa.h>
 #include <ArduinoJson.h>
 
-StaticJsonDocument<1024> packet;
+StaticJsonDocument<1024> packet; //課題 > packetのサイズの最適化
 
 void setup()
 {
@@ -35,6 +40,8 @@ void loop()
     Serial.println(output);
     
     /*
+    Groundの状況に応じて実装
+
     Serial.print(" || RSSI: "); // 通信強度がわかります。
     Serial.println(LoRa.packetRssi());
     Serial.println();
