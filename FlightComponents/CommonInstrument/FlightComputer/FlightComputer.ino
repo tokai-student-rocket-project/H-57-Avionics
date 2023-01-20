@@ -205,7 +205,7 @@ void updateFlightData() {
     &flightData::_roll
   );
 
-  Serial.println(flightData::_altitude_m);
+  Serial.println(device::_altimeter.descentCount());
 }
 
 
@@ -235,7 +235,7 @@ void writeLog() {
     flightData::_pressure_Pa,
     flightData::_temperature_degT,
     flightData::_altitude_m,
-    device::_altimeter.isDescending(),
+    device::_altimeter.descentCount(),
     flightData::_acceleration_x_g,
     flightData::_acceleration_y_g,
     flightData::_acceleration_z_g,

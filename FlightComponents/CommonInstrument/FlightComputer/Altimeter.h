@@ -24,6 +24,7 @@ public:
   float getReferencePressure();
 
   bool isDescending();
+  uint16_t descentCount();
 };
 
 
