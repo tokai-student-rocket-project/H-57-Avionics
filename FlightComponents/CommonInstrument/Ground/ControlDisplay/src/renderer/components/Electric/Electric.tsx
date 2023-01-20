@@ -1,4 +1,4 @@
-import { Card, Tooltip } from 'antd';
+import { Card } from 'antd';
 import { useState, useEffect } from 'react';
 import {
   FaBatteryEmpty,
@@ -28,15 +28,12 @@ const getBatteryColor = (batteryLevel: number) => {
 const getBatteryIcon = (batteryLevel: number) => {
   const color = getBatteryColor(batteryLevel);
 
-  if (batteryLevel === 0)
-    return <FaBatteryEmpty size={20} cursor="pointer" color={color} />;
-  if (batteryLevel < 25)
-    return <FaBatteryQuarter size={20} cursor="pointer" color={color} />;
-  if (batteryLevel < 50)
-    return <FaBatteryHalf size={20} cursor="pointer" color={color} />;
+  if (batteryLevel === 0) return <FaBatteryEmpty size={20} color={color} />;
+  if (batteryLevel < 25) return <FaBatteryQuarter size={20} color={color} />;
+  if (batteryLevel < 50) return <FaBatteryHalf size={20} color={color} />;
   if (batteryLevel < 75)
-    return <FaBatteryThreeQuarters size={20} cursor="pointer" color={color} />;
-  return <FaBatteryFull size={20} cursor="pointer" color={color} />;
+    return <FaBatteryThreeQuarters size={20} color={color} />;
+  return <FaBatteryFull size={20} color={color} />;
 };
 
 const getV33Color = (voltage: number) => {
