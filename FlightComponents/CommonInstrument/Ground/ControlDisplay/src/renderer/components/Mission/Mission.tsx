@@ -32,7 +32,7 @@ const Mission = () => {
         >
           <img src={MissionLogo} alt="MissionLogo" height="64px" />
           <div style={{ marginLeft: '16px', width: '200px' }}>
-            <div style={{ fontSize: '2em', lineHeight: '1' }}>TSRP</div>
+            <div style={{ fontSize: '1.5em', lineHeight: '1' }}>TSRP</div>
             <div style={{ fontSize: '3em', lineHeight: '1' }}>H-57</div>
           </div>
           <div style={{ marginLeft: '16px', fontSize: '1.05em' }}>
