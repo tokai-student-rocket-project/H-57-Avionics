@@ -10,7 +10,7 @@
 #include <SPI.h>
 #include <Arduino_MKRGPS.h>
 #include <ArduinoJson.h>
-#include "StreamUtils.h"
+//#include "StreamUtils.h"
 
 // GPSの設定
 float latitude;
@@ -48,7 +48,7 @@ void setup()
     //      continue;
     Serial1.begin(9600);
 
-    if (!LoRa.begin(923E6))
+    if (!LoRa.begin(921.8E6)) //ARIB Unit Channel Number 30 を採用する。
     {
         Serial.println("Starting LoRa failed!");
         while (1)
@@ -64,9 +64,9 @@ void setup()
     }
 
     prev_SEND = 0;
-    interval_SEND = 1000;
+    interval_SEND = 100;
     prev_POSITION = 0;
-    interval_POSITION = 15`00;
+    interval_POSITION = 1500;
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
