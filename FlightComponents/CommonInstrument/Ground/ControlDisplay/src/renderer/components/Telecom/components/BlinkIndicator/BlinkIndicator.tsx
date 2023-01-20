@@ -49,6 +49,7 @@ const BlinkIndicator = () => {
     });
 
     return () => {
+      window.electronAPI.remove('config-sended');
       window.electronAPI.remove('flight-data-recieved');
       window.electronAPI.remove('config-recieved');
       window.electronAPI.remove('status-recieved');
