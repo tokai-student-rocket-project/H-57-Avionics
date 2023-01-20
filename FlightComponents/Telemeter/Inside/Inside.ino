@@ -1,9 +1,10 @@
 /*
-  機体からGPS情報を地上に送信するArduinoです。
-  ソースファイル名：Inside.ino
-  作成者：1CES2116 Hiroki Tsutsumi, <氏名の追加>
+  Writer?:Hiroki TSUTSUMI(1CES2116)
+  Rocket:H-57
+  MCU Series:Arduino
+  MCU:SAMD21
 
-  H-57号機に搭載予定
+  GPS,バルブ位置を取得し、送信する機能を持っています。
 */
 
 #include <LoRa.h>
@@ -168,3 +169,45 @@ void downlinkServoPosition()
         prev_POSITION = curr_POSITION;
     }
 }
+
+/*
+                                                   .,
+                                                .&MMb
+                                             .(MMMMMN
+                         ..JgNMMMMMMMMMMNNg(MMMMMMMMM-
+                    ..gMMMMMMMMMH"""""MMMMMMMMMMMMMMM]
+                 .gMMMMMMNg+&+J...       .MMMMMMMMMMM@
+              .gMMMMMMMMMMMMMMMMMMMMNJ.  dMMMMMMMMMMMMN,
+            .MMMM8gMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMTMMMMa.
+          .MMMM=.MMMM9"`       _7"MMMMMMMMMMMMMMMMM^  ,WMMMe
+        .dMMM= JMM@!                ?TMMMMMMMMMMMM'     .WMMN,
+       .MMMF  JM@`                    .MMMMMMMMMM'        /MMMb    `
+      .MMM^  .MF                     .MMMMMMMMMMMx          WMMN.
+     .MMM!   dF                      dMMMMMMMMMMMMN.         UMMN.
+    .MMM`   .#                      .MMMMMMMM#MMMMMN,         UMMb
+   .MMM^    ,]       `  `  `  `  ` .MMMMMMMM#  WMMMMMe         MMM]
+   dMMF     ,!                     MMMMMMMM@    TMMMMM[  `     ,MMM.
+  .MMM      ,    ...(JJ-...       -MMMMMMM@      ?MMMMMc        dMMb
+  (MMF      .(.MMMMMMMMMMMMMN,   .MMMMMMMF        qMMMMM,   `   ,MMN
+  dMM%     .MMMMMMMMMMMMMMMMMMMa.MMMMMMMF          WMMMMN        MMM_
+  MMM}   .dMMMMMMMMMMMMMMMMMMMMM$TMMMMMF           .MMMMM[      `MMM}
+  MMM{  .MMMMMMMMMMMMMMMMMMMMMMF  ?MMMF             JMMMMN       MMM}
+  MMM] .MMMMMMMMMMMMMMMMMMMMMMM`   dMD        `     .MMMMM;      MMM~
+  JMMb -MMMMMMMMMMMMMMMMMMMMMM%    .$                MMMMM]     .MM#
+  .MMN.dMMMMMMMMMMMMMMMMMMMMMF     (.                dMMMMb     JMMF
+   WMMbdMMMMMMMMMMMMMMMMMMMMM`    JM`                dMMMM@    .MMM`
+   ,MMMJMMMMMMMMMMMMMMMMMMMM%    JM#              `  dMMMMF    dMMF
+    JMMNMMMMMMMMMMMMMMMMMMMF    dMM^          `      MMMMM]   JMM@
+     ?MMNMMMMMMMMMMMMMMMMM#`  .dMM3                 .MMMMM`  JMM#
+      ?MMNMMMMMMMMMMMMMMMM\  .dM#'                 .MMMMMF .dMM@
+       (MMMmTMMMMMMMMMMMMF  .M#^                  .MMMMM@ .MMMF
+        .WMMN,?TMMMMMMMM#  .7                    .MMMMM@.dMMM^
+          /MMMN,    ???~dM#_4,.                .MMMMMMNdMMMD
+            ?MMMMa.    .M@    (YQ...       ..gMMMMMMMMMMMD
+              (WMMMNa,.M@         7"MMMMMMMMMMMMMMMMMMM"
+                 ?WMMMMMg...            ??7uagMMMMMM"`
+                    -WMMMMMMMMNNgggggggNMMMMMMMM9^
+                    .F   _7"WMMMMMMMMMMMMH""^
+                    r
+                                                                   `
+*/

@@ -1,3 +1,13 @@
+/*
+  Writer?:Hiroki TSUTSUMI(1CES2116)
+  Rocket:H-57
+  MCU Series:Arduino
+  MCU:SAMD21
+
+  バルブ位置を制御し、テレメトリーモジュールに送信する機能を持っています。
+*/
+
+
 #include "VarSpeedServo.h"
 #include <ArduinoJson.h>
 
@@ -44,8 +54,8 @@ void setup()
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-    //if (Position == 1 && digitalRead(2) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
-    if (Position == 1 && digitalRead(3) == LOW) //Arduino NANO　H-57 仕様
+    // if (Position == 1 && digitalRead(2) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
+    if (Position == 1 && digitalRead(3) == LOW) // Arduino NANO　H-57 仕様
     {
         LCount++;
     }
@@ -65,8 +75,8 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-    //if (Position == 2 && digitalRead(3) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
-    if (Position == 2 && digitalRead(2) == LOW) //Arduino NANO　H-57 仕様
+    // if (Position == 2 && digitalRead(3) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
+    if (Position == 2 && digitalRead(2) == LOW) // Arduino NANO　H-57 仕様
     {
         WCount++;
     }
@@ -92,10 +102,10 @@ void loop()
     Serial.println();
     serializeJson(servoPacket, Serial);
 
-    //Arduino IDE シリアルプロッタでのデバック用
-    // Serial.print(WCount);
-    // Serial.print(",");
-    // Serial.println(LCount);
+    // Arduino IDE シリアルプロッタでのデバック用
+    //  Serial.print(WCount);
+    //  Serial.print(",");
+    //  Serial.println(LCount);
 
     delay(2); // 250Hz
     // delay(10);
@@ -151,3 +161,46 @@ void W_Position()
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
 }
+
+/*
+                                                   .,
+                                                .&MMb
+                                             .(MMMMMN
+                         ..JgNMMMMMMMMMMNNg(MMMMMMMMM-
+                    ..gMMMMMMMMMH"""""MMMMMMMMMMMMMMM]
+                 .gMMMMMMNg+&+J...       .MMMMMMMMMMM@
+              .gMMMMMMMMMMMMMMMMMMMMNJ.  dMMMMMMMMMMMMN,
+            .MMMM8gMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMTMMMMa.
+          .MMMM=.MMMM9"`       _7"MMMMMMMMMMMMMMMMM^  ,WMMMe
+        .dMMM= JMM@!                ?TMMMMMMMMMMMM'     .WMMN,
+       .MMMF  JM@`                    .MMMMMMMMMM'        /MMMb    `
+      .MMM^  .MF                     .MMMMMMMMMMMx          WMMN.
+     .MMM!   dF                      dMMMMMMMMMMMMN.         UMMN.
+    .MMM`   .#                      .MMMMMMMM#MMMMMN,         UMMb
+   .MMM^    ,]       `  `  `  `  ` .MMMMMMMM#  WMMMMMe         MMM]
+   dMMF     ,!                     MMMMMMMM@    TMMMMM[  `     ,MMM.
+  .MMM      ,    ...(JJ-...       -MMMMMMM@      ?MMMMMc        dMMb
+  (MMF      .(.MMMMMMMMMMMMMN,   .MMMMMMMF        qMMMMM,   `   ,MMN
+  dMM%     .MMMMMMMMMMMMMMMMMMMa.MMMMMMMF          WMMMMN        MMM_
+  MMM}   .dMMMMMMMMMMMMMMMMMMMMM$TMMMMMF           .MMMMM[      `MMM}
+  MMM{  .MMMMMMMMMMMMMMMMMMMMMMF  ?MMMF             JMMMMN       MMM}
+  MMM] .MMMMMMMMMMMMMMMMMMMMMMM`   dMD        `     .MMMMM;      MMM~
+  JMMb -MMMMMMMMMMMMMMMMMMMMMM%    .$                MMMMM]     .MM#
+  .MMN.dMMMMMMMMMMMMMMMMMMMMMF     (.                dMMMMb     JMMF
+   WMMbdMMMMMMMMMMMMMMMMMMMMM`    JM`                dMMMM@    .MMM`
+   ,MMMJMMMMMMMMMMMMMMMMMMMM%    JM#              `  dMMMMF    dMMF
+    JMMNMMMMMMMMMMMMMMMMMMMF    dMM^          `      MMMMM]   JMM@
+     ?MMNMMMMMMMMMMMMMMMMM#`  .dMM3                 .MMMMM`  JMM#
+      ?MMNMMMMMMMMMMMMMMMM\  .dM#'                 .MMMMMF .dMM@
+       (MMMmTMMMMMMMMMMMMF  .M#^                  .MMMMM@ .MMMF
+        .WMMN,?TMMMMMMMM#  .7                    .MMMMM@.dMMM^
+          /MMMN,    ???~dM#_4,.                .MMMMMMNdMMMD
+            ?MMMMa.    .M@    (YQ...       ..gMMMMMMMMMMMD
+              (WMMMNa,.M@         7"MMMMMMMMMMMMMMMMMMM"
+                 ?WMMMMMg...            ??7uagMMMMMM"`
+                    -WMMMMMMMMNNgggggggNMMMMMMMM9^
+                    .F   _7"WMMMMMMMMMMMMH""^
+                    r
+                                                                   `
+*/
+
