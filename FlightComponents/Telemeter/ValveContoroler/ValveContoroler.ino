@@ -34,8 +34,8 @@ void setup()
     // Supplyservo.attach(SupplyServoPin, 1520, 560);
     Supplyservo.write(20, 30, true); // 不感体に近い為初期値を20度ずらした。 0 -=> 20, 60 -=> 80
 
-    pinMode(2, INPUT_PULLUP); // WAITING
-    pinMode(3, INPUT_PULLUP); // LUNCH
+    pinMode(2, INPUT_PULLUP); // WAITING <=- Arduino UNO　//LUNCH <=- Arduino NANO　//ただの設計ミス。ソフトで解決可能なのでUNO,NANOで切り替えてほしい...
+    pinMode(3, INPUT_PULLUP); // LUNCH <=- ArduinoUNO //WAITING <=- Arduino NANO
     pinMode(LED_BUILTIN, OUTPUT);
 
     delay(1000);
@@ -44,7 +44,8 @@ void setup()
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-    if (Position == 1 && digitalRead(2) == LOW)
+    //if (Position == 1 && digitalRead(2) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
+    if (Position == 1 && digitalRead(3) == LOW) //Arduino NANO　H-57 仕様
     {
         LCount++;
     }
@@ -64,7 +65,8 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-    if (Position == 2 && digitalRead(3) == LOW)
+    //if (Position == 2 && digitalRead(3) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
+    if (Position == 2 && digitalRead(2) == LOW) //Arduino NANO　H-57 仕様
     {
         WCount++;
     }
@@ -82,7 +84,7 @@ void loop()
         delay(300);
     }
 
-    //
+    // Arduinojson
     StaticJsonDocument<64> servoPacket;
     servoPacket["mainservoDeg"] = Mainservo_deg;
     servoPacket["supplyservoDeg"] = Supplyservo_deg;
@@ -90,6 +92,7 @@ void loop()
     Serial.println();
     serializeJson(servoPacket, Serial);
 
+    //Arduino IDE シリアルプロッタでのデバック用
     // Serial.print(WCount);
     // Serial.print(",");
     // Serial.println(LCount);
@@ -102,7 +105,7 @@ void L_Position()
     Supplyservo.write(80, 0, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
     // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
 
-    delay(10);
+    delay(10); //
 
     /* --この下消去予定-- */
     // delay(450);
@@ -120,8 +123,7 @@ void L_Position()
     // 2022/12/21
     // コールドフロー試験
     // Mainservo.write(140, 30, true); 角度140°、速度30にて成功
-    // 成功を踏まえて...
-    // 速度を早くするべきかどうか検討する必要あり。
+    // 成功を踏まえて...速度を早くするべきかどうか検討する必要あり。
     //
     // 2022/12/23
     // 燃焼実験
