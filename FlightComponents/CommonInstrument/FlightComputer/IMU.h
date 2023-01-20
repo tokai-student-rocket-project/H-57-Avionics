@@ -13,10 +13,7 @@ private:
   Madgwick _madgwickFilter;
 
 public:
-  void initialize(
-    int16_t offsetAccelerationX, int16_t offsetAccelerationY, int16_t offsetAccelerationZ,
-    int16_t offsetGyroX, int16_t offsetGyroY, int16_t offsetGyroZ
-  );
+  void initialize();
 
   void getData(
     float* accelerationX, float* accelerationY, float* accelerationZ,

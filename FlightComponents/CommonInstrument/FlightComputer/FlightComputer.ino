@@ -112,7 +112,7 @@ void setup() {
   downlinkEvent("INITIALIZE");
 
   device::_altimeter.initialize();
-  device::_imu.initialize(-1665, -507, 1331, 13, 17, 40);
+  device::_imu.initialize();
 
   MsgPacketizer::subscribe(LoRa, 0xF3,
     [](
@@ -204,6 +204,8 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll
   );
+
+  Serial.println(flightData::_altitude_m);
 }
 
 

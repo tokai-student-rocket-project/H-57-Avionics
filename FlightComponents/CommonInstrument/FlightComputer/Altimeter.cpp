@@ -6,7 +6,7 @@ void Altimeter::initialize() {
   _bme280.beginI2C();
 
   // 時間を空けないと正常な気圧を取得できない
-  delay(5000);
+  delay(2000);
   setReferencePressure(getPressure());
 }
 
