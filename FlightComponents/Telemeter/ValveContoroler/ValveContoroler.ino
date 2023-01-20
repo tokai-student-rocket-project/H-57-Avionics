@@ -163,44 +163,31 @@ void W_Position()
 }
 
 /*
-                                                   .,
-                                                .&MMb
-                                             .(MMMMMN
-                         ..JgNMMMMMMMMMMNNg(MMMMMMMMM-
-                    ..gMMMMMMMMMH"""""MMMMMMMMMMMMMMM]
-                 .gMMMMMMNg+&+J...       .MMMMMMMMMMM@
-              .gMMMMMMMMMMMMMMMMMMMMNJ.  dMMMMMMMMMMMMN,
-            .MMMM8gMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMTMMMMa.
-          .MMMM=.MMMM9"`       _7"MMMMMMMMMMMMMMMMM^  ,WMMMe
-        .dMMM= JMM@!                ?TMMMMMMMMMMMM'     .WMMN,
-       .MMMF  JM@`                    .MMMMMMMMMM'        /MMMb    `
-      .MMM^  .MF                     .MMMMMMMMMMMx          WMMN.
-     .MMM!   dF                      dMMMMMMMMMMMMN.         UMMN.
-    .MMM`   .#                      .MMMMMMMM#MMMMMN,         UMMb
-   .MMM^    ,]       `  `  `  `  ` .MMMMMMMM#  WMMMMMe         MMM]
-   dMMF     ,!                     MMMMMMMM@    TMMMMM[  `     ,MMM.
-  .MMM      ,    ...(JJ-...       -MMMMMMM@      ?MMMMMc        dMMb
-  (MMF      .(.MMMMMMMMMMMMMN,   .MMMMMMMF        qMMMMM,   `   ,MMN
-  dMM%     .MMMMMMMMMMMMMMMMMMMa.MMMMMMMF          WMMMMN        MMM_
-  MMM}   .dMMMMMMMMMMMMMMMMMMMMM$TMMMMMF           .MMMMM[      `MMM}
-  MMM{  .MMMMMMMMMMMMMMMMMMMMMMF  ?MMMF             JMMMMN       MMM}
-  MMM] .MMMMMMMMMMMMMMMMMMMMMMM`   dMD        `     .MMMMM;      MMM~
-  JMMb -MMMMMMMMMMMMMMMMMMMMMM%    .$                MMMMM]     .MM#
-  .MMN.dMMMMMMMMMMMMMMMMMMMMMF     (.                dMMMMb     JMMF
-   WMMbdMMMMMMMMMMMMMMMMMMMMM`    JM`                dMMMM@    .MMM`
-   ,MMMJMMMMMMMMMMMMMMMMMMMM%    JM#              `  dMMMMF    dMMF
-    JMMNMMMMMMMMMMMMMMMMMMMF    dMM^          `      MMMMM]   JMM@
-     ?MMNMMMMMMMMMMMMMMMMM#`  .dMM3                 .MMMMM`  JMM#
-      ?MMNMMMMMMMMMMMMMMMM\  .dM#'                 .MMMMMF .dMM@
-       (MMMmTMMMMMMMMMMMMF  .M#^                  .MMMMM@ .MMMF
-        .WMMN,?TMMMMMMMM#  .7                    .MMMMM@.dMMM^
-          /MMMN,    ???~dM#_4,.                .MMMMMMNdMMMD
-            ?MMMMa.    .M@    (YQ...       ..gMMMMMMMMMMMD
-              (WMMMNa,.M@         7"MMMMMMMMMMMMMMMMMMM"
-                 ?WMMMMMg...            ??7uagMMMMMM"`
-                    -WMMMMMMMMNNgggggggNMMMMMMMM9^
-                    .F   _7"WMMMMMMMMMMMMH""^
-                    r
-                                                                   `
+                                    .[
+                                 .dMM@
+                 ...&gNMMMMNNgJ+MMMMMN
+             ..MMMMH"""7??77""MMMMMMMM;
+          .JMMMMMMMMMMMMNg,. .MMMMMMMMN,
+        .MMMWMMMMMMMMMMMMMMMNMMMMMMMM"WMN,
+      .dM#^JM#"         ?TMMMMMMMMMM^  .WMN,
+     .MMt JM^              .MMMMMMM'     ,MMb
+    .MM! .@               .MMMMMMMMb       UMN.
+   .M#`  d`               dMMMMMMMMMN,      UMN
+  .MM!   F               .MMMMM#`,MMMM,      HMb
+  MMF    \    ...       .MMMMM#`  .MMMM,     ,MM.
+ .MM`    i.MMMMMMMMNJ.  dMMMM#     .MMMN.     MM]
+ -M#   .dMMMMMMMMMMMMMN.MMMM@       ,MMMb     JM@
+ (M#  .MMMMMMMMMMMMMMM# TMM@         dMMM;    (M#
+ -M# .MMMMMMMMMMMMMMMM'  WF          .MMMb    JMF
+ .MM.dMMMMMMMMMMMMMMMF   .            MMMN    MM]
+  dMbMMMMMMMMMMMMMMM@   .#            MMMN   .MM
+  .MMdMMMMMMMMMMMMMM!  .MF            MMM#  .MMt
+   -MMMMMMMMMMMMMMMF  .M@            .MMMF .MMF
+    (MMMMMMMMMMMMM@  .MD            .MMMM`.MMF
+     ,MMNTMMMMMMMM! ,"             .MMMM\.MM3
+       TMMa._7"""QN"(.           ..MMMMQMM@`
+         TMMN,  .M3   74J......(MMMMMMMM@!
+           ?WMMNML.       ?"""HHMNMMM#"
+              (MHMMMMNggg&ggNMMMMM9^
+              .^   -?""""""""7!
 */
-
