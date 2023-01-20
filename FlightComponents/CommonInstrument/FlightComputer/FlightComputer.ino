@@ -232,6 +232,8 @@ void writeLog() {
     static_cast<uint8_t>(internal::_flightMode),
     device::_shiranui3.isOn(),
     device::_buzzer.isOn(),
+    flightData::_pressure_Pa,
+    flightData::_temperature_degT,
     flightData::_altitude_m,
     device::_altimeter.isDescending(),
     flightData::_acceleration_x_g,

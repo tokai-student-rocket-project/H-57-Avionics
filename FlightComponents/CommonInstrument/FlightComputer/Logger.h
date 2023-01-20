@@ -6,7 +6,7 @@ class Logger
 {
 private:
   const size_t _PAGE_SIZE = 128;
-  const size_t _PACKET_SIZE = 63;
+  const size_t _PACKET_SIZE = 73;
 
   uint8_t _addresses[8] = { 0x50, 0x54, 0x51, 0x55, 0x52, 0x56, 0x53, 0x57 };
   size_t _packetCount = 0;
@@ -14,8 +14,10 @@ private:
   void writeSD(
     float flightTime,
     uint8_t flightMode,
-    uint8_t StateShiranui3,
-    uint8_t StateBuzzer,
+    uint8_t stateShiranui3,
+    uint8_t stateBuzzer,
+    float pressure,
+    float temperature,
     float altitude,
     uint16_t descentCount,
     float accelerationX,
@@ -37,8 +39,10 @@ public:
   void writeLog(
     float flightTime,
     uint8_t flightMode,
-    uint8_t StateShiranui3,
-    uint8_t StateBuzzer,
+    uint8_t stateShiranui3,
+    uint8_t stateBuzzer,
+    float pressure,
+    float temperature,
     float altitude,
     uint16_t descentCount,
     float accelerationX,
