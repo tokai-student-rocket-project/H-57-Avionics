@@ -4,7 +4,7 @@
   MCU Series:Arduino
   MCU:SAMD21
 
-  GPS,バルブ位置を取得し、送信する機能を持っています。
+  GPS,バルブ位置を機体のアビオニクスから受信する機能を持っています。
 */
 
 #include <SPI.h>
