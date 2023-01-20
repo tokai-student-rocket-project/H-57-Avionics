@@ -7,7 +7,6 @@ import log from 'electron-log';
 import { SerialPort } from 'serialport';
 import { ReadlineParser } from '@serialport/parser-readline';
 import Store from 'electron-store';
-import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
 class AppUpdater {
@@ -198,9 +197,6 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
 
   // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {
