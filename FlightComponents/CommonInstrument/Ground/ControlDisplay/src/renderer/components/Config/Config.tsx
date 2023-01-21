@@ -1,5 +1,9 @@
-import { Card, Col, Row, Statistic, Select, Button, Input } from 'antd';
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable no-nested-ternary */
+import { Card, Col, Row, Statistic, Select, Button, Input, Modal } from 'antd';
 import { useState, useEffect } from 'react';
+import { FaGamepad, FaTimes } from 'react-icons/fa';
 
 const units = { a: 'm', p: 'hPa', bt: 'sec', sp: 'sec', fs: 'sec', l: 'sec' };
 
@@ -13,6 +17,9 @@ const Config = () => {
 
   const [selectedLabel, setSelectedLabel] = useState<string>('');
   const [value, setValue] = useState<string>('');
+
+  const [isShowGame, setIsShowGame] = useState<boolean>(false);
+  const [stones, setStones] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
   useEffect(() => {
     window.electronAPI.configRecieved(() => {
@@ -37,6 +44,30 @@ const Config = () => {
     setSelectedLabel(label);
   };
 
+  const selectStoneIndex = (e: React.MouseEvent<HTMLDivElement>) => {
+    const targetIndex = Number(e.currentTarget.dataset.num);
+    setStones((originStones) => {
+      const newStones = originStones.map((stone, index) =>
+        index === targetIndex ? 1 : stone
+      );
+
+      let cpuIndex = 0;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        cpuIndex = Math.floor(Math.random() * 10);
+
+        if (newStones[cpuIndex] === 0) break;
+        if (Math.min.apply(null, newStones) === 1) return newStones;
+      }
+
+      return newStones.map((stone, index) => (index === cpuIndex ? 2 : stone));
+    });
+  };
+
+  const clearStones = () => {
+    setStones([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  };
+
   const sendConfig = () => {
     if (selectedLabel === 'a')
       window.electronAPI.sendConfig(selectedLabel, value);
@@ -53,84 +84,166 @@ const Config = () => {
   };
 
   return (
-    <Card title="CONFIG" bordered={false} style={{ margin: '8px' }}>
-      <Row style={{ marginTop: '24px' }}>
-        <Col span={12}>
-          <Statistic
-            title="指定分離高度"
-            suffix="m"
-            valueStyle={{ color: 'white' }}
-            value={separationAltitude}
+    <>
+      <Card
+        title="CONFIG"
+        bordered={false}
+        style={{ margin: '8px' }}
+        extra={
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaGamepad
+              cursor="pointer"
+              size={22}
+              color="#b9bbbe"
+              onClick={() => setIsShowGame(true)}
+            />
+          </div>
+        }
+      >
+        <Row style={{ marginTop: '24px' }}>
+          <Col span={12}>
+            <Statistic
+              title="指定分離高度"
+              suffix="m"
+              valueStyle={{ color: 'white' }}
+              value={separationAltitude}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="基準気圧"
+              suffix="hPa"
+              valueStyle={{ color: 'white' }}
+              value={basePrassure}
+            />
+          </Col>
+        </Row>
+        <Row style={{ marginTop: '12px' }}>
+          <Col span={12}>
+            <Statistic
+              title="想定燃焼時間"
+              suffix="sec"
+              valueStyle={{ color: 'white' }}
+              value={burnTime}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="分離保護時間"
+              suffix="sec"
+              valueStyle={{ color: 'white' }}
+              value={separationProtection}
+            />
+          </Col>
+        </Row>
+        <Row style={{ marginTop: '12px' }}>
+          <Col span={12}>
+            <Statistic
+              title="強制分離時間"
+              suffix="sec"
+              valueStyle={{ color: 'white' }}
+              value={forceSeparation}
+            />
+          </Col>
+          <Col span={12}>
+            <Statistic
+              title="想定着地時間"
+              suffix="sec"
+              valueStyle={{ color: 'white' }}
+              value={landingTime}
+            />
+          </Col>
+        </Row>
+        <div style={{ display: 'flex', marginTop: '24px' }}>
+          <Select
+            onSelect={selectLabel}
+            style={{ width: '300px' }}
+            options={[
+              { value: 'a', label: '指定分離高度' },
+              { value: 'p', label: '基準気圧' },
+              { value: 'bt', label: '想定燃焼時間' },
+              { value: 'sp', label: '分離保護時間' },
+              { value: 'fs', label: '強制分離時間' },
+              { value: 'l', label: '想定着地時' },
+            ]}
           />
-        </Col>
-        <Col span={12}>
-          <Statistic
-            title="基準気圧"
-            suffix="hPa"
-            valueStyle={{ color: 'white' }}
-            value={basePrassure}
+          <Input
+            onChange={(event) => setValue(event.target.value)}
+            addonAfter={units[selectedLabel]}
+            style={{ height: '32px' }}
           />
-        </Col>
-      </Row>
-      <Row style={{ marginTop: '12px' }}>
-        <Col span={12}>
-          <Statistic
-            title="想定燃焼時間"
-            suffix="sec"
-            valueStyle={{ color: 'white' }}
-            value={burnTime}
-          />
-        </Col>
-        <Col span={12}>
-          <Statistic
-            title="分離保護時間"
-            suffix="sec"
-            valueStyle={{ color: 'white' }}
-            value={separationProtection}
-          />
-        </Col>
-      </Row>
-      <Row style={{ marginTop: '12px' }}>
-        <Col span={12}>
-          <Statistic
-            title="強制分離時間"
-            suffix="sec"
-            valueStyle={{ color: 'white' }}
-            value={forceSeparation}
-          />
-        </Col>
-        <Col span={12}>
-          <Statistic
-            title="想定着地時間"
-            suffix="sec"
-            valueStyle={{ color: 'white' }}
-            value={landingTime}
-          />
-        </Col>
-      </Row>
-      <div style={{ display: 'flex', marginTop: '24px' }}>
-        <Select
-          onSelect={selectLabel}
-          style={{ width: '300px' }}
-          options={[
-            { value: 'a', label: '指定分離高度' },
-            { value: 'p', label: '基準気圧' },
-            { value: 'bt', label: '想定燃焼時間' },
-            { value: 'sp', label: '分離保護時間' },
-            { value: 'fs', label: '強制分離時間' },
-            { value: 'l', label: '想定着地時' },
-          ]}
-        />
-        <Input
-          onChange={(event) => setValue(event.target.value)}
-          addonAfter={units[selectedLabel]}
-          style={{ height: '32px' }}
-        />
-        <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
-          送信
-        </Button>
-      </div>
-    </Card>
+          <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
+            送信
+          </Button>
+        </div>
+      </Card>
+      <Modal
+        open={isShowGame}
+        onCancel={() => setIsShowGame(false)}
+        destroyOnClose
+        maskClosable
+        afterClose={clearStones}
+        footer={null}
+        bodyStyle={{ background: '#36393f', color: 'white' }}
+        closeIcon={<FaTimes color="white" />}
+        width={750}
+      >
+        <div
+          style={{
+            margin: '32px',
+            display: 'grid',
+            gridGap: '10px',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gridTemplateRows: '150px 150px 150px',
+          }}
+        >
+          {stones.map((stone, index) => (
+            <div
+              style={{
+                background: stone === 0 ? '#40444b' : '#202225',
+                padding: '15px',
+                borderRadius: '8px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontSize: '3em',
+                fontWeight: 'bold',
+              }}
+            >
+              {stone === 1 ? (
+                <span
+                  style={{
+                    color: '#46c46d',
+                    transform: 'rotate(-15deg)',
+                  }}
+                >
+                  GO!
+                </span>
+              ) : stone === 2 ? (
+                <span
+                  style={{
+                    color: '#ed4245',
+                    transform: 'rotate(-15deg)',
+                  }}
+                >
+                  NOGO!
+                </span>
+              ) : (
+                <div
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    cursor: 'pointer',
+                  }}
+                  data-num={index}
+                  onClick={selectStoneIndex}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </>
   );
 };
 
