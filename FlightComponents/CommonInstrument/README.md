@@ -46,7 +46,7 @@ heightOutput = ((float)-44330.77)*(pow(((float)readFloatPressure()/(float)_refer
 
 数式に直すとこんな感じ。
 
-$$ h = -44330.77 \times \left{ \left( \frac{P}{P_{0}} \right) ^{0.190263} - 1 \right} $$
+$$ h = -44330.77 \times \left( \left( \frac{P}{P_{0}} \right) ^{0.190263} - 1 \right) $$
 $$ h : \text{高度[m]}, P : \text{計測気圧[Pa]}, P_{0} : \text{基準気圧[Pa]} $$
 
 ["International barometric height formula"](http://hyperphysics.phy-astr.gsu.edu/hbase/Kinetic/barfor.html)を使っているみたいです。対流圏(高度0kmから11km)で有効です。
