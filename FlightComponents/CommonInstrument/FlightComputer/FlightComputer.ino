@@ -2,8 +2,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <ArduinoJson.h>
-#include <IntervalCounter.h>
-#include <OneShotTimer.h>
+#include <TaskManager.h>
 #include <MsgPacketizer.h>
 #include "Altimeter.h"
 #include "IMU.h"
@@ -69,11 +68,6 @@ namespace config {
 }
 
 namespace internal {
-  // タイマー
-  IntervalCounter _downlinkInterval(0.5);
-  IntervalCounter _logicInterval(0.01);
-  OneShotTimer _separateShot(3.0);
-
   FlightMode _flightMode;
   // 離床した瞬間の時間を保存する変数
   uint32_t _launchTime_ms;
@@ -116,39 +110,11 @@ void setup() {
   device::_altimeter.initialize();
   device::_imu.initialize();
 
-  MsgPacketizer::subscribe(LoRa, 0xF3,
-    [](
-      uint8_t command,
-      float payload
-      )
-    {
-      if (!isFlying()) executeCommand(command, payload);
-    }
-  );
+  Tasks.add(mainRoutine)->startIntervalMsec(10);
+  Tasks.add(downlinkRoutine)->startIntervalMsec(500);
+  Tasks.add("TurnOffShiranuiTask", turnOffShiranuiTask);
 
-  // ロジック用タイマー 0.01秒間隔
-  internal::_logicInterval.onUpdate([&]() {
-    logic();
-    });
-  internal::_logicInterval.start();
-
-  // ダウンリンク用タイマー1 0.5秒間隔
-  internal::_downlinkInterval.onUpdate([&]() {
-    downlinkStatus();
-  downlinkFlightData();
-  downlinkConfig();
-
-  device::_commandIndicator.on();
-  device::_telemeter.sendDownlink();
-  device::_commandIndicator.off();
-    });
-  internal::_downlinkInterval.start();
-
-  // 分離3秒後に電磁弁をオフにする
-  internal::_separateShot.onUpdate([&]() {
-    device::_shiranui3.off();
-  device::_buzzer.on();
-    });
+  MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
   reset();
 
@@ -157,13 +123,11 @@ void setup() {
 
 
 void loop() {
-  internal::_logicInterval.update();
-  internal::_downlinkInterval.update();
-  internal::_separateShot.update();
+  Tasks.update();
 }
 
 
-void logic() {
+void mainRoutine() {
   device::_flightPin.update();
   updateFlightData();
   updateIndicators();
@@ -187,6 +151,23 @@ void logic() {
     internal::_isForceSeparated = true;
     changeFlightMode(FlightMode::PARACHUTE);
   }
+}
+
+
+void downlinkRoutine() {
+  downlinkStatus();
+  downlinkFlightData();
+  downlinkConfig();
+
+  device::_commandIndicator.on();
+  device::_telemeter.sendDownlink();
+  device::_commandIndicator.off();
+}
+
+
+void turnOffShiranuiTask() {
+  device::_shiranui3.off();
+  device::_buzzer.on();
 }
 
 
@@ -371,8 +352,9 @@ void separate() {
   device::_buzzer.off();
   device::_shiranui3.on();
 
-  if (!internal::_separateShot.isRunning())
-    internal::_separateShot.start();
+  if (!Tasks["TurnOffShiranuiTask"]->isRunning()) {
+    Tasks["TurnOffShiranuiTask"]->startOnceAfterMsec(3000);
+  }
 }
 
 
@@ -445,6 +427,8 @@ void changeFlightMode(FlightMode nextMode) {
 /// @param command 0x05:想定着地時間
 /// @param payload 
 void executeCommand(uint8_t command, float payload) {
+  if (isFlying()) return;
+
   device::_commandIndicator.on();
 
   downlinkEvent("CONFIG-UPDATE");
