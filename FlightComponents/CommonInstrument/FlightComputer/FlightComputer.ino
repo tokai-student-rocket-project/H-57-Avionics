@@ -75,8 +75,10 @@ namespace internal {
   OneShotTimer _separateShot(3.0);
 
   FlightMode _flightMode;
-  // 離床した瞬間の時間を保存しておく変数
+  // 離床した瞬間の時間を保存する変数
   uint32_t _launchTime_ms;
+  // 強制分離を実行したかを保存する変数
+  bool _isForceSeparated = false;
 }
 
 namespace flightData {
@@ -182,6 +184,7 @@ void logic() {
   if (canSeparateForce()) {
     downlinkEvent("FORCE-SEPARATE");
     separate();
+    internal::_isForceSeparated = true;
     changeFlightMode(FlightMode::PARACHUTE);
   }
 }
@@ -204,8 +207,6 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll
   );
-
-  Serial.println(device::_altimeter.descentCount());
 }
 
 
@@ -360,13 +361,14 @@ bool canSeparate() {
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparateForce() {
   return isFlying()
-    && internal::_flightMode != FlightMode::PARACHUTE
+    && !internal::_isForceSeparated
     && millis() > internal::_launchTime_ms + config::force_separation_time_ms;
 }
 
 
 /// @brief 分離信号を出す
 void separate() {
+  device::_buzzer.off();
   device::_shiranui3.on();
 
   if (!internal::_separateShot.isRunning())
@@ -378,6 +380,7 @@ void separate() {
 void reset() {
   device::_shiranui3.off();
   device::_buzzer.off();
+  internal::_isForceSeparated = false;
 }
 
 
