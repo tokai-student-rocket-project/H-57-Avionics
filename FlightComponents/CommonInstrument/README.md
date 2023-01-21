@@ -45,7 +45,8 @@ heightOutput = ((float)-44330.77)*(pow(((float)readFloatPressure()/(float)_refer
 
 数式に直すとこんな感じ。
 
-$$ h = -44330.77 \times \left\{ \left( \frac{P}{P_{0}} \right) ^{0.190263} - 1 \right\} \\ h : \text{高度[m]}, P : \text{計測気圧[Pa]}, P_{0} : \text{基準気圧[Pa]} $$
+$$ h = -44330.77 \times \left\{ \lef\( \frac{P}{P_{0}} \right) ^{0.190263} - 1 \right\} $$
+$$ h : \text{高度[m]}, P : \text{計測気圧[Pa]}, P_{0} : \text{基準気圧[Pa]} $$
 
 ["International barometric height formula"](http://hyperphysics.phy-astr.gsu.edu/hbase/Kinetic/barfor.html)を使っているみたいです。対流圏(高度0kmから11km)で有効です。
 
@@ -71,16 +72,17 @@ $$ h = -44330.77 \times \left\{ \left( \frac{P}{P_{0}} \right) ^{0.190263} - 1 \
 <指数移動平均>
 [高度算出](#高度算出)で得た高度にはノイズが含まれているため指数移動平均で平滑化します。
 
-$$ \mu = \mu_{ref} + \alpha \times \left( h - \mu_{ref} \right) \\ \mu : \text{平均[m]}, \mu_{ref} : \text{前回の平均[m]}, \alpha : \text{平滑化定数}, h : \text{高度[m]} $$
+$$ \mu = \mu_{ref} + \alpha \times \left( h - \mu_{ref} \right) $$
+$$ \mu : \text{平均[m]}, \mu_{ref} : \text{前回の平均[m]}, \alpha : \text{平滑化定数}, h : \text{高度[m]} $$
 
 平滑化は任意に設定する必要があります。0~1の範囲で大きいほど平滑化が強くなります。地上での試験では0.35が適切でしたが、こればっかりは打ち上げないとわからないです。
 
 指数移動平均は前回の値1つを保存しておけば良いので、単純移動平均と比較して負荷が軽いという特徴があります。
 
-<連続降下検知>
+<連続降下検知>  
 平滑化した高度が連続で減少した回数をカウントします。連続なので1度でも減少しなければカウントはリセットされます。開発時は10回連続にしていますが、平滑化定数との兼ね合いもあるのでこればっかりは打ち上げないとわからないです。
 
-<頂点検知>
+<頂点検知>  
 上昇中（[フライトモード](#フライトモード)がCLIMB）に連続降下検知がされた場合はフライトモードをDESCENTモードに変更します。同時にタイマーが分離保護時間を経過すれば、分離指令を出してフライトモードをPARASHUTEモードに変更します。
 
 #### タイマー
