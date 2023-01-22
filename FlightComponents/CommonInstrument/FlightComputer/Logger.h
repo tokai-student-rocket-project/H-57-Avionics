@@ -6,7 +6,7 @@ class Logger
 {
 private:
   const size_t _PAGE_SIZE = 128;
-  const size_t _PACKET_SIZE = 73;
+  const size_t _PACKET_SIZE = 88;
 
   uint8_t _addresses[8] = { 0x50, 0x54, 0x51, 0x55, 0x52, 0x56, 0x53, 0x57 };
   size_t _packetCount = 0;
@@ -28,7 +28,10 @@ private:
     float gyroZ,
     float yaw,
     float pitch,
-    float roll
+    float roll,
+    float voltage33,
+    float voltage5,
+    float voltage12
   );
   void writeEEPROM(const size_t packetCount, const uint8_t* data, const size_t size);
 
@@ -53,7 +56,10 @@ public:
     float gyroZ,
     float yaw,
     float pitch,
-    float roll
+    float roll,
+    float voltage33,
+    float voltage5,
+    float voltage12
   );
 
   /// @brief ロガーの中身をシリアル通信でダンプする

@@ -88,6 +88,9 @@ namespace flightData {
   float _yaw;
   float _pitch;
   float _roll;
+  float _voltage33;
+  float _voltage5;
+  float _voltage12;
 }
 
 
@@ -188,6 +191,12 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll
   );
+
+  // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
+  // 電圧係数 = 基準電圧 / 2.4
+  flightData::_voltage33 = analogRead(A6) / 1024.0 * 3.3 * 1.37;
+  flightData::_voltage5 = analogRead(A5) / 1024.0 * 3.3 * 2.08;
+  flightData::_voltage12 = analogRead(A4) / 1024.0 * 3.3 * 5.00;
 }
 
 
@@ -226,7 +235,10 @@ void writeLog() {
     flightData::_gyro_z_degps,
     flightData::_yaw,
     flightData::_pitch,
-    flightData::_roll
+    flightData::_roll,
+    flightData::_voltage33,
+    flightData::_voltage5,
+    flightData::_voltage12
   );
 }
 
@@ -248,12 +260,9 @@ void downlinkStatus() {
     device::_flightPin.isOpen(),
     device::_shiranui3.isOn(),
     device::_buzzer.isOn(),
-
-    // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
-    // 電圧係数 = 基準電圧 / 2.4
-    analogRead(A6) / 1024.0 * 3.3 * 1.37, // 3.3V
-    analogRead(A5) / 1024.0 * 3.3 * 2.08, // 5V
-    analogRead(A4) / 1024.0 * 3.3 * 5.00  // 12V
+    flightData::_voltage33,
+    flightData::_voltage5,
+    flightData::_voltage12
   );
 }
 
