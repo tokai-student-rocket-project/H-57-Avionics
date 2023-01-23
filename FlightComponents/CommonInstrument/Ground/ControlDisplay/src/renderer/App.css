@@ -4,6 +4,7 @@ body {
 
 .ant-card {
   background-color: rgb(18, 18, 18, 0.75);
+  border-radius: 12px;
 
   .ant-card-head {
     color: white !important;

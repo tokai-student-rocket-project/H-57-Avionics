@@ -106,9 +106,8 @@ const App = () => {
                     justifyContent: 'center',
                   }}
                 >
-                  <div>
-                    <GNSS />
-                  </div>
+                  <GNSS />
+                  <AltitudeIndicator />
                 </div>
               </Col>
               <Col span={7}>
