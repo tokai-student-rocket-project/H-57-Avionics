@@ -1,13 +1,14 @@
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
 import { FaClock, FaLocationArrow } from 'react-icons/fa';
+import { accent, green, orange, emphasisMidium } from '../../utilities/colors';
 
 const getColor = (mode: string, isAccent: boolean) => {
-  if (mode === 'STANDBY') return '#faa61a';
-  if (mode === 'PARASHUTE') return '#46c46d';
-  if (mode === 'LAND') return '#46c46d';
+  if (mode === 'STANDBY') return orange;
+  if (mode === 'PARASHUTE') return green;
+  if (mode === 'LAND') return green;
 
-  return isAccent ? '#5865f2' : 'white';
+  return isAccent ? accent : 'white';
 };
 
 const FlightMode = () => {
@@ -36,7 +37,7 @@ const FlightMode = () => {
   return (
     <div
       style={{
-        backgroundColor: '#202225',
+        backgroundColor: 'rgb(17, 17, 17, 0.85)',
         padding: '16px 64px 16px 128px',
         clipPath: 'polygon(0% 100%, 12% 0%, 100% 0%, 100% 100%)',
         borderBottomColor: getColor(flightMode, true),
@@ -68,9 +69,11 @@ const FlightMode = () => {
               gridTemplateColumns: 'auto 1fr',
             }}
           >
-            <FaLocationArrow style={{ marginRight: '4px', color: '#b9bbbe' }} />
+            <FaLocationArrow
+              style={{ marginRight: '4px', color: emphasisMidium }}
+            />
             <div>Taiki, Hokkaido</div>
-            <FaClock style={{ marginRight: '4px', color: '#b9bbbe' }} />
+            <FaClock style={{ marginRight: '4px', color: emphasisMidium }} />
             <div>{now}</div>
           </div>
         </Col>

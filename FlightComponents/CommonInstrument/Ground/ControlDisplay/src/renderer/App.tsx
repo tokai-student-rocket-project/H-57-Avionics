@@ -83,7 +83,7 @@ const App = () => {
             </Row>
           </Header>
 
-          <Content style={{ padding: '0 16px' }}>
+          <Content style={{ padding: '0 8px' }}>
             <Row>
               <Col span={7}>
                 <Row>

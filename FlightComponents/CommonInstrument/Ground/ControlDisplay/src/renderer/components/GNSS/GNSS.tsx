@@ -1,6 +1,7 @@
 import { Card } from 'antd';
 import { useEffect, useState } from 'react';
 import { FaSatellite } from 'react-icons/fa';
+import { emphasisMidium, emphasisDisabled } from '../../utilities/colors';
 
 const DegToDms = (degrees: number): string => {
   const minits = (degrees - Math.floor(degrees)) * 60;
@@ -40,12 +41,12 @@ const GNSS = () => {
             <FaSatellite
               style={{ marginLeft: '16px' }}
               size={14}
-              color="#b9bbbe"
+              color={emphasisMidium}
             />
             <span
               style={{
                 fontSize: '1em',
-                color: sattelites === 0 ? '#ed4245' : 'white',
+                color: sattelites === 0 ? emphasisDisabled : 'white',
                 marginLeft: '4px',
               }}
             >

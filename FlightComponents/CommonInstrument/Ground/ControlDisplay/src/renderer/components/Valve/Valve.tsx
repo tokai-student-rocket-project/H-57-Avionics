@@ -1,5 +1,6 @@
 import { Card } from 'antd';
 import { useState, useEffect } from 'react';
+import { green, red, emphasisMidium } from '../../utilities/colors';
 import mcsc from '../../images/valve/mcsc.png';
 import mcsi from '../../images/valve/mcsi.png';
 import mcso from '../../images/valve/mcso.png';
@@ -72,7 +73,7 @@ const Valve = () => {
       <div style={{ display: 'flex', marginTop: '24px' }}>
         <span
           style={{
-            color: '#b9bbbe',
+            color: emphasisMidium,
             margin: 'auto auto auto 0',
             fontSize: '0.9em',
           }}
@@ -82,7 +83,7 @@ const Valve = () => {
         <span
           style={{
             fontSize: '1.15em',
-            color: servoPosition === 'INVALID' ? '#ed4245' : '#46c46d',
+            color: servoPosition === 'INVALID' ? red : green,
             margin: 'auto 0 auto auto',
           }}
         >

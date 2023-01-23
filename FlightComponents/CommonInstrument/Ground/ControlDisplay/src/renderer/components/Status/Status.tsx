@@ -1,8 +1,6 @@
 import { Card } from 'antd';
 import { useState, useEffect } from 'react';
-
-const positiveColor = '#46c46d';
-const nagativeColor = '#ed4245';
+import { green, red, emphasisMidium } from '../../utilities/colors';
 
 const Status = () => {
   const [flightpinState, setFlightpinState] = useState<'CLOSE' | 'OPEN'>(
@@ -31,7 +29,7 @@ const Status = () => {
       <div style={{ display: 'flex', marginTop: '24px' }}>
         <span
           style={{
-            color: '#b9bbbe',
+            color: emphasisMidium,
             margin: 'auto auto auto 0',
             fontSize: '0.9em',
           }}
@@ -41,7 +39,7 @@ const Status = () => {
         <span
           style={{
             fontSize: '1.15em',
-            color: flightpinState === 'CLOSE' ? nagativeColor : positiveColor,
+            color: flightpinState === 'CLOSE' ? red : green,
             margin: 'auto 0 auto auto',
           }}
         >
@@ -51,7 +49,7 @@ const Status = () => {
       <div style={{ display: 'flex', marginTop: '8px' }}>
         <span
           style={{
-            color: '#b9bbbe',
+            color: emphasisMidium,
             margin: 'auto auto auto 0',
             fontSize: '0.9em',
           }}
@@ -61,7 +59,7 @@ const Status = () => {
         <span
           style={{
             fontSize: '1.15em',
-            color: shiranui3State === 'OFF' ? nagativeColor : positiveColor,
+            color: shiranui3State === 'OFF' ? red : green,
             margin: 'auto 0 auto auto',
           }}
         >
@@ -71,7 +69,7 @@ const Status = () => {
       <div style={{ display: 'flex', marginTop: '8px' }}>
         <span
           style={{
-            color: '#b9bbbe',
+            color: emphasisMidium,
             margin: 'auto auto auto 0',
             fontSize: '0.9em',
           }}
@@ -81,7 +79,7 @@ const Status = () => {
         <span
           style={{
             fontSize: '1.15em',
-            color: buzzerState === 'OFF' ? nagativeColor : positiveColor,
+            color: buzzerState === 'OFF' ? red : green,
             margin: 'auto 0 auto auto',
           }}
         >
