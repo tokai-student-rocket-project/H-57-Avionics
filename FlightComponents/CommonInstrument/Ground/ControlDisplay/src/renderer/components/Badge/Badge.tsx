@@ -1,14 +1,15 @@
 import { Typography } from 'antd';
 import { useState, useEffect } from 'react';
+import { accent, green, orange } from '../../utilities/colors';
 
 const { Title } = Typography;
 
 const getColor = (mode: string, isAccent: boolean) => {
-  if (mode === 'STANDBY') return '#faa61a';
-  if (mode === 'PARASHUTE') return '#46c46d';
-  if (mode === 'LAND') return '#46c46d';
+  if (mode === 'STANDBY') return orange;
+  if (mode === 'PARASHUTE') return green;
+  if (mode === 'LAND') return green;
 
-  return isAccent ? '#5865f2' : 'white';
+  return isAccent ? accent : 'white';
 };
 
 const Badge = () => {
@@ -38,7 +39,7 @@ const Badge = () => {
     <div>
       <div
         style={{
-          backgroundColor: '#202225',
+          backgroundColor: 'rgb(17, 17, 17, 0.85)',
           padding: '8px',
           height: '64px',
           display: 'flex',
@@ -56,7 +57,7 @@ const Badge = () => {
       </div>
       <div
         style={{
-          backgroundColor: '#202225',
+          backgroundColor: 'rgb(17, 17, 17, 0.85)',
           padding: '8px',
           display: 'flex',
           alignItems: 'center',

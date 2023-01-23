@@ -20,7 +20,7 @@ private:
   /// @brief 回数で指定。この値以上に連続で減少しないと降下にならない
   const uint16_t MINIMUM_DESCENT_COUNT = 10;
   // 高度平滑化の強度。手元の試験では0.35がちょうどよかった。
-  const float SENSITIVITY = 0.35;
+  const float SENSITIVITY = 0.25;
 
   float _average;
   float _averageOrigin;

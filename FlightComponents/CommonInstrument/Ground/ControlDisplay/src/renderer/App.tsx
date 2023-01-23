@@ -11,6 +11,7 @@ import Telecom from './components/Telecom';
 import GNSS from './components/GNSS';
 import Valve from './components/Valve';
 import AltitudeIndicator from './components/AltitudeIndicator';
+import MapView from './components/MapView';
 import Electric from './components/Electric';
 import Mission from './components/Mission';
 
@@ -44,73 +45,90 @@ const App = () => {
   }, [latestEvent?.id, notificationApi]);
 
   return (
-    <>
+    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
       {contextHolder}
-      <Layout style={{ backgroundColor: 'transparent', height: '100%' }}>
-        <Header
+
+      <MapView />
+
+      <div
+        style={{
+          position: 'absolute',
+          height: '100%',
+          width: '100%',
+          zIndex: '999',
+        }}
+      >
+        <Layout
           style={{
             backgroundColor: 'transparent',
-            padding: '0',
-            height: 'auto',
           }}
         >
-          <Row>
-            <Col span={9}>
-              <FlightData />
-            </Col>
-            <Col span={6}>
-              <Badge />
-            </Col>
-            <Col span={9}>
-              <FlightMode />
-            </Col>
-          </Row>
-        </Header>
+          <Header
+            style={{
+              backgroundColor: 'transparent',
+              padding: '0',
+              height: 'auto',
+            }}
+          >
+            <Row>
+              <Col span={9}>
+                <FlightData />
+              </Col>
+              <Col span={6}>
+                <Badge />
+              </Col>
+              <Col span={9}>
+                <FlightMode />
+              </Col>
+            </Row>
+          </Header>
 
-        <Content style={{ padding: '0 16px' }}>
-          <Row>
-            <Col span={8}>
-              <Row>
-                <Col span={24}>
-                  <Telecom />
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Config />
-                </Col>
-              </Row>
-            </Col>
-            <Col span={8}>
-              <Row>
-                <Col span={24}>
-                  <AltitudeIndicator />
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
+          <Content style={{ padding: '0 8px' }}>
+            <Row>
+              <Col span={7}>
+                <Row>
+                  <Col span={24}>
+                    <Telecom />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Config />
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={10}>
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                  }}
+                >
                   <GNSS />
-                </Col>
-              </Row>
-            </Col>
-            <Col span={8}>
-              <Row>
-                <Mission />
-              </Row>
-              <Row>
-                <Col span={12}>
-                  <Electric />
-                  <Status />
-                </Col>
-                <Col span={12}>
-                  <Valve />
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
-    </>
+                  <AltitudeIndicator />
+                </div>
+              </Col>
+              <Col span={7}>
+                <Row>
+                  <Mission />
+                </Row>
+                <Row>
+                  <Col span={12}>
+                    <Electric />
+                    <Status />
+                  </Col>
+                  <Col span={12}>
+                    <Valve />
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          </Content>
+        </Layout>
+      </div>
+    </div>
   );
 };
 

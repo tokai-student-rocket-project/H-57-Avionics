@@ -1,6 +1,7 @@
-import { Card } from 'antd';
 import { useState, useEffect } from 'react';
-import back from '../../images/back.png';
+import { FaRegDotCircle } from 'react-icons/fa';
+import ballTop from '../../images/ball/ball-top.png';
+import ballBottom from '../../images/ball/ball-bottom.png';
 
 const inRange = (min: number, max: number, value: number) =>
   min <= value && value < max;
@@ -11,8 +12,8 @@ const AltitudeIndicator = () => {
   const [isPositive, setIsPositive] = useState<boolean>();
 
   const setPosition = (pitch: number, roll: number) => {
-    const nextPitchPosition = ((pitch + 90) / 180) * 100;
-    const nextRollPosition = ((roll + 90) / 180) * 100;
+    const nextRollPosition = 50 * Math.cos(roll * (Math.PI / 180));
+    const nextPitchPosition = 50 * Math.cos(pitch * (Math.PI / 180));
 
     if (nextPitchPosition < 0) setPitchPosition(nextPitchPosition * -1);
     else if (nextPitchPosition > 100) setPitchPosition(200 - nextPitchPosition);
@@ -39,17 +40,23 @@ const AltitudeIndicator = () => {
   }, []);
 
   return (
-    <Card bordered={false} style={{ margin: '8px' }}>
+    <div
+      style={{
+        background: 'rgb(18, 18, 18, 0.75)',
+        margin: '8px',
+        padding: '25px',
+        borderRadius: '50px',
+      }}
+    >
       <div
         style={{
           display: 'flex',
-          marginTop: '24px',
           position: 'relative',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <img height={250} src={back} alt="back" />
+        <img height={200} src={isPositive ? ballTop : ballBottom} alt="back" />
         <div
           style={{
             position: 'absolute',
@@ -57,20 +64,18 @@ const AltitudeIndicator = () => {
             height: '200px',
           }}
         >
-          <div
+          <FaRegDotCircle
+            size={24}
             style={{
-              backgroundColor: isPositive ? 'white' : 'black',
-              width: '8px',
+              color: isPositive ? 'white' : 'black',
               position: 'absolute',
-              height: '8px',
-              borderRadius: '50%',
               marginLeft: `${pitchPosition}%`,
               marginTop: `${rollPosition}%`,
             }}
           />
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

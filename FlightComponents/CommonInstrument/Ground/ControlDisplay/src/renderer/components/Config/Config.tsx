@@ -4,6 +4,14 @@
 import { Card, Col, Row, Statistic, Select, Button, Input, Modal } from 'antd';
 import { useState, useEffect } from 'react';
 import { FaGamepad, FaTimes } from 'react-icons/fa';
+import {
+  green,
+  emphasisHigh,
+  emphasisMidium,
+  red,
+  background16dp,
+  background04dp,
+} from '../../utilities/colors';
 
 const units = { a: 'm', p: 'hPa', bt: 'sec', sp: 'sec', fs: 'sec', l: 'sec' };
 
@@ -94,7 +102,7 @@ const Config = () => {
             <FaGamepad
               cursor="pointer"
               size={22}
-              color="#b9bbbe"
+              color={emphasisHigh}
               onClick={() => setIsShowGame(true)}
             />
           </div>
@@ -184,9 +192,9 @@ const Config = () => {
         maskClosable
         afterClose={clearStones}
         footer={null}
-        bodyStyle={{ background: '#36393f', color: 'white' }}
+        bodyStyle={{ background: background16dp, color: 'white' }}
         closeIcon={<FaTimes color="white" />}
-        width={750}
+        width={500}
       >
         <div
           style={{
@@ -194,26 +202,27 @@ const Config = () => {
             display: 'grid',
             gridGap: '10px',
             gridTemplateColumns: '1fr 1fr 1fr',
-            gridTemplateRows: '150px 150px 150px',
+            gridTemplateRows: '100px 100px 100px',
           }}
         >
           {stones.map((stone, index) => (
             <div
               style={{
-                background: stone === 0 ? '#40444b' : '#202225',
+                background: stone === 0 ? background16dp : background04dp,
+                border: stone === 0 ? `1px solid ${emphasisMidium}` : 'none',
                 padding: '15px',
                 borderRadius: '8px',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                fontSize: '3em',
+                fontSize: '2em',
                 fontWeight: 'bold',
               }}
             >
               {stone === 1 ? (
                 <span
                   style={{
-                    color: '#46c46d',
+                    color: green,
                     transform: 'rotate(-15deg)',
                   }}
                 >
@@ -222,7 +231,7 @@ const Config = () => {
               ) : stone === 2 ? (
                 <span
                   style={{
-                    color: '#ed4245',
+                    color: red,
                     transform: 'rotate(-15deg)',
                   }}
                 >
