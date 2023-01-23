@@ -98,8 +98,17 @@ const App = () => {
                 </Row>
               </Col>
               <Col span={10}>
-                <div>
-                  <GNSS />
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div>
+                    <GNSS />
+                  </div>
                 </div>
               </Col>
               <Col span={7}>

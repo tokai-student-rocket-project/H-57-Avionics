@@ -1,7 +1,7 @@
 import { Card } from 'antd';
 import { useEffect, useState } from 'react';
 import { FaSatellite } from 'react-icons/fa';
-import { emphasisMidium, emphasisDisabled } from '../../utilities/colors';
+import { emphasisMidium } from '../../utilities/colors';
 
 const DegToDms = (degrees: number): string => {
   const minits = (degrees - Math.floor(degrees)) * 60;
@@ -15,7 +15,7 @@ const GNSS = () => {
   const [latitude, setLatitude] = useState<number>(42.514179);
   const [longitude, setLongitude] = useState<number>(143.439731);
 
-  const [sattelites, setSattelites] = useState<number>(4);
+  const [sattelites, setSattelites] = useState<number>(0);
 
   useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
@@ -32,40 +32,49 @@ const GNSS = () => {
   return (
     <Card
       bordered={false}
-      style={{ margin: '8px', width: '225px', height: 'auto' }}
+      style={{ margin: '8px', width: '250px', height: 'auto' }}
     >
-      <div style={{ margin: '8px -16px -16px -16px', display: 'flex' }}>
-        <div>
-          <div style={{ fontSize: '1.25em' }}>GNSS</div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ margin: '8px -16px -16px -16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div
+            style={{
+              borderRight: `1px solid ${emphasisMidium}`,
+              paddingRight: '8px',
+            }}
+          >
+            <div style={{ fontSize: '1.25em' }}>GNSS</div>
             <FaSatellite
-              style={{ marginLeft: '16px' }}
+              style={{ marginLeft: '4px' }}
               size={14}
               color={emphasisMidium}
             />
             <span
               style={{
                 fontSize: '1em',
-                color: sattelites === 0 ? emphasisDisabled : 'white',
+                color: 'white',
                 marginLeft: '4px',
               }}
             >
               {sattelites}
             </span>
           </div>
-        </div>
-        <div
-          style={{ textAlign: 'center', fontSize: '1.2em', marginLeft: '16px' }}
-        >
-          <div>
-            {`${DegToDms(Math.abs(latitude))}${
-              Math.sign(latitude) === -1 ? 'S' : 'N'
-            }`}
-          </div>
-          <div>
-            {`${DegToDms(Math.abs(longitude))}${
-              Math.sign(longitude) === -1 ? 'W' : 'E'
-            }`}
+
+          <div
+            style={{
+              fontSize: '1.2em',
+              marginLeft: '16px',
+            }}
+          >
+            <div>
+              {`${DegToDms(Math.abs(latitude))}${
+                Math.sign(latitude) === -1 ? 'S' : 'N'
+              }`}
+            </div>
+            <div>
+              {`${DegToDms(Math.abs(longitude))}${
+                Math.sign(longitude) === -1 ? 'W' : 'E'
+              }`}
+            </div>
           </div>
         </div>
       </div>
