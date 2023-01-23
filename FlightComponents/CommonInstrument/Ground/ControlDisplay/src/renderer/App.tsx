@@ -69,7 +69,7 @@ const App = () => {
 
         <Content style={{ padding: '0 16px' }}>
           <Row>
-            <Col span={8}>
+            <Col span={7}>
               <Row>
                 <Col span={24}>
                   <Telecom />
@@ -81,19 +81,8 @@ const App = () => {
                 </Col>
               </Row>
             </Col>
-            <Col span={8}>
-              <Row>
-                <Col span={24}>
-                  <AltitudeIndicator />
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <GNSS />
-                </Col>
-              </Row>
-            </Col>
-            <Col span={8}>
+            <Col span={10} />
+            <Col span={7}>
               <Row>
                 <Mission />
               </Row>

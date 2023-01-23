@@ -1,5 +1,6 @@
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
+import { FaClock, FaLocationArrow } from 'react-icons/fa';
 
 const getColor = (mode: string, isAccent: boolean) => {
   if (mode === 'STANDBY') return '#faa61a';
@@ -11,6 +12,7 @@ const getColor = (mode: string, isAccent: boolean) => {
 
 const FlightMode = () => {
   const [flightMode, setFlightMode] = useState<string>('EXPERIMENT');
+  const [now, setNow] = useState<string>();
 
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {
@@ -20,6 +22,11 @@ const FlightMode = () => {
         ]
       );
     });
+
+    setInterval(() => {
+      const nowRaw = new Date();
+      setNow(`${nowRaw.toDateString()}\n${nowRaw.toTimeString()}`);
+    }, 1000);
 
     return () => {
       window.electronAPI.remove('status-recieved');
@@ -52,7 +59,21 @@ const FlightMode = () => {
             value={flightMode}
           />
         </Col>
-        <Col span={12} />
+        <Col span={12}>
+          <div
+            style={{
+              color: 'white',
+              lineHeight: '1.2em',
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+            }}
+          >
+            <FaLocationArrow style={{ margin: '2px', color: '#b9bbbe' }} />
+            <div>Taiki, Hokkaido</div>
+            <FaClock style={{ margin: '2px', color: '#b9bbbe' }} />
+            <div>{now}</div>
+          </div>
+        </Col>
       </Row>
     </div>
   );
