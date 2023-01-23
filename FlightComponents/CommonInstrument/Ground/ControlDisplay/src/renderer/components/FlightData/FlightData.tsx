@@ -67,7 +67,14 @@ const FlightData = () => {
             valueStyle={{ color: 'white' }}
             title="Acceleration"
             value={acceleration?.toFixed(1)}
-            suffix="m/s^2"
+            suffix={
+              <div style={{ display: 'flex' }}>
+                <div>m/s</div>
+                <div style={{ fontSize: '0.5em', margin: '0px 0px auto 0px' }}>
+                  2
+                </div>
+              </div>
+            }
           />
         </Col>
       </Row>
