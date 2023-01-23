@@ -1,6 +1,6 @@
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
-import { FaClock, FaLocationArrow } from 'react-icons/fa';
+import { FaClock, FaRocket } from 'react-icons/fa';
 import { accent, green, orange, emphasisMidium } from '../../utilities/colors';
 
 const getColor = (mode: string, isAccent: boolean) => {
@@ -69,9 +69,7 @@ const FlightMode = () => {
               gridTemplateColumns: 'auto 1fr',
             }}
           >
-            <FaLocationArrow
-              style={{ marginRight: '4px', color: emphasisMidium }}
-            />
+            <FaRocket style={{ marginRight: '4px', color: emphasisMidium }} />
             <div>Taiki, Hokkaido</div>
             <FaClock style={{ marginRight: '4px', color: emphasisMidium }} />
             <div>{now}</div>
