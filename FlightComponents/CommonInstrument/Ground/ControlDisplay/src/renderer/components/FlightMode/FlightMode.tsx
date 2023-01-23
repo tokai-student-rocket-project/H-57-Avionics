@@ -68,9 +68,9 @@ const FlightMode = () => {
               gridTemplateColumns: 'auto 1fr',
             }}
           >
-            <FaLocationArrow style={{ margin: '2px', color: '#b9bbbe' }} />
+            <FaLocationArrow style={{ marginRight: '4px', color: '#b9bbbe' }} />
             <div>Taiki, Hokkaido</div>
-            <FaClock style={{ margin: '2px', color: '#b9bbbe' }} />
+            <FaClock style={{ marginRight: '4px', color: '#b9bbbe' }} />
             <div>{now}</div>
           </div>
         </Col>
