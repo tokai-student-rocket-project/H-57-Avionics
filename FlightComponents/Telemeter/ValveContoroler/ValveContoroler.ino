@@ -135,6 +135,7 @@ void L_Position()
     // Mainservo_deg = Mainservo.read();
     // digitalWrite(LED_BUILTIN, HIGH);
     // 上記の動作でコールドフロー試験を成功させることが出来た。やったね！
+    //
 }
 
 void W_Position()
