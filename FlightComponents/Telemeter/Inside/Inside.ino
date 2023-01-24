@@ -66,7 +66,7 @@ void setup()
     prev_SEND = 0;
     interval_SEND = 1000;
     prev_POSITION = 0;
-    interval_POSITION = 15`00;
+    interval_POSITION = 1000;
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
