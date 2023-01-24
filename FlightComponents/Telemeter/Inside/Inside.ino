@@ -65,17 +65,9 @@ void setup()
     }
 
     prev_SEND = 0;
-    interval_SEND = 100;
+    interval_SEND = 1000;
     prev_POSITION = 0;
-<<<<<<< HEAD
-<<<<<<< HEAD
     interval_POSITION = 1500;
-=======
-    interval_POSITION = 1000;
->>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
-=======
-    interval_POSITION = 1200;
->>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
