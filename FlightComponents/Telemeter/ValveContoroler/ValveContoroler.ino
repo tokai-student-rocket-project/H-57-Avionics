@@ -52,13 +52,8 @@ void setup()
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-<<<<<<< HEAD
-    // if (Position == 1 && digitalRead(2) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
-    if (Position == 1 && digitalRead(3) == LOW) // Arduino NANO　H-57 仕様
-=======
     // if (Position == 1 && digitalRead(2) == LOW) // UNO
     if (Position == 1 && digitalRead(3) == LOW) // NANO
->>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
     {
         LCount++;
     }
@@ -78,13 +73,8 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-<<<<<<< HEAD
-    // if (Position == 2 && digitalRead(3) == LOW) //Arduino UNO 簡易的に作成した制御シールド用
-    if (Position == 2 && digitalRead(2) == LOW) // Arduino NANO　H-57 仕様
-=======
     // if (Position == 2 && digitalRead(3) == LOW) // UNO
     if (Position == 2 && digitalRead(2) == LOW) // NANO
->>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
     {
         WCount++;
     }
@@ -102,43 +92,18 @@ void loop()
         delay(300);
     }
 
-<<<<<<< HEAD
     // Arduinojson
     StaticJsonDocument<64> servoPacket;
     servoPacket["mainservoDeg"] = Mainservo_deg;
     servoPacket["supplyservoDeg"] = Supplyservo_deg;
-=======
-    //
-<<<<<<< HEAD
-    //StaticJsonDocument<64> servoPacket;
-    //servoPacket["mainservoDeg"] = Mainservo_deg;
-    //servoPacket["supplyservoDeg"] = Supplyservo_deg;
->>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
-=======
-    StaticJsonDocument<64> servoPacket;
-    servoPacket["mainservoDeg"] = Mainservo_deg;
-    servoPacket["supplyservoDeg"] = Supplyservo_deg;
->>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     Serial.println();
     serializeJson(servoPacket, Serial);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     // Arduino IDE シリアルプロッタでのデバック用
     //  Serial.print(WCount);
     //  Serial.print(",");
     //  Serial.println(LCount);
-=======
-    Serial.print(WCount);
-    Serial.print(",");
-    Serial.println(LCount);
->>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
-=======
-    //Serial.print(WCount);
-    //Serial.print(",");
-    //PSerial.println(LCount);
->>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // delay(2); // 250Hz
     delay(10);
@@ -148,11 +113,8 @@ void L_Position()
     Supplyservo.write(80, 255, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
     // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
 
-<<<<<<< HEAD
-    delay(10); //
-=======
+
     delay(100);
->>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s //失敗
     // Mainservo.write(160, 160, true); // Mainservo OPEN //Main弁が閉まる時間: UNO
