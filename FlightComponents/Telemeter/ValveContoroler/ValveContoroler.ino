@@ -83,33 +83,33 @@ void loop()
     }
 
     //
-    //StaticJsonDocument<64> servoPacket;
-    //servoPacket["mainservoDeg"] = Mainservo_deg;
-    //servoPacket["supplyservoDeg"] = Supplyservo_deg;
+    StaticJsonDocument<64> servoPacket;
+    servoPacket["mainservoDeg"] = Mainservo_deg;
+    servoPacket["supplyservoDeg"] = Supplyservo_deg;
 
-    // Serial.println();
-    // serializeJson(servoPacket, Serial);
+    Serial.println();
+    serializeJson(servoPacket, Serial);
 
-    Serial.print(WCount);
-    Serial.print(",");
-    Serial.println(LCount);
+    //Serial.print(WCount);
+    //Serial.print(",");
+    //PSerial.println(LCount);
 
     // delay(2); // 250Hz
     delay(10);
 }
 void L_Position()
 {
-    Supplyservo.write(80, 0, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
+    Supplyservo.write(80, 255, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
     // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
 
-    delay(10);
+    delay(100);
 
     // Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s //失敗
     // Mainservo.write(160, 160, true); // Mainservo OPEN //Main弁が閉まる時間: UNO
 
     // Memo Sweagelock  45 60
     // 2023/1/21 フローテック -=> Sweagelock にバルブ変更
-    Mainservo.write(57, 0, true); // UNO //NANO
+    Mainservo.write(57, 40, true); // UNO //NANO
 
     digitalWrite(LED_BUILTIN, HIGH);
 
