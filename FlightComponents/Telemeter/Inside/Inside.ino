@@ -1,16 +1,17 @@
 /*
-  機体からGPS情報を地上に送信するArduinoです。
-  ソースファイル名：Inside.ino
-  作成者：1CES2116 Hiroki Tsutsumi, <氏名の追加>
+  Writer?:Hiroki TSUTSUMI(1CES2116)
+  Rocket:H-57
+  MCU Series:Arduino
+  MCU:SAMD21
 
-  H-57号機に搭載予定
+  GPS,バルブ位置を取得し、送信する機能を持っています。
 */
 
 #include <LoRa.h>
 #include <SPI.h>
 #include <Arduino_MKRGPS.h>
 #include <ArduinoJson.h>
-#include "StreamUtils.h"
+//#include "StreamUtils.h"
 
 // GPSの設定
 float latitude;
@@ -48,7 +49,7 @@ void setup()
     //      continue;
     Serial1.begin(9600);
 
-    if (!LoRa.begin(923E6))
+    if (!LoRa.begin(921.8E6)) //ARIB Unit Channel Number 30 を採用する。
     {
         Serial.println("Starting LoRa failed!");
         while (1)
@@ -66,7 +67,15 @@ void setup()
     prev_SEND = 0;
     interval_SEND = 100;
     prev_POSITION = 0;
+<<<<<<< HEAD
+<<<<<<< HEAD
+    interval_POSITION = 1500;
+=======
+    interval_POSITION = 1000;
+>>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
+=======
     interval_POSITION = 1200;
+>>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // 状態確認用LED
     //  PinMode(PIN, OUTPUT);
@@ -169,3 +178,33 @@ void downlinkServoPosition()
         prev_POSITION = curr_POSITION;
     }
 }
+
+/*
+                                    .[
+                                 .dMM@
+                 ...&gNMMMMNNgJ+MMMMMN
+             ..MMMMH"""7??77""MMMMMMMM;
+          .JMMMMMMMMMMMMNg,. .MMMMMMMMN,
+        .MMMWMMMMMMMMMMMMMMMNMMMMMMMM"WMN,
+      .dM#^JM#"         ?TMMMMMMMMMM^  .WMN,
+     .MMt JM^              .MMMMMMM'     ,MMb
+    .MM! .@               .MMMMMMMMb       UMN.
+   .M#`  d`               dMMMMMMMMMN,      UMN
+  .MM!   F               .MMMMM#`,MMMM,      HMb
+  MMF    \    ...       .MMMMM#`  .MMMM,     ,MM.
+ .MM`    i.MMMMMMMMNJ.  dMMMM#     .MMMN.     MM]
+ -M#   .dMMMMMMMMMMMMMN.MMMM@       ,MMMb     JM@
+ (M#  .MMMMMMMMMMMMMMM# TMM@         dMMM;    (M#
+ -M# .MMMMMMMMMMMMMMMM'  WF          .MMMb    JMF
+ .MM.dMMMMMMMMMMMMMMMF   .            MMMN    MM]
+  dMbMMMMMMMMMMMMMMM@   .#            MMMN   .MM
+  .MMdMMMMMMMMMMMMMM!  .MF            MMM#  .MMt
+   -MMMMMMMMMMMMMMMF  .M@            .MMMF .MMF
+    (MMMMMMMMMMMMM@  .MD            .MMMM`.MMF
+     ,MMNTMMMMMMMM! ,"             .MMMM\.MM3
+       TMMa._7"""QN"(.           ..MMMMQMM@`
+         TMMN,  .M3   74J......(MMMMMMMM@!
+           ?WMMNML.       ?"""HHMNMMM#"
+              (MHMMMMNggg&ggNMMMMM9^
+              .^   -?""""""""7!
+*/
