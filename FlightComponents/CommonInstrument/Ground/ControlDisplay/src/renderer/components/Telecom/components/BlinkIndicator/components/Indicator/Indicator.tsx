@@ -1,3 +1,5 @@
+import { green, emphasisDisabled } from '../../../../../../utilities/colors';
+
 type Props = {
   isActive: boolean;
 };
@@ -8,7 +10,7 @@ const Indicator = (props: Props) => {
   return (
     <div
       style={{
-        backgroundColor: isActive ? '#46c46d' : '#72767d',
+        backgroundColor: isActive ? green : emphasisDisabled,
         width: '12px',
         margin: 'auto 16px auto 8px',
         height: '12px',

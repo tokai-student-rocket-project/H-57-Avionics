@@ -1,14 +1,22 @@
 import { Card, Tooltip, Popover } from 'antd';
 import { useState, useEffect } from 'react';
 import { FaRss, FaCog } from 'react-icons/fa';
+import {
+  green,
+  red,
+  orange,
+  emphasisHigh,
+  emphasisMidium,
+  emphasisDisabled,
+} from '../../utilities/colors';
 import SerialportSelector from './components/SerialportSelector';
 import BlinkIndicator from './components/BlinkIndicator';
 
 const rssiToColor = (rssi: number): string => {
-  if (rssi === -999) return '#72767d';
-  if (rssi < -100) return '#ed4245';
-  if (rssi < -70) return '#faa61a';
-  return '#46c46d';
+  if (rssi === -999) return emphasisDisabled;
+  if (rssi < -100) return red;
+  if (rssi < -70) return orange;
+  return green;
 };
 
 const Telecom = () => {
@@ -40,7 +48,7 @@ const Telecom = () => {
               cursor="pointer"
               style={{ marginLeft: '16px' }}
               size={16}
-              color="#b9bbbe"
+              color={emphasisHigh}
             />
           </Popover>
           <Tooltip placement="bottom" title={rssi}>

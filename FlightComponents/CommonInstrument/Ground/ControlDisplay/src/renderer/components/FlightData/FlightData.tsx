@@ -1,12 +1,13 @@
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
+import { accent, green, orange } from '../../utilities/colors';
 
 const getColor = (mode: string, isAccent: boolean) => {
-  if (mode === 'STANDBY') return '#faa61a';
-  if (mode === 'PARASHUTE') return '#46c46d';
-  if (mode === 'LAND') return '#46c46d';
+  if (mode === 'STANDBY') return orange;
+  if (mode === 'PARASHUTE') return green;
+  if (mode === 'LAND') return green;
 
-  return isAccent ? '#5865f2' : 'white';
+  return isAccent ? accent : 'white';
 };
 
 const FlightData = () => {
@@ -40,7 +41,7 @@ const FlightData = () => {
   return (
     <div
       style={{
-        backgroundColor: '#202225',
+        backgroundColor: 'rgb(17, 17, 17, 0.85)',
         padding: '16px 128px 16px 64px',
         borderBottomColor: getColor(flightMode, true),
         clipPath: 'polygon(0% 100%, 0% 0%, 88% 0%, 100% 100%)',
@@ -66,7 +67,14 @@ const FlightData = () => {
             valueStyle={{ color: 'white' }}
             title="Acceleration"
             value={acceleration?.toFixed(1)}
-            suffix="m/s^2"
+            suffix={
+              <div style={{ display: 'flex' }}>
+                <div>m/s</div>
+                <div style={{ fontSize: '0.5em', margin: '0px 0px auto 0px' }}>
+                  2
+                </div>
+              </div>
+            }
           />
         </Col>
       </Row>

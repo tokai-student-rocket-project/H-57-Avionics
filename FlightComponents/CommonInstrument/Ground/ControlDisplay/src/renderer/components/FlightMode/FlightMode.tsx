@@ -1,16 +1,19 @@
 import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
+import { FaClock, FaRocket } from 'react-icons/fa';
+import { accent, green, orange, emphasisMidium } from '../../utilities/colors';
 
 const getColor = (mode: string, isAccent: boolean) => {
-  if (mode === 'STANDBY') return '#faa61a';
-  if (mode === 'PARASHUTE') return '#46c46d';
-  if (mode === 'LAND') return '#46c46d';
+  if (mode === 'STANDBY') return orange;
+  if (mode === 'PARASHUTE') return green;
+  if (mode === 'LAND') return green;
 
-  return isAccent ? '#5865f2' : 'white';
+  return isAccent ? accent : 'white';
 };
 
 const FlightMode = () => {
   const [flightMode, setFlightMode] = useState<string>('EXPERIMENT');
+  const [now, setNow] = useState<string>();
 
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {
@@ -21,6 +24,11 @@ const FlightMode = () => {
       );
     });
 
+    setInterval(() => {
+      const nowRaw = new Date();
+      setNow(`${nowRaw.toDateString()}\n${nowRaw.toTimeString()}`);
+    }, 1000);
+
     return () => {
       window.electronAPI.remove('status-recieved');
     };
@@ -29,7 +37,7 @@ const FlightMode = () => {
   return (
     <div
       style={{
-        backgroundColor: '#202225',
+        backgroundColor: 'rgb(17, 17, 17, 0.85)',
         padding: '16px 64px 16px 128px',
         clipPath: 'polygon(0% 100%, 12% 0%, 100% 0%, 100% 100%)',
         borderBottomColor: getColor(flightMode, true),
@@ -52,7 +60,21 @@ const FlightMode = () => {
             value={flightMode}
           />
         </Col>
-        <Col span={12} />
+        <Col span={12}>
+          <div
+            style={{
+              color: 'white',
+              lineHeight: '1.2em',
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+            }}
+          >
+            <FaRocket style={{ marginRight: '4px', color: emphasisMidium }} />
+            <div>Taiki, Hokkaido</div>
+            <FaClock style={{ marginRight: '4px', color: emphasisMidium }} />
+            <div>{now}</div>
+          </div>
+        </Col>
       </Row>
     </div>
   );

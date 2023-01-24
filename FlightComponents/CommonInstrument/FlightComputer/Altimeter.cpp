@@ -44,3 +44,8 @@ float Altimeter::getTemperature() {
 bool Altimeter::isDescending() {
   return _descentDetector._isDescending;
 }
+
+
+uint16_t Altimeter::descentCount() {
+  return _descentDetector._descentCount;
+}

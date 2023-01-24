@@ -15,6 +15,8 @@ void Logger::writeLog(
   uint8_t flightMode,
   uint8_t StateShiranui3,
   uint8_t StateBuzzer,
+  float pressure,
+  float temperature,
   float altitude,
   uint16_t descentCount,
   float accelerationX,
@@ -25,27 +27,30 @@ void Logger::writeLog(
   float gyroZ,
   float yaw,
   float pitch,
-  float roll
+  float roll,
+  float voltage33,
+  float voltage5,
+  float voltage12
 ) {
   writeSD(
     flightTime, flightMode,
     StateShiranui3, StateBuzzer,
-    altitude,
-    descentCount,
+    pressure, temperature, altitude, descentCount,
     accelerationX, accelerationY, accelerationZ,
     gyroX, gyroY, gyroZ,
-    yaw, pitch, roll
+    yaw, pitch, roll,
+    voltage33, voltage5, voltage12
   );
 
   const auto& packet = MsgPacketizer::encode(
     0x12,
     flightTime, flightMode,
     StateShiranui3, StateBuzzer,
-    altitude,
-    descentCount,
+    pressure, temperature, altitude, descentCount,
     accelerationX, accelerationY, accelerationZ,
     gyroX, gyroY, gyroZ,
-    yaw, pitch, roll
+    yaw, pitch, roll,
+    voltage33, voltage5, voltage12
   );
 
   writeEEPROM(_packetCount, (unsigned char*)packet.data.data(), packet.data.size());
@@ -57,8 +62,10 @@ void Logger::writeLog(
 void Logger::writeSD(
   float flightTime,
   uint8_t flightMode,
-  uint8_t StateShiranui3,
-  uint8_t StateBuzzer,
+  uint8_t stateShiranui3,
+  uint8_t stateBuzzer,
+  float pressure,
+  float temperature,
   float altitude,
   uint16_t descentCount,
   float accelerationX,
@@ -69,15 +76,21 @@ void Logger::writeSD(
   float gyroZ,
   float yaw,
   float pitch,
-  float roll) {
+  float roll,
+  float voltage33,
+  float voltage5,
+  float voltage12
+) {
   if (_packetCount == 0) {
-    Serial.println("flightTime,flightMode,StateShiranui3,StateBuzzer,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll");
+    Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
   }
 
   Serial.print(flightTime); Serial.print(",");
   Serial.print(flightMode); Serial.print(",");
-  Serial.print(StateShiranui3); Serial.print(",");
-  Serial.print(StateBuzzer); Serial.print(",");
+  Serial.print(stateShiranui3); Serial.print(",");
+  Serial.print(stateBuzzer); Serial.print(",");
+  Serial.print(pressure); Serial.print(",");
+  Serial.print(temperature); Serial.print(",");
   Serial.print(altitude); Serial.print(",");
   Serial.print(descentCount); Serial.print(",");
   Serial.print(accelerationX); Serial.print(",");
@@ -88,7 +101,10 @@ void Logger::writeSD(
   Serial.print(gyroZ); Serial.print(",");
   Serial.print(yaw); Serial.print(",");
   Serial.print(pitch); Serial.print(",");
-  Serial.print(roll);
+  Serial.print(roll); Serial.print(",");
+  Serial.print(voltage33); Serial.print(",");
+  Serial.print(voltage5); Serial.print(",");
+  Serial.print(voltage12);
   Serial.println("");
 }
 
@@ -111,8 +127,10 @@ void Logger::dumpLog() {
     [](
       float flightTime,
       uint8_t flightMode,
-      uint8_t  StateShiranui3,
-      uint8_t  StateBuzzer,
+      uint8_t  stateShiranui3,
+      uint8_t  stateBuzzer,
+      float pressure,
+      float temperature,
       float altitude,
       uint16_t descentCount,
       float accelerationX,
@@ -123,12 +141,17 @@ void Logger::dumpLog() {
       float gyroZ,
       float yaw,
       float pitch,
-      float roll
+      float roll,
+      float voltage33,
+      float voltage5,
+      float voltage12
       ) {
         Serial.print(flightTime); Serial.print(",");
   Serial.print(flightMode); Serial.print(",");
-  Serial.print(StateShiranui3); Serial.print(",");
-  Serial.print(StateBuzzer); Serial.print(",");
+  Serial.print(stateShiranui3); Serial.print(",");
+  Serial.print(stateBuzzer); Serial.print(",");
+  Serial.print(pressure); Serial.print(",");
+  Serial.print(temperature); Serial.print(",");
   Serial.print(altitude); Serial.print(",");
   Serial.print(descentCount); Serial.print(",");
   Serial.print(accelerationX); Serial.print(",");
@@ -139,14 +162,17 @@ void Logger::dumpLog() {
   Serial.print(gyroZ); Serial.print(",");
   Serial.print(yaw); Serial.print(",");
   Serial.print(pitch); Serial.print(",");
-  Serial.print(roll);
+  Serial.print(roll); Serial.print(",");
+  Serial.print(voltage33); Serial.print(",");
+  Serial.print(voltage5); Serial.print(",");
+  Serial.print(voltage12);
   Serial.println("");
     }
   );
 
   uint8_t packet[_PACKET_SIZE];
 
-  Serial.println("flightTime,flightMode,StateShiranui3,StateBuzzer,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll");
+  Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
 
   for (size_t address = 0; address < (size_t)0x7FFFF; address += _PAGE_SIZE) {
     uint8_t blockAddress = (uint8_t)(address >> 16);

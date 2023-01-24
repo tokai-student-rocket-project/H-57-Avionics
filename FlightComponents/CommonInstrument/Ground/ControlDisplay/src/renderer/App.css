@@ -1,13 +1,14 @@
 body {
-  background-color: #2f3136;
+  background-color: transparent;
 }
 
 .ant-card {
-  background-color: #36393f !important;
+  background-color: rgb(18, 18, 18, 0.75);
+  border-radius: 12px;
 
   .ant-card-head {
     color: white !important;
-    border-bottom-color: #202225 !important;
+    border-bottom-color: #999999 !important;
   }
 
   .ant-card-body {
@@ -20,32 +21,35 @@ body {
   color: white !important;
 
   .ant-select-selector {
-    background-color: #40444b !important;
+    background-color: transparent !important;
+    border: 1px solid #999999 !important;
     border-radius: 0 !important;
-    border: 0 !important;
 
     .ant-select-selection-placeholder {
-      color: #72767d !important;
+      color: #999999 !important;
     }
   }
 }
 
 .ant-select-arrow {
-  color: white !important;
+  color: #F7F7F7 !important;
 }
 
 .ant-input {
   height: 32px;
   color: white !important;
-  background-color: #40444b !important;
+  background-color: transparent !important;
+  border: 1px solid #999999 !important;
   border-radius: 0 !important;
-  border: 0 !important;
+  border-left: none !important;
 }
 
 .ant-input-group-addon {
-  color: #b9bbbe !important;
-  background-color: #40444b !important;
-  border: 0 !important;
+  color: #F7F7F7 !important;
+  background-color: transparent !important;
+  border: 1px solid #999999 !important;
+  border-radius: 0 !important;
+  border-left: none !important;
 }
 
 .ant-btn {
@@ -56,32 +60,32 @@ body {
 }
 
 .ant-btn-primary {
-  background-color: #5865f2 !important;
+  background-color: #1774FF !important;
   border: 0 !important;
 }
 
 .ant-divider {
-  color: #b9bbbe !important;
-  border-color: #b9bbbe !important;
+  color: #F7F7F7 !important;
+  border-color: #999999 !important;
   margin-top: 16px !important;
   margin-bottom: 8px !important;
 }
 
 .ant-statistic-title{
-  color: #b9bbbe;
+  color: #F7F7F7;
 }
 
 .ant-statistic-content-suffix{
-  color: #b9bbbe;
+  color: #F7F7F7;
 }
 
 .ant-popover-inner {
-  background-color: #36393f;
+  background-color: #262626;
 }
 
 .leaflet-container {
   width: 100%;
-  height: 220px;
+  height: 100%;
 }
 
 .ant-notification-notice-message {
@@ -90,10 +94,10 @@ body {
 }
 
 .ant-notification-notice {
-  background: #40444b;
+  background: #262626;
   padding: 4px 16px;
   width: 300px;
-  border-left: 4px solid #5865f2;
+  border-left: 4px solid #1774FF;
 }
 
 .ant-notification-notice-close {
