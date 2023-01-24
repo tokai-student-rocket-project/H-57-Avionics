@@ -1,5 +1,6 @@
 import { Card } from 'antd';
 import { useState, useEffect } from 'react';
+import { green, red, emphasisMidium } from '../../utilities/colors';
 import mcsc from '../../images/valve/mcsc.png';
 import mcsi from '../../images/valve/mcsi.png';
 import mcso from '../../images/valve/mcso.png';
@@ -70,13 +71,19 @@ const Valve = () => {
   return (
     <Card title="VALVE" bordered={false} style={{ margin: '8px' }}>
       <div style={{ display: 'flex', marginTop: '24px' }}>
-        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+        <span
+          style={{
+            color: emphasisMidium,
+            margin: 'auto auto auto 0',
+            fontSize: '0.9em',
+          }}
+        >
           ポジション
         </span>
         <span
           style={{
-            fontSize: '1.25em',
-            color: servoPosition === 'INVALID' ? '#ed4245' : '#46c46d',
+            fontSize: '1.15em',
+            color: servoPosition === 'INVALID' ? red : green,
             margin: 'auto 0 auto auto',
           }}
         >
@@ -92,7 +99,7 @@ const Valve = () => {
         }}
       >
         <img width="100%" src={valve} alt="valve" />
-        <div style={{ position: 'absolute', top: '10%', left: '30%' }}>
+        <div style={{ position: 'absolute', top: '8%', left: '30%' }}>
           <div>Supply</div>
           {`${supplyServoDegrees.toFixed(1)}°`}
         </div>

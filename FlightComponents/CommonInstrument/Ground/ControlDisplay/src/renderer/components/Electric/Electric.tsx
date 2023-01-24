@@ -7,6 +7,7 @@ import {
   FaBatteryQuarter,
   FaBatteryThreeQuarters,
 } from 'react-icons/fa';
+import { green, red, orange, emphasisMidium } from '../../utilities/colors';
 
 const getBatteryLevel = (voltage: number) => {
   const maximumVoltage = 12.0;
@@ -20,9 +21,9 @@ const getBatteryLevel = (voltage: number) => {
 };
 
 const getBatteryColor = (batteryLevel: number) => {
-  if (batteryLevel < 55) return '#ed4245';
-  if (batteryLevel < 60) return '#faa61a';
-  return '#46c46d';
+  if (batteryLevel < 55) return red;
+  if (batteryLevel < 60) return orange;
+  return green;
 };
 
 const getBatteryIcon = (batteryLevel: number) => {
@@ -37,24 +38,24 @@ const getBatteryIcon = (batteryLevel: number) => {
 };
 
 const getV33Color = (voltage: number) => {
-  if (voltage === 0) return '#ed4245';
-  if (voltage < 2.38) return '#faa61a';
-  if (voltage > 3.46) return '#faa61a';
-  return '#46c46d';
+  if (voltage === 0) return red;
+  if (voltage < 2.38) return orange;
+  if (voltage > 3.46) return orange;
+  return green;
 };
 
 const getV5Color = (voltage: number) => {
-  if (voltage === 0) return '#ed4245';
-  if (voltage < 4.5) return '#faa61a';
-  if (voltage > 5.5) return '#faa61a';
-  return '#46c46d';
+  if (voltage === 0) return red;
+  if (voltage < 4.5) return orange;
+  if (voltage > 5.5) return orange;
+  return green;
 };
 
 const getV12Color = (voltage: number) => {
-  if (voltage === 0) return '#ed4245';
-  if (voltage < 10.8) return '#faa61a';
-  if (voltage > 13.2) return '#faa61a';
-  return '#46c46d';
+  if (voltage === 0) return red;
+  if (voltage < 10.8) return orange;
+  if (voltage > 13.2) return orange;
+  return green;
 };
 
 const Electric = () => {
@@ -93,16 +94,19 @@ const Electric = () => {
         </div>
       }
     >
-      <div style={{ marginTop: '24px', textAlign: 'center' }}>
-        {getBatteryLevel(voltage12) < 60 && (
-          <div style={{ color: '#ed4245' }}>バルブシステム動作不可</div>
-        )}
-        {getBatteryLevel(voltage12) < 55 && (
-          <div style={{ color: '#ed4245' }}>不知火動作不可</div>
-        )}
+      <div
+        style={{
+          margin: '24px -16px 0px -16px',
+          textAlign: 'center',
+          color: red,
+          fontWeight: 'bold',
+        }}
+      >
+        {getBatteryLevel(voltage12) < 60 && <div>バルブシステム動作不可</div>}
+        {getBatteryLevel(voltage12) < 55 && <div>不知火動作不可</div>}
       </div>
       <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
           ロジック
         </span>
         <span
@@ -117,7 +121,7 @@ const Electric = () => {
         <span
           style={{
             fontSize: '1.25em',
-            color: '#b9bbbe',
+            color: emphasisMidium,
             marginLeft: '8px',
           }}
         >
@@ -125,7 +129,7 @@ const Electric = () => {
         </span>
       </div>
       <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
           5V供給
         </span>
         <span
@@ -140,7 +144,7 @@ const Electric = () => {
         <span
           style={{
             fontSize: '1.25em',
-            color: '#b9bbbe',
+            color: emphasisMidium,
             marginLeft: '8px',
           }}
         >
@@ -148,7 +152,7 @@ const Electric = () => {
         </span>
       </div>
       <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: '#b9bbbe', margin: 'auto auto auto 0' }}>
+        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
           12V供給
         </span>
         <span
@@ -163,7 +167,7 @@ const Electric = () => {
         <span
           style={{
             fontSize: '1.25em',
-            color: '#b9bbbe',
+            color: emphasisMidium,
             marginLeft: '8px',
           }}
         >

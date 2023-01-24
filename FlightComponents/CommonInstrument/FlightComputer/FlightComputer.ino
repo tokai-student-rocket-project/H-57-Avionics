@@ -2,8 +2,7 @@
 #include <SPI.h>
 #include <LoRa.h>
 #include <ArduinoJson.h>
-#include <IntervalCounter.h>
-#include <OneShotTimer.h>
+#include <TaskManager.h>
 #include <MsgPacketizer.h>
 #include "Altimeter.h"
 #include "IMU.h"
@@ -52,28 +51,23 @@ namespace config {
   float separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定燃焼時間 [ms]
-  constexpr uint32_t DEFAULT_BURN_TIME_ms = 2778;
+  constexpr uint32_t DEFAULT_BURN_TIME_ms = 1350;
   uint32_t burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 10692;
+  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 7787;
   uint32_t separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 12692;
+  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 11787;
   uint32_t force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 
   // 想定着地時間 [ms]
-  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 30000;
+  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 45000;
   uint32_t landing_time_ms = DEFAULT_LANDING_TIME_ms;
 }
 
 namespace internal {
-  // タイマー
-  IntervalCounter _downlinkInterval(0.5);
-  IntervalCounter _logicInterval(0.01);
-  OneShotTimer _separateShot(3.0);
-
   FlightMode _flightMode;
   // 離床した瞬間の時間を保存する変数
   uint32_t _launchTime_ms;
@@ -94,6 +88,9 @@ namespace flightData {
   float _yaw;
   float _pitch;
   float _roll;
+  float _voltage33;
+  float _voltage5;
+  float _voltage12;
 }
 
 
@@ -116,39 +113,11 @@ void setup() {
   device::_altimeter.initialize();
   device::_imu.initialize();
 
-  MsgPacketizer::subscribe(LoRa, 0xF3,
-    [](
-      uint8_t command,
-      float payload
-      )
-    {
-      if (!isFlying()) executeCommand(command, payload);
-    }
-  );
+  Tasks.add(mainRoutine)->startIntervalMsec(10);
+  Tasks.add(downlinkRoutine)->startIntervalMsec(500);
+  Tasks.add("TurnOffShiranuiTask", turnOffShiranuiTask);
 
-  // ロジック用タイマー 0.01秒間隔
-  internal::_logicInterval.onUpdate([&]() {
-    logic();
-    });
-  internal::_logicInterval.start();
-
-  // ダウンリンク用タイマー1 0.5秒間隔
-  internal::_downlinkInterval.onUpdate([&]() {
-    downlinkStatus();
-  downlinkFlightData();
-  downlinkConfig();
-
-  device::_commandIndicator.on();
-  device::_telemeter.sendDownlink();
-  device::_commandIndicator.off();
-    });
-  internal::_downlinkInterval.start();
-
-  // 分離3秒後に電磁弁をオフにする
-  internal::_separateShot.onUpdate([&]() {
-    device::_shiranui3.off();
-  device::_buzzer.on();
-    });
+  MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
   reset();
 
@@ -157,13 +126,11 @@ void setup() {
 
 
 void loop() {
-  internal::_logicInterval.update();
-  internal::_downlinkInterval.update();
-  internal::_separateShot.update();
+  Tasks.update();
 }
 
 
-void logic() {
+void mainRoutine() {
   device::_flightPin.update();
   updateFlightData();
   updateIndicators();
@@ -190,6 +157,23 @@ void logic() {
 }
 
 
+void downlinkRoutine() {
+  downlinkStatus();
+  downlinkFlightData();
+  downlinkConfig();
+
+  device::_commandIndicator.on();
+  device::_telemeter.sendDownlink();
+  device::_commandIndicator.off();
+}
+
+
+void turnOffShiranuiTask() {
+  device::_shiranui3.off();
+  device::_buzzer.on();
+}
+
+
 /// @brief センサ類から各種データを読み出す
 void updateFlightData() {
   flightData::_temperature_degT = device::_altimeter.getTemperature();
@@ -207,6 +191,12 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll
   );
+
+  // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
+  // 電圧係数 = 基準電圧 / 2.4
+  flightData::_voltage33 = analogRead(A6) / 1024.0 * 3.3 * 1.37;
+  flightData::_voltage5 = analogRead(A5) / 1024.0 * 3.3 * 2.08;
+  flightData::_voltage12 = analogRead(A4) / 1024.0 * 3.3 * 5.00;
 }
 
 
@@ -245,7 +235,10 @@ void writeLog() {
     flightData::_gyro_z_degps,
     flightData::_yaw,
     flightData::_pitch,
-    flightData::_roll
+    flightData::_roll,
+    flightData::_voltage33,
+    flightData::_voltage5,
+    flightData::_voltage12
   );
 }
 
@@ -267,12 +260,9 @@ void downlinkStatus() {
     device::_flightPin.isOpen(),
     device::_shiranui3.isOn(),
     device::_buzzer.isOn(),
-
-    // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
-    // 電圧係数 = 基準電圧 / 2.4
-    analogRead(A6) / 1024.0 * 3.3 * 1.37, // 3.3V
-    analogRead(A5) / 1024.0 * 3.3 * 2.08, // 5V
-    analogRead(A4) / 1024.0 * 3.3 * 5.00  // 12V
+    flightData::_voltage33,
+    flightData::_voltage5,
+    flightData::_voltage12
   );
 }
 
@@ -371,8 +361,9 @@ void separate() {
   device::_buzzer.off();
   device::_shiranui3.on();
 
-  if (!internal::_separateShot.isRunning())
-    internal::_separateShot.start();
+  if (!Tasks["TurnOffShiranuiTask"]->isRunning()) {
+    Tasks["TurnOffShiranuiTask"]->startOnceAfterMsec(3000);
+  }
 }
 
 
@@ -445,6 +436,8 @@ void changeFlightMode(FlightMode nextMode) {
 /// @param command 0x05:想定着地時間
 /// @param payload 
 void executeCommand(uint8_t command, float payload) {
+  if (isFlying()) return;
+
   device::_commandIndicator.on();
 
   downlinkEvent("CONFIG-UPDATE");
