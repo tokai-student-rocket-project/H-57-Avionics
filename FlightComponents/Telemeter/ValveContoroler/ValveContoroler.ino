@@ -109,14 +109,21 @@ void loop()
     servoPacket["supplyservoDeg"] = Supplyservo_deg;
 =======
     //
+<<<<<<< HEAD
     //StaticJsonDocument<64> servoPacket;
     //servoPacket["mainservoDeg"] = Mainservo_deg;
     //servoPacket["supplyservoDeg"] = Supplyservo_deg;
 >>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
+=======
+    StaticJsonDocument<64> servoPacket;
+    servoPacket["mainservoDeg"] = Mainservo_deg;
+    servoPacket["supplyservoDeg"] = Supplyservo_deg;
+>>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
-    // Serial.println();
-    // serializeJson(servoPacket, Serial);
+    Serial.println();
+    serializeJson(servoPacket, Serial);
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     // Arduino IDE シリアルプロッタでのデバック用
     //  Serial.print(WCount);
@@ -127,23 +134,32 @@ void loop()
     Serial.print(",");
     Serial.println(LCount);
 >>>>>>> 33085ccc91ba07cb07be3134e8f1b1eef6d22198
+=======
+    //Serial.print(WCount);
+    //Serial.print(",");
+    //PSerial.println(LCount);
+>>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // delay(2); // 250Hz
     delay(10);
 }
 void L_Position()
 {
-    Supplyservo.write(80, 0, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
+    Supplyservo.write(80, 255, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
     // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
 
+<<<<<<< HEAD
     delay(10); //
+=======
+    delay(100);
+>>>>>>> 1c0a7494f0457d85543bff60ddf13c99d63a2a63
 
     // Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s //失敗
     // Mainservo.write(160, 160, true); // Mainservo OPEN //Main弁が閉まる時間: UNO
 
     // Memo Sweagelock  45 60
     // 2023/1/21 フローテック -=> Sweagelock にバルブ変更
-    Mainservo.write(57, 0, true); // UNO //NANO
+    Mainservo.write(57, 40, true); // UNO //NANO
 
     digitalWrite(LED_BUILTIN, HIGH);
 
