@@ -70,6 +70,7 @@ const App = () => {
         <Layout
           style={{
             backgroundColor: 'transparent',
+            height: '100%',
           }}
         >
           <Header
@@ -92,8 +93,12 @@ const App = () => {
             </Row>
           </Header>
 
-          <Content style={{ padding: '0 8px' }}>
-            <Row>
+          <Content
+            style={{
+              padding: '0 8px',
+            }}
+          >
+            <Row style={{ height: '100%' }}>
               <Col span={7}>
                 <Row>
                   <Col span={24}>
@@ -110,9 +115,8 @@ const App = () => {
                 <div
                   style={{
                     height: '100%',
-                    padding: '8px',
                     display: 'grid',
-                    gridTemplateRows: 'auto 1fr auto',
+                    gridTemplateRows: 'auto 1fr auto auto',
                     placeItems: 'center',
                   }}
                 >
@@ -121,11 +125,19 @@ const App = () => {
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'flex-end',
+                      width: '100%',
                       justifyContent: 'center',
                     }}
                   >
                     <GNSS />
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <AltitudeIndicator />
                   </div>
                 </div>
