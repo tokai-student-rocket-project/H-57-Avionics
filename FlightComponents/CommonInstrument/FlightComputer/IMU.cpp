@@ -10,12 +10,12 @@ void IMU::initialize() {
   // +-2000[deg/s]。16.4[LBS/(deg/s)]
   _mpu6050.setFullScaleGyroRange(MPU6050_IMU::GYRO_FS::MPU6050_GYRO_FS_2000);
 
-  _mpu6050.setXAccelOffset(-1709);
-  _mpu6050.setYAccelOffset(-553);
-  _mpu6050.setZAccelOffset(1083);
-  _mpu6050.setXGyroOffset(27);
-  _mpu6050.setYGyroOffset(-84);
-  _mpu6050.setYGyroOffset(-58);
+  _mpu6050.setXAccelOffset(-1191);
+  _mpu6050.setYAccelOffset(-5755);
+  _mpu6050.setZAccelOffset(1229);
+  _mpu6050.setXGyroOffset(-239);
+  _mpu6050.setYGyroOffset(3);
+  _mpu6050.setYGyroOffset(211);
 
   _madgwickFilter.begin(100);
 }
