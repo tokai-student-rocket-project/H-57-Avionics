@@ -77,7 +77,6 @@ const Electric = () => {
   return (
     <Card
       title="ELECTRIC"
-      style={{ margin: '8px' }}
       bordered={false}
       extra={
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -96,7 +95,7 @@ const Electric = () => {
     >
       <div
         style={{
-          margin: '24px -16px 0px -16px',
+          margin: '0px -16px',
           textAlign: 'center',
           color: red,
           fontWeight: 'bold',

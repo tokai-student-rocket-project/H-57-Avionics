@@ -14,6 +14,7 @@ import AltitudeIndicator from './components/AltitudeIndicator';
 import MapView from './components/MapView';
 import Electric from './components/Electric';
 import Mission from './components/Mission';
+import Progress from './components/Progress';
 
 const { Header, Content } = Layout;
 
@@ -30,12 +31,22 @@ const App = () => {
   useEffect(() => {
     window.electronAPI.eventRecieved((_, id, flightTime, event) => {
       if (id === latestEvent?.id) return;
+      if (
+        event === 'LAUNCH' ||
+        event === 'BURNOUT' ||
+        event === 'DESCENT' ||
+        event === 'SEPARATE' ||
+        event === 'FORCE-SEPARATE' ||
+        event === 'LAND'
+      )
+        return;
+
       setLatestEvent({ id, flightTime, event });
       notificationApi.open({
         message: `${
           flightTime < 0 ? '' : `[T+${flightTime.toFixed(2)}]`
         } ${event}`,
-        placement: 'bottomRight',
+        placement: 'bottomLeft',
       });
     });
 
@@ -46,10 +57,7 @@ const App = () => {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-      {contextHolder}
-
       <MapView />
-
       <div
         style={{
           position: 'absolute',
@@ -58,6 +66,7 @@ const App = () => {
           zIndex: '999',
         }}
       >
+        {contextHolder}
         <Layout
           style={{
             backgroundColor: 'transparent',
@@ -101,13 +110,24 @@ const App = () => {
                 <div
                   style={{
                     height: '100%',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'center',
+                    padding: '8px',
+                    display: 'grid',
+                    gridTemplateRows: 'auto 1fr auto',
+                    placeItems: 'center',
                   }}
                 >
-                  <GNSS />
-                  <AltitudeIndicator />
+                  <Progress />
+                  <div />
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <GNSS />
+                    <AltitudeIndicator />
+                  </div>
                 </div>
               </Col>
               <Col span={7}>

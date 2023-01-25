@@ -69,8 +69,8 @@ const Valve = () => {
   }, []);
 
   return (
-    <Card title="VALVE" bordered={false} style={{ margin: '8px' }}>
-      <div style={{ display: 'flex', marginTop: '24px' }}>
+    <Card title="VALVE" bordered={false}>
+      <div style={{ display: 'flex' }}>
         <span
           style={{
             color: emphasisMidium,

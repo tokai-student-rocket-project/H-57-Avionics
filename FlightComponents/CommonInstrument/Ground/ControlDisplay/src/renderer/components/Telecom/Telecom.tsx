@@ -36,7 +36,6 @@ const Telecom = () => {
     <Card
       title="TELECOM"
       bordered={false}
-      style={{ margin: '8px' }}
       extra={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Popover

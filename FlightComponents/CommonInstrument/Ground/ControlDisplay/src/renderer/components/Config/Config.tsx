@@ -96,7 +96,6 @@ const Config = () => {
       <Card
         title="CONFIG"
         bordered={false}
-        style={{ margin: '8px' }}
         extra={
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <FaGamepad
@@ -108,7 +107,7 @@ const Config = () => {
           </div>
         }
       >
-        <Row style={{ marginTop: '24px' }}>
+        <Row>
           <Col span={12}>
             <Statistic
               title="指定分離高度"

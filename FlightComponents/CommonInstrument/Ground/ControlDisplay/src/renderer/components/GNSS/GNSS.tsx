@@ -30,11 +30,8 @@ const GNSS = () => {
   }, []);
 
   return (
-    <Card
-      bordered={false}
-      style={{ margin: '8px', width: '250px', height: 'auto' }}
-    >
-      <div style={{ margin: '8px -16px -16px -16px' }}>
+    <Card bordered={false} style={{ width: '250px', height: 'auto' }}>
+      <div style={{ margin: '-8px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div
             style={{

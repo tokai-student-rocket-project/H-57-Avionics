@@ -21,12 +21,8 @@ const Status = () => {
   }, []);
 
   return (
-    <Card
-      title="STATUS"
-      style={{ margin: '8px', marginTop: '16px' }}
-      bordered={false}
-    >
-      <div style={{ display: 'flex', marginTop: '24px' }}>
+    <Card title="STATUS" style={{ marginTop: '16px' }} bordered={false}>
+      <div style={{ display: 'flex' }}>
         <span
           style={{
             color: emphasisMidium,
