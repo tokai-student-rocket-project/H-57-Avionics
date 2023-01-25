@@ -47,7 +47,7 @@ namespace device {
 
 namespace config {
   // 指定分離高度 [m]
-  constexpr float DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
+  constexpr float DEFAULT_SEPARATION_ALTITUDE_m = 431.119;
   float separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定燃焼時間 [ms]
