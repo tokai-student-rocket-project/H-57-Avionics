@@ -189,8 +189,7 @@ void updateFlightData() {
     &flightData::_gyro_z_degps,
     &flightData::_yaw,
     &flightData::_pitch,
-    &flightData::_roll
-  );
+    &flightData::_roll);
 
   // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
   // 電圧係数 = 基準電圧 / 2.4
