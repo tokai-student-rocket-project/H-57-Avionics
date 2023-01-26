@@ -42,9 +42,11 @@ void setup()
     Supplyservo.attach(SupplyServoPin);
     Supplyservo.write(20, 30, true); // 不感体に近い為初期値を20度ずらした。 0 -=> 20, 60 -=> 80
 
-    pinMode(2, INPUT_PULLUP); // WAITING <=- Arduino UNO　//LUNCH <=- Arduino NANO　//ただの設計ミス。ソフトで解決可能なのでUNO,NANOで切り替えてほしい...
+    pinMode(2, INPUT_PULLUP); // WAITING <=- Arduino UNO　//LAUNCH <=- Arduino NANO　//ただの設計ミス。ソフトウェアで解決可能なのでUNO,NANOで切り替える
     pinMode(3, INPUT_PULLUP); // LUNCH <=- ArduinoUNO //WAITING <=- Arduino NANO
-    pinMode(LED_BUILTIN, OUTPUT);
+    //pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(5, OUTPUT);
+    pinMode(6, OUTPUT);
 
     delay(1000);
 }
@@ -123,7 +125,9 @@ void L_Position()
     // 2023/1/21 フローテック -=> Sweagelock にバルブ変更
     Mainservo.write(57, 40, true); // UNO //NANO
 
-    digitalWrite(LED_BUILTIN, HIGH);
+    //digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(5, HIGH);
+    digitalWrite(6, LOW);
 
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
@@ -155,7 +159,9 @@ void W_Position()
     delay(10);
     Mainservo.write(20, 30, true); // MainServo CLOSE
 
-    digitalWrite(LED_BUILTIN, LOW);
+    //digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(6, HIGH);
+    digitalWrite(5, LOW);
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
 }
