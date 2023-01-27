@@ -16,12 +16,18 @@ const GNSS = () => {
   const [longitude, setLongitude] = useState<number>(143.439731);
 
   const [sattelites, setSattelites] = useState<number>(0);
+  const [epocTime, setEpocTime] = useState<string>();
 
   useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
       setLatitude(Number(window.electronAPI.store.get('latitude')));
       setLongitude(Number(window.electronAPI.store.get('longitude')));
       setSattelites(Number(window.electronAPI.store.get('satellites')));
+      setEpocTime(
+        new Date(
+          Number(window.electronAPI.store.get('epocTime'))
+        ).toLocaleTimeString()
+      );
 
       return () => {
         window.electronAPI.remove('gnss-recieved');

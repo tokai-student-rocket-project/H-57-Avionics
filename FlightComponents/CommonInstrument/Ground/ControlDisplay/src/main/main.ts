@@ -119,6 +119,7 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
         store.set('latitude', dataObject.lat);
         store.set('longitude', dataObject.lon);
         store.set('satellites', dataObject.satellites);
+        store.set('epochTime', dataObject.epochTime);
         mainWindow?.webContents.send('gnss-recieved');
       }
 

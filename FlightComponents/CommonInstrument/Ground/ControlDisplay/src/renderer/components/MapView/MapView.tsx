@@ -11,8 +11,7 @@ import {
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-L.Icon.Default.imagePath =
-  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/';
+L.Icon.Default.imagePath = `${window.location.origin}/map/icon/`;
 
 type ChangeCenterProps = {
   center: L.LatLngExpression;
@@ -57,7 +56,7 @@ const MapView = () => {
     >
       <TileLayer
         attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
-        url="https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg"
+        url={`${window.location.origin}/map/tile/{z}/{x}/{y}.jpg`}
       />
       <Marker position={center} />
       <ChangeCenter center={center} />
