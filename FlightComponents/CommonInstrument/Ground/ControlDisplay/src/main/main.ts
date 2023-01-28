@@ -37,7 +37,7 @@ let serialportTelemeter: SerialPort | null = null;
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
 
-  serialport = new SerialPort({ path: serialportPath, baudRate: 500000 });
+  serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
     console.log(data);
