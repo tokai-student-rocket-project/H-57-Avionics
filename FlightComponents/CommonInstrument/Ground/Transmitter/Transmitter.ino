@@ -12,6 +12,8 @@ void setup() {
   Serial.begin(115200);
   LoRa.begin(923.8E6);
 
+  pinMode(LED_BUILTIN, OUTPUT);
+
   // Status
   MsgPacketizer::subscribe(LoRa, 0x01,
     [](
@@ -138,7 +140,9 @@ void sendCommand(uint8_t command, float payload) {
 
 
 void sendDownlinkPacket() {
+  digitalWrite(LED_BUILTIN, HIGH);
   serializeJson(downlinkPacket, Serial);
   Serial.println("");
   downlinkPacket.clear();
+  digitalWrite(LED_BUILTIN, LOW);
 }

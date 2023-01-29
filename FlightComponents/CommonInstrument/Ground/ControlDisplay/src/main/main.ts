@@ -37,7 +37,7 @@ let serialportTelemeter: SerialPort | null = null;
 ipcMain.on('open-serialport', (_, serialportPath: string) => {
   if (serialport?.isOpen) serialport.close();
 
-  serialport = new SerialPort({ path: serialportPath, baudRate: 500000 });
+  serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
     console.log(data);
@@ -119,6 +119,7 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
         store.set('latitude', dataObject.lat);
         store.set('longitude', dataObject.lon);
         store.set('satellites', dataObject.satellites);
+        store.set('epochTime', dataObject.epochTime);
         mainWindow?.webContents.send('gnss-recieved');
       }
 
