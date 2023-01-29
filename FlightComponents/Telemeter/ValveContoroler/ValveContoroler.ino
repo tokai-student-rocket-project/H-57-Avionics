@@ -7,7 +7,6 @@
   バルブ位置を制御し、テレメトリーモジュールに送信する機能を持っています。
 */
 
-
 #include "VarSpeedServo.h"
 #include <ArduinoJson.h>
 
@@ -22,9 +21,9 @@ int Position = 1;
 // Servo設定
 VarSpeedServo Mainservo;
 VarSpeedServo Supplyservo;
-//int MainServoPin = 5; // Uno
+// int MainServoPin = 5; // Uno
 int MainServoPin = 9; // Nano
-//int SupplyServoPin = 6; // Uno
+// int SupplyServoPin = 6; // Uno
 int SupplyServoPin = 10; // Nano
 float Supplyservo_deg;
 float Mainservo_deg;
@@ -44,9 +43,17 @@ void setup()
 
     pinMode(2, INPUT_PULLUP); // WAITING <=- Arduino UNO　//LAUNCH <=- Arduino NANO　//ただの設計ミス。ソフトウェアで解決可能なのでUNO,NANOで切り替える
     pinMode(3, INPUT_PULLUP); // LUNCH <=- ArduinoUNO //WAITING <=- Arduino NANO
-    //pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(5, OUTPUT);
-    pinMode(6, OUTPUT);
+    
+    //pinMode(3, INPUT_PULLUP); // WAITING <=- Arduino UNO　//LAUNCH <=- Arduino NANO　//ただの設計ミス。ソフトウェアで解決可能なのでUNO,NANOで切り替える
+    //pinMode(2, INPUT_PULLUP); // LUNCH <=- ArduinoUNO //WAITING <=- Arduino NANO
+    
+
+    //pinMode(LED_BUILTIN, OUTPUT); //UNO
+    pinMode(5, OUTPUT); //NANO
+    pinMode(6, OUTPUT); //NANO
+
+    digitalWrite(6, HIGH); //NANO
+    digitalWrite(5, LOW); //NANO
 
     delay(1000);
 }
@@ -54,8 +61,8 @@ void setup()
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-    // if (Position == 1 && digitalRead(2) == LOW) // UNO
-    if (Position == 1 && digitalRead(3) == LOW) // NANO
+    //if (Position == 1 && digitalRead(2) == LOW) //NANO?
+    if (Position == 1 && digitalRead(3) == LOW) //UNO
     {
         LCount++;
     }
@@ -75,8 +82,8 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-    // if (Position == 2 && digitalRead(3) == LOW) // UNO
-    if (Position == 2 && digitalRead(2) == LOW) // NANO
+    //if (Position == 2 && digitalRead(3) == LOW) //NANO?
+    if (Position == 2 && digitalRead(2) == LOW) //UNO
     {
         WCount++;
     }
@@ -107,27 +114,21 @@ void loop()
     //  Serial.print(",");
     //  Serial.println(LCount);
 
-    // delay(2); // 250Hz
-    delay(10);
+    //delayMicroseconds(100);
+    delay(2); // 250Hz
+    //delay(10); // 100Hz
 }
 void L_Position()
 {
-    Supplyservo.write(80, 255, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
-    // Supplyservo.write(60, 80, true); //Fill弁が閉まる時間:0.54s
-
-
-    delay(100);
-
-    // Mainservo.write(140, 50, true); // MainServo OPEN //Main弁が閉まる時間:1.22s //失敗
-    // Mainservo.write(160, 160, true); // Mainservo OPEN //Main弁が閉まる時間: UNO
-
-    // Memo Sweagelock  45 60
+    Supplyservo.write(80, 90, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
+    //FILLバルブ：80度で閉
+    delay(200);
     // 2023/1/21 フローテック -=> Sweagelock にバルブ変更
-    Mainservo.write(57, 40, true); // UNO //NANO
+    Mainservo.write(57, 90, true); // UNO //NANO
 
-    //digitalWrite(LED_BUILTIN, HIGH);
-    digitalWrite(5, HIGH);
-    digitalWrite(6, LOW);
+    // digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(5, HIGH); //NANO
+    digitalWrite(6, LOW); //NANO
 
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
@@ -151,47 +152,53 @@ void L_Position()
     // digitalWrite(LED_BUILTIN, HIGH);
     // 上記の動作でコールドフロー試験を成功させることが出来た。やったね！
     //
+    // Swagelockバルブでのコールドフロー試験
+    // Supplyservo.write(80, 255, true); // SupplyServo CLOSE //0:MAX Speed 1-255:Slower-Faster
+    // delay(100);
+    // Mainservo.write(57, 40, true); // UNO //NANO
 }
 
 void W_Position()
 {
+    
     Supplyservo.write(20, 30, true); // SupplyServo OPEN
     delay(10);
     Mainservo.write(20, 30, true); // MainServo CLOSE
+    
 
-    //digitalWrite(LED_BUILTIN, LOW);
-    digitalWrite(6, HIGH);
-    digitalWrite(5, LOW);
+    // digitalWrite(LED_BUILTIN, LOW); //UNO
+    digitalWrite(6, HIGH); //NANO
+    digitalWrite(5, LOW); //NANO
     Supplyservo_deg = Supplyservo.read();
     Mainservo_deg = Mainservo.read();
 }
 
 /*
-                                    .[
-                                 .dMM@
-                 ...&gNMMMMNNgJ+MMMMMN
-             ..MMMMH"""7??77""MMMMMMMM;
-          .JMMMMMMMMMMMMNg,. .MMMMMMMMN,
-        .MMMWMMMMMMMMMMMMMMMNMMMMMMMM"WMN,
-      .dM#^JM#"         ?TMMMMMMMMMM^  .WMN,
-     .MMt JM^              .MMMMMMM'     ,MMb
-    .MM! .@               .MMMMMMMMb       UMN.
-   .M#`  d`               dMMMMMMMMMN,      UMN
-  .MM!   F               .MMMMM#`,MMMM,      HMb
-  MMF    \    ...       .MMMMM#`  .MMMM,     ,MM.
- .MM`    i.MMMMMMMMNJ.  dMMMM#     .MMMN.     MM]
- -M#   .dMMMMMMMMMMMMMN.MMMM@       ,MMMb     JM@
- (M#  .MMMMMMMMMMMMMMM# TMM@         dMMM;    (M#
- -M# .MMMMMMMMMMMMMMMM'  WF          .MMMb    JMF
- .MM.dMMMMMMMMMMMMMMMF   .            MMMN    MM]
-  dMbMMMMMMMMMMMMMMM@   .#            MMMN   .MM
-  .MMdMMMMMMMMMMMMMM!  .MF            MMM#  .MMt
-   -MMMMMMMMMMMMMMMF  .M@            .MMMF .MMF
-    (MMMMMMMMMMMMM@  .MD            .MMMM`.MMF
-     ,MMNTMMMMMMMM! ,"             .MMMM\.MM3
-       TMMa._7"""QN"(.           ..MMMMQMM@`
-         TMMN,  .M3   74J......(MMMMMMMM@!
-           ?WMMNML.       ?"""HHMNMMM#"
-              (MHMMMMNggg&ggNMMMMM9^
-              .^   -?""""""""7!
+                                      .[
+                                   .dMM@
+                   ...&gNMMMMNNgJ+MMMMMN
+               ..MMMMH"""7??77""MMMMMMMM;
+            .JMMMMMMMMMMMMNg,. .MMMMMMMMN,
+          .MMMWMMMMMMMMMMMMMMMNMMMMMMMM"WMN,
+        .dM#^JM#"         ?TMMMMMMMMMM^  .WMN,
+       .MMt JM^              .MMMMMMM'     ,MMb
+      .MM! .@               .MMMMMMMMb       UMN.
+     .M#`  d`               dMMMMMMMMMN,      UMN
+    .MM!   F               .MMMMM#`,MMMM,      HMb
+    MMF    \    ...       .MMMMM#`  .MMMM,     ,MM.
+   .MM`    i.MMMMMMMMNJ.  dMMMM#     .MMMN.     MM]
+   -M#   .dMMMMMMMMMMMMMN.MMMM@       ,MMMb     JM@
+   (M#  .MMMMMMMMMMMMMMM# TMM@         dMMM;    (M#
+   -M# .MMMMMMMMMMMMMMMM'  WF          .MMMb    JMF
+   .MM.dMMMMMMMMMMMMMMMF   .            MMMN    MM]
+    dMbMMMMMMMMMMMMMMM@   .#            MMMN   .MM
+    .MMdMMMMMMMMMMMMMM!  .MF            MMM#  .MMt
+     -MMMMMMMMMMMMMMMF  .M@            .MMMF .MMF
+      (MMMMMMMMMMMMM@  .MD            .MMMM`.MMF
+       ,MMNTMMMMMMMM! ,"             .MMMM\.MM3
+         TMMa._7"""QN"(.           ..MMMMQMM@`
+           TMMN,  .M3   74J......(MMMMMMMM@!
+             ?WMMNML.       ?"""HHMNMMM#"
+                (MHMMMMNggg&ggNMMMMM9^
+                .^   -?""""""""7!
 */
