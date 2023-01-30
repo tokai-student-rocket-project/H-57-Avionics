@@ -109,12 +109,20 @@ const Config = () => {
       >
         <Row>
           <Col span={12}>
-            <Statistic
-              title="指定分離高度"
-              suffix="m"
-              valueStyle={{ color: 'white' }}
-              value={separationAltitude}
-            />
+            {separationAltitude === '0.0' ? (
+              <Statistic
+                title="指定分離高度"
+                valueStyle={{ color: 'white' }}
+                value="頂点分離"
+              />
+            ) : (
+              <Statistic
+                title="指定分離高度"
+                valueStyle={{ color: 'white' }}
+                suffix="m"
+                value={separationAltitude}
+              />
+            )}
           </Col>
           <Col span={12}>
             <Statistic
