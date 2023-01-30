@@ -39,7 +39,7 @@ const Progress = () => {
         setStepProgress(2);
         setBurnoutTime(flightTime);
       }
-      if (event === 'DESCENT') {
+      if (event === 'APOGEE') {
         setStepProgress(3);
         setApogeeTime(flightTime);
       }

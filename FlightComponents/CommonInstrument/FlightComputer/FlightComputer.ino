@@ -395,7 +395,7 @@ void updateFlightMode() {
 
   case FlightMode::CLIMB:
     if (device::_altimeter.isDescending()) {
-      downlinkEvent("DESCENT");
+      downlinkEvent("APOGEE");
       changeFlightMode(FlightMode::DESCENT);
     }
     break;
