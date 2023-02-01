@@ -7,8 +7,8 @@ const inRange = (min: number, max: number, value: number) =>
   min <= value && value < max;
 
 const AltitudeIndicator = () => {
-  const [pitchPosition, setPitchPosition] = useState<number>(0);
-  const [rollPosition, setRollPosition] = useState<number>(0);
+  const [pitchPosition, setPitchPosition] = useState<number>(50);
+  const [rollPosition, setRollPosition] = useState<number>(50);
   const [isPositive, setIsPositive] = useState<boolean>();
 
   const setPosition = (pitch: number, roll: number) => {
@@ -56,12 +56,12 @@ const AltitudeIndicator = () => {
           justifyContent: 'center',
         }}
       >
-        <img height={200} src={isPositive ? ballTop : ballBottom} alt="back" />
+        <img height={150} src={isPositive ? ballTop : ballBottom} alt="back" />
         <div
           style={{
             position: 'absolute',
-            width: '200px',
-            height: '200px',
+            width: '150px',
+            height: '150px',
           }}
         >
           <FaRegDotCircle
@@ -69,8 +69,8 @@ const AltitudeIndicator = () => {
             style={{
               color: isPositive ? 'white' : 'black',
               position: 'absolute',
-              marginLeft: `${pitchPosition}%`,
-              marginTop: `${rollPosition}%`,
+              marginLeft: `calc(${pitchPosition}% - 12px)`,
+              marginTop: `calc(${rollPosition}% - 12px)`,
             }}
           />
         </div>
