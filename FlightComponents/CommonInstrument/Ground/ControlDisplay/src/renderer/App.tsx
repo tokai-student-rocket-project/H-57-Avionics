@@ -34,7 +34,7 @@ const App = () => {
       if (
         event === 'LAUNCH' ||
         event === 'BURNOUT' ||
-        event === 'DESCENT' ||
+        event === 'APOGEE' ||
         event === 'SEPARATE' ||
         event === 'FORCE-SEPARATE' ||
         event === 'LAND'

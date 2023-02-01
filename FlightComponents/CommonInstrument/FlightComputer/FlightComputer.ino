@@ -47,7 +47,7 @@ namespace device {
 
 namespace config {
   // 指定分離高度 [m]
-  constexpr float DEFAULT_SEPARATION_ALTITUDE_m = 431.119;
+  constexpr float DEFAULT_SEPARATION_ALTITUDE_m = 0.0;
   float separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定燃焼時間 [ms]
@@ -340,9 +340,16 @@ bool canReset() {
 /// @brief separate()を実行してもよい状況かを返す
 /// @return True: 実行可能, False: 実行不可能
 bool canSeparate() {
-  return internal::_flightMode == FlightMode::DESCENT
-    && millis() > internal::_launchTime_ms + config::separation_protection_time_ms
-    && flightData::_altitude_m <= config::separation_altitude_m;
+  // 降下中でなければ分離実行不可
+  if (internal::_flightMode != FlightMode::DESCENT) return false;
+  // 分離保護時間なら分離実行不可
+  if (millis() <= internal::_launchTime_ms + config::separation_protection_time_ms) return false;
+
+  // 分離指定高度が0mなら頂点分離なので降下中なら常に分離実行可能
+  if (config::separation_altitude_m == 0.0) return true;
+
+  // 指定分離高度を下回れば分離実行可能
+  return  flightData::_altitude_m <= config::separation_altitude_m;
 }
 
 
@@ -395,7 +402,7 @@ void updateFlightMode() {
 
   case FlightMode::CLIMB:
     if (device::_altimeter.isDescending()) {
-      downlinkEvent("DESCENT");
+      downlinkEvent("APOGEE");
       changeFlightMode(FlightMode::DESCENT);
     }
     break;
