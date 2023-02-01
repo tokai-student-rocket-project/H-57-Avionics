@@ -43,7 +43,7 @@
 - ソフトウェア
   - [Arduino_MKRGPS](https://github.com/arduino-libraries/Arduino_MKRGPS)
     - MKR GPS Shield用のライブラリです。緯度、経度だけでなく受信した衛星の数や速度も取得できます。
-![工事中](https://4.bp.blogspot.com/-iXsqh1jkecI/XgNpGfsJq-I/AAAAAAAADxo/kYPeM1jk6aAce9M7UVWSsx3FnH2IetOpQCK4BGAYYCw/s400/%25E3%2581%25A9%25E3%2581%2586%25E3%2581%2597%25E3%2581%25A6%25E5%25A4%259C%25E4%25B8%25AD%25E3%2581%25AB%25E9%25A1%2594.png "工事中")
+![工事中](https://media.tenor.com/qEtHVSXW5ZkAAAAC/genba-neko-cat.gif "工事中")
 ***
 
 ### 弁制御モジュール
@@ -64,6 +64,6 @@
 - ソフトウェア
   - [VerSpeedServo](https://github.com/netlabtoolkit/VarSpeedServo)
     - アクチュエータの角度、速度を制御します。
-  ![工事中](https://4.bp.blogspot.com/-iXsqh1jkecI/XgNpGfsJq-I/AAAAAAAADxo/kYPeM1jk6aAce9M7UVWSsx3FnH2IetOpQCK4BGAYYCw/s400/%25E3%2581%25A9%25E3%2581%2586%25E3%2581%2597%25E3%2581%25A6%25E5%25A4%259C%25E4%25B8%25AD%25E3%2581%25AB%25E9%25A1%2594.png "工事中")
+  ![工事中](https://memo-labo.com/material/nandemo1.gif "工事中")
 
 ***
