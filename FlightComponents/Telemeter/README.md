@@ -7,9 +7,9 @@
   - [成功基準](#成功基準)
   - [H-57](#h-57)
   - [遠隔測定モジュール](#遠隔測定モジュール)
-  - [仕様](#仕様)
+    - [仕様](#仕様)
   - [弁制御モジュール](#弁制御モジュール)
-  - [仕様](#仕様-1)
+    - [仕様](#仕様-1)
 
 ## 概要
 
@@ -31,7 +31,39 @@
 ### H-57
 
 ### 遠隔測定モジュール
-### 仕様
+#### 仕様
+- ハードウェア
+  - マイコンボード
+    - [MKR WAN 1310](https://docs.arduino.cc/hardware/mkr-wan-1310)（Arduino公式HPより）
+  - 動作電圧
+    - USB給電：5.0V
+    - 外部給電：5.0V
+  - Shield
+    - [MKR GPS Shield](https://docs.arduino.cc/hardware/mkr-gps-shield?_gl=1*mc5mbr*_ga*MTQ0MTM0MzY4MS4xNjYyMDAyMTMy*_ga_NEXN8H46L5*MTY3NTIyOTgwNi44OC4xLjE2NzUyMzA4NTguMC4wLjA.)（Arudino公式HPより）
+- ソフトウェア
+  - [Arduino_MKRGPS](https://github.com/arduino-libraries/Arduino_MKRGPS)
+    - MKR GPS Shield用のライブラリです。緯度、経度だけでなく受信した衛星の数や速度も取得できます。
+![工事中](https://4.bp.blogspot.com/-iXsqh1jkecI/XgNpGfsJq-I/AAAAAAAADxo/kYPeM1jk6aAce9M7UVWSsx3FnH2IetOpQCK4BGAYYCw/s400/%25E3%2581%25A9%25E3%2581%2586%25E3%2581%2597%25E3%2581%25A6%25E5%25A4%259C%25E4%25B8%25AD%25E3%2581%25AB%25E9%25A1%2594.png "工事中")
+***
 
 ### 弁制御モジュール
-### 仕様
+#### 仕様
+- ハードウェア
+  - マイコンボード
+    - [ARDUINO NANO](https://docs.arduino.cc/hardware/nano?_gl=1*huj9p8*_ga*MTQ0MTM0MzY4MS4xNjYyMDAyMTMy*_ga_NEXN8H46L5*MTY3NTIyOTgwNi44OC4xLjE2NzUyMzAwODUuMC4wLjA.)（Arduino公式HPより）
+
+  - 動作電圧
+    - USB給電:5.0V
+    - 外部給電:5.0V
+  - アクチュエータ
+    - [RS-405CB](https://www.futaba.co.jp/product/robot/command_type_servos/rs405cb)（Futaba公式HPより）
+      - 電源電圧:11.1[V]
+      - トルク:48.0[kgf.cm]
+      - スピード:0.22[s/60°]
+      - 可動範囲:300[deg]
+- ソフトウェア
+  - [VerSpeedServo](https://github.com/netlabtoolkit/VarSpeedServo)
+    - アクチュエータの角度、速度を制御します。
+  ![工事中](https://4.bp.blogspot.com/-iXsqh1jkecI/XgNpGfsJq-I/AAAAAAAADxo/kYPeM1jk6aAce9M7UVWSsx3FnH2IetOpQCK4BGAYYCw/s400/%25E3%2581%25A9%25E3%2581%2586%25E3%2581%2597%25E3%2581%25A6%25E5%25A4%259C%25E4%25B8%25AD%25E3%2581%25AB%25E9%25A1%2594.png "工事中")
+
+***
