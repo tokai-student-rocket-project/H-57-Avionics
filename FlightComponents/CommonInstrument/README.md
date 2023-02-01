@@ -129,7 +129,7 @@ $$ h : \text{高度[m]}, P : \text{計測気圧[Pa]}, P_{0} : \text{基準気圧
 
 分離判定は**頂点検知+タイマー**です。
 
-![論理回路図](./Documents/SafetyReview/LogicDiagram.png)
+![論理回路図](./Documents/SafetyReview/LogicDiagram.drawio.png)
 
 #### 頂点検知
 
