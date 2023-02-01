@@ -50,7 +50,7 @@
 ![工事中](https://media.tenor.com/qEtHVSXW5ZkAAAAC/genba-neko-cat.gif "工事中")
 ### 運用方法
 #### 作業手順書
-- [こちら](.\docs\Manual.md)を参照してください。
+- [こちら](./docs/Manual.md)を参照してください。
 
 #### 起動
 - 
