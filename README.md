@@ -12,4 +12,6 @@ TSRP-H-57に搭載する計器類のプログラム及び設計書を保存す�
 
 ---
 
+![TSRP_Mark](FlightComponents\Telemeter\docs\images\TSRP_Mark.png)
+
 ©️ 1999 Tokai Student Rocket Project
