@@ -19,7 +19,7 @@
 > ![PWMケーブル](./images/Manual_ValveContoroler_PWM_up.JPG)
 >
 
-- [ ] PWMケーブルの接続 
+- [ ] :point_left:ヨシ！ PWMケーブルの接続 
 
 ***
 ## 2. サーボ用電源用ケーブルの接続
@@ -35,7 +35,7 @@
 > ![12V](./images/Manual_ValveContoroler_12V.JPG)
 >
 
-- [ ] サーボ用電源用ケーブルの接続
+- [ ] :point_left:ヨシ！ サーボ用電源用ケーブルの接続
 
 ***
 ## 3. 信号用ケーブルの接続
@@ -50,7 +50,7 @@
 > ![信号用](./images/Manual_ValveContoroler_Signal.JPG)
 >
 
-- [ ] 信号用ケーブルの接続
+- [ ] :point_left:ヨシ！ 信号用ケーブルの接続
 
 ***
 ## 4. 電源用ケーブルの接続
@@ -67,7 +67,7 @@
 > ![電源用](./images/Manual_ValveContoroler_Power.JPG)
 >
 
-- [ ] 電源用ケーブルの接続
+- [ ] :point_left:ヨシ！ 電源用ケーブルの接続
 
 ***
 ## 5. 確認用LEDケーブルの接続
@@ -93,7 +93,7 @@
 
 以上の手順までに接続したケーブルが接続されているか確認する。
 
-- [ ] これまでに接続したケーブルの確認
+- [ ] :point_left:ヨシ！ これまでに接続したケーブルの確認
 
 ***
 ## 7. 基板タワーの作成
@@ -123,7 +123,7 @@
 > ![印](./images/Manual_ValveContoroler_sirusi.JPG "黒色の印に合わせて組み立てる")
 >
 
-- [ ] 基板タワーの作成
+- [ ] :point_left:ヨシ！ 基板タワーの作成
 
 ***
 ## 8. UARTケーブルの接続
@@ -138,7 +138,7 @@
 > ![UART用ケーブル接続](./images/Manual_ValveContoroler_UART.JPG "UART用ケーブル接続")
 > 
 
-- [ ] UARTケーブルの接続
+- [ ] :point_left:ヨシ！ UARTケーブルの接続
 
 ***
 ## 9. 電源を入れる
@@ -151,16 +151,15 @@
 > ![工事中](https://pbs.twimg.com/media/ELFsyg4UUAAAVIC.jpg "工事中")
 > 
 
-- [ ] 電源を入れる
+- [ ] :point_left:ヨシ！ 電源を入れる
 
 ***
 # 10. ヨシ！
 
 **最終確認ヨシ！**
 
-:point_right:
 ![ヨシ！](https://memo-labo.com/material/nandemo1.gif "とにかくヨシ！")
 
-- [ ] ヨシ！
+- [ ] :point_left:ヨシ！
 
 ***
