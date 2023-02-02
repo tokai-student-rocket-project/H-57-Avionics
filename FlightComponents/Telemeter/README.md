@@ -7,14 +7,11 @@
     - [成功基準](#成功基準)
 - [H-57](#h-57)
   - [テレメトリー基板](#テレメトリー基板)
-    - [仕様](#仕様)
-  - [運用方法](#運用方法)
-    - [作業手順書](#作業手順書)
-    - [起動](#起動)
+    - [仕様（テレメトリー基板）](#仕様テレメトリー基板)
+    - [作業手順書（テレメトリー基板）](#作業手順書テレメトリー基板)
   - [バルブコントローラー基板](#バルブコントローラー基板)
-    - [仕様](#仕様-1)
-  - [運用方法](#運用方法-1)
-    - [作業手順書](#作業手順書-1)
+    - [仕様（バルブコントローラー基板）](#仕様バルブコントローラー基板)
+    - [作業手順書（バルブコントローラー基板）](#作業手順書バルブコントローラー基板)
 
 # 概要
 
@@ -32,11 +29,15 @@
   - 簡単なプログラムで見通し10km以上の通信が可能
   
 ### 成功基準
+![工事中](https://p100k.jp/wp-content/uploads/2021/03/EI4vUVMUYAAZzj7-1024x905-1-1.jpg "工事中")
+
+[目次へ戻る](#目次)
+***
 
 # H-57
 
 ## テレメトリー基板
-### 仕様
+### 仕様（テレメトリー基板）
 - ハードウェア
   - マイコンボード
     - [MKR WAN 1310](https://docs.arduino.cc/hardware/mkr-wan-1310)（Arduino公式HPより）
@@ -49,17 +50,15 @@
   - [Arduino_MKRGPS](https://github.com/arduino-libraries/Arduino_MKRGPS)
     - MKR GPS Shield用のライブラリです。緯度、経度だけでなく受信した衛星の数や速度も取得できます。
 ![工事中](https://media.tenor.com/qEtHVSXW5ZkAAAAC/genba-neko-cat.gif "工事中")
-## 運用方法
-### 作業手順書
+
+### 作業手順書（テレメトリー基板）
 - [こちら](./docs/Manual_Telematar.md)を参照してください。
 
-### 起動
-- 
-
+[目次へ戻る](#目次)
 ***
 
 ## バルブコントローラー基板
-### 仕様
+### 仕様（バルブコントローラー基板）
 - ハードウェア
   - マイコンボード
     - [ARDUINO NANO](https://docs.arduino.cc/hardware/nano?_gl=1*huj9p8*_ga*MTQ0MTM0MzY4MS4xNjYyMDAyMTMy*_ga_NEXN8H46L5*MTY3NTIyOTgwNi44OC4xLjE2NzUyMzAwODUuMC4wLjA.)（Arduino公式HPより）
@@ -78,6 +77,9 @@
     - アクチュエータの角度、速度を制御します。
   ![工事中](https://p100k.jp/wp-content/uploads/2021/03/EI4vUVMUYAAZzj7-1024x905-1-1.jpg "工事中")
 
-## 運用方法
-### 作業手順書
+### 作業手順書（バルブコントローラー基板）
 - [こちら](./docs/Manual_ValveContoroler.md)を参照してください。
+
+[目次へ戻る](#目次)
+
+***

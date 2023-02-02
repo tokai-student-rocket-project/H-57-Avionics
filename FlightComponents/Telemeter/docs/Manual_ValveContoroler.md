@@ -16,7 +16,7 @@
 >
 > 写真では片方にしか接続されていないが両方に接続すること
 > 
-> ![PWMケーブル](Manual_ValveContoroler_PWM_up.JPG)
+> ![PWMケーブル](./images/Manual_ValveContoroler_PWM_up.JPG)
 > 
 
 ***
@@ -30,7 +30,7 @@
 ***まだ、電源基板との接続は行わないこと。***
 
 > 写真では片方にしか接続されていないが両方に接続すること。
-> ![12V](Manual_ValveContoroler_12V.JPG)
+> ![12V](./images/Manual_ValveContoroler_12V.JPG)
 >
 
 ***
@@ -43,7 +43,7 @@
 入らない時は向きを確認して落ち着いて作業すること。
 
 > <!--4線ケーブルの色を変更する可能性があるので写真を差し替える。-->
-> ![信号用](Manual_ValveContoroler_Signal.JPG)
+> ![信号用](./images/Manual_ValveContoroler_Signal.JPG)
 >
 
 ***
@@ -58,7 +58,7 @@
 ***まだ、電源基板との接続は行わないこと。***
 
 >
-> ![電源用](Manual_ValveContoroler_Power.JPG)
+> ![電源用](./images/Manual_ValveContoroler_Power.JPG)
 >
 
 ***
@@ -73,7 +73,7 @@
 **LED3** にLED付きケーブル(緑)を接続する。
 
 >
-> ![LED](Manual_ValveContoroler_LED.JPG)
+> ![LED](./images/Manual_ValveContoroler_LED.JPG)
 > 
 
 ***
@@ -102,10 +102,13 @@
 
 右上に黒色の印を向け組み立てる。
 
+> テレメーター基板とバルブコントローラー基板を組み合わせた様子
+> 
+> ![基板タワー](./images/Manual_ValveContoroler_Tower.JPG "基板タワー")
 >
-> ![基板タワー](Manual_ValveContoroler_Tower.JPG "基板タワー")
->
-> ![印](Manual_ValveContoroler_sirusi.JPG "黒色の印に合わせて組み立てる")
+> 黒色の印を他の基板と合わせて組み立てる
+> 
+> ![印](./images/Manual_ValveContoroler_sirusi.JPG "黒色の印に合わせて組み立てる")
 >
 
 ***
@@ -118,7 +121,8 @@
 
 > 接続箇所に注意して接続すること。
 > 
-> ![UART用ケーブル接続](Manual_ValveContoroler_UART.JPG "UART用ケーブル接続")
+> ![UART用ケーブル接続](./images/Manual_ValveContoroler_UART.JPG "UART用ケーブル接続")
+> 
 
 ***
 ## 9. 電源を入れる
@@ -137,3 +141,5 @@
 **最終確認ヨシ！**
 
 ![ヨシ！](https://memo-labo.com/material/nandemo1.gif "とにかくヨシ！")
+
+***
