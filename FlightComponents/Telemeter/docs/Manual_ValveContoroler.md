@@ -127,11 +127,12 @@
 ***4. 電源用ケーブルの接続*** で接続したケーブルを電源基板の5V出力コネクタへ接続する。
 
 >
-> ![工事中](https://memo-labo.com/material/nandemo1.gif "工事中")
+> ![工事中](https://pbs.twimg.com/media/ELFsyg4UUAAAVIC.jpg "工事中")
 > 
 
 ***
-## 10. ヨシ！
+# 10. ヨシ！
 
 **最終確認ヨシ！**
-![ヨシ！](https://1.bp.blogspot.com/-M8_3WkgaSaI/X3KKPda5dzI/AAAAAABHkTw/3AfKwoKeKpQduSew8TuoPIVZTHnCou9yQCLcBGAsYHQ/s328/AS0007323_00.gif "ヨシ！")
+
+![ヨシ！](https://memo-labo.com/material/nandemo1.gif "とにかくヨシ！")
