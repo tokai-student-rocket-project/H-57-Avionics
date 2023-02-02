@@ -19,6 +19,9 @@ UARTと記載のあるところにUARTケーブルを接続する。
 >
 > ![UART](./images/Manual_Telematar_UART.JPG "UARTケーブルの接続")
 >
+
+- [ ] UARTケーブルの接続
+
 ***
 
 ## 2. 状態確認LEDの接続
@@ -43,6 +46,9 @@ PIN2にGPS受信確認用LEDを接続する。
 > 
 > ![LED](./images/Manual_Telematar_LED.JPG "LEDの接続")
 >
+
+- [ ] 状態確認LEDの接続
+
 ***
 
 ## 3. アンテナの接続
@@ -56,7 +62,9 @@ MKR WAN 1310へダイポールアンテナを写真の箇所へ接続する。�
 > このダイポールアンテナはMKRWAN1310専用品となっているので確認がとれない場合は専用品を用いること。
 > 
 > ![ダイポールアンテナ](./images/Manual_Telematar_Antenna.JPG "ダイポールアンテナの接続")
->  
+>
+
+- [ ] アンテナの接続
 
 ## 4. MKR GPS Shieldの接続
    - 用意するもの
@@ -70,7 +78,9 @@ MKR WAN 1310へダイポールアンテナを写真の箇所へ接続する。�
 > MKR WAN 1310とMKR GPS Shield用ケーブルが接続されていない場合にこの手順を踏む。
 > 
 > ![GPS](./images/Manual_Telematar_GPS.JPG "MKR GPS ShieldとMKR WAN 1310の接続") 
-> 
+>
+
+- [ ] MKR GPS Shieldの接続
 
 ## 5. 電源ポートの接続
    - 用意するもの
@@ -81,13 +91,15 @@ MKR WAN 1310へダイポールアンテナを写真の箇所へ接続する。�
 一つの方向にしか入らないため落ち着いて作業すること。
 
 > 
-> 
 > ***!!! 注意 !!!***
 >
 > ***!!! 電源基板への接続はまだ行わないこと !!!***
 > 
 > ![電源接続](./images/Manual_Telematar_Power.JPG "電源接続")
 >
+
+- [ ] 電源ポートの接続
+
 ***
 
 ## 6. 基板タワーの組み立て
@@ -111,6 +123,9 @@ MKR WAN 1310へダイポールアンテナを写真の箇所へ接続する。�
 > 
 > ![組み立て](./images/Manual_Telematar_Kumitate.JPG "計器タワーの組み立て")
 >
+
+- [ ] 基板タワーの組み立て
+
 ***
 
 ## 7. 電源を入れる
@@ -128,12 +143,16 @@ MKR WAN 1310へダイポールアンテナを写真の箇所へ接続する。�
 > ![電源接続](./images/Manual_Telematar_PowerConnect.JPG "電源接続")
 >
 
+- [ ]  電源を入れる
+
 ***
 # 8. ヨシ！
 
 **最終確認を行う。**
 
 ![ヨシ！](https://memo-labo.com/material/nandemo1.gif "とにかくヨシ！")
+
+- [ ]  ヨシ！
 
 ***
 
