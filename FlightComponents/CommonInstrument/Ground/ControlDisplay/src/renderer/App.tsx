@@ -95,7 +95,7 @@ const App = () => {
 
           <Content
             style={{
-              padding: '0 8px',
+              padding: '0 8px 16px 8px',
             }}
           >
             <Row style={{ height: '100%' }}>
@@ -127,18 +127,13 @@ const App = () => {
                       display: 'flex',
                       width: '100%',
                       justifyContent: 'center',
-                    }}
-                  >
-                    <GNSS />
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      justifyContent: 'center',
+                      alignItems: 'flex-end',
                     }}
                   >
                     <AltitudeIndicator />
+                    <div>
+                      <GNSS />
+                    </div>
                   </div>
                 </div>
               </Col>
