@@ -1,15 +1,13 @@
 #include <Wire.h>
-#include <SPI.h>
 #include <LoRa.h>
-#include <ArduinoJson.h>
 #include <TaskManager.h>
 #include <MsgPacketizer.h>
 #include "Altimeter.h"
 #include "IMU.h"
 #include "Logger.h"
+#include "Telemeter.h"
 #include "PullupPin.h"
 #include "OutputPin.h"
-#include "Telemeter.h"
 
 
 enum class FlightMode {
