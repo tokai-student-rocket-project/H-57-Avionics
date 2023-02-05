@@ -1,3 +1,12 @@
+![Avionics](./FlightComponents/Telemeter/docs/images/RGB_Avionics.jpg "Avionics")
+
+<!--
+いい感じの画像を挿入したい。
+参考にしたところ
+https://github.com/VoronDesign/Voron-Trident
+オープンソース3Dプリンタープロジェクト「VORON」
+-->
+
 # H-57 搭載計器
 
 TSRP-H-57に搭載する計器類のプログラム及び設計書を保存するレポジトリです。
