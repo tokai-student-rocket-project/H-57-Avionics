@@ -289,6 +289,13 @@ float flightTime() {
 }
 
 
+/// @brief 頂点分離設定かを返す。指定分離高度を0mに設定していれば頂点分離する
+/// @return True: 頂点分離, False: 指定高度分離
+bool isApogeeSeparation() {
+  return config::separation_altitude_m == 0.0;
+}
+
+
 /// @brief 飛行中かを返す。フライトモードで判断
 /// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
@@ -330,8 +337,8 @@ bool canSeparate() {
   // 分離保護時間なら分離実行不可
   if (millis() <= internal::_launchTime_ms + config::separation_protection_time_ms) return false;
 
-  // 分離指定高度が0mなら頂点分離なので降下中なら常に分離実行可能
-  if (config::separation_altitude_m == 0.0) return true;
+  // 頂点分離設定では降下中なら常に分離実行可能
+  if (isApogeeSeparation()) return true;
 
   // 指定分離高度を下回れば分離実行可能
   return  flightData::_altitude_m <= config::separation_altitude_m;
