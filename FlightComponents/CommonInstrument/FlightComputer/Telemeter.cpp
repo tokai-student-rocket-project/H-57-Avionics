@@ -4,28 +4,28 @@
 #include "Telemeter.h"
 
 
-void Telemeter::reservePacket(const uint8_t* data, const size_t size) {
-  if (_offset + size > sizeof(_buffer) / sizeof(_buffer[0])) return;
+void Telemeter::stackPacket(const uint8_t* data, const size_t size) {
+  if (_stackOffset + size > sizeof(_stack) / sizeof(_stack[0])) return;
 
   for (size_t i = 0; i < size; i++)
   {
-    _buffer[_offset + i] = data[i];
+    _stack[_stackOffset + i] = data[i];
   }
 
-  _offset += size;
+  _stackOffset += size;
 }
 
 
-void Telemeter::sendDownlink() {
+void Telemeter::sendStackedData() {
   if (LoRa.beginPacket()) {
-    LoRa.write(_buffer, _offset);
+    LoRa.write(_stack, _stackOffset);
     LoRa.endPacket(true);
-    _offset = 0;
+    _stackOffset = 0;
   }
 }
 
 
-void Telemeter::sendStatus(
+void Telemeter::stackStatus(
   uint8_t flightMode,
   bool flightPinState, bool shiranui3State, bool buzzerState,
   float v33Voltage, float v5Voltage, float v12Voltage
@@ -37,11 +37,11 @@ void Telemeter::sendStatus(
     v33Voltage, v5Voltage, v12Voltage
   );
 
-  reservePacket(packet.data.data(), packet.data.size());
+  stackPacket(packet.data.data(), packet.data.size());
 }
 
 
-void Telemeter::sendFlightData(
+void Telemeter::stackFlightData(
   float flightTime,
   float altitude, float acceleration,
   float yaw, float pitch, float roll
@@ -53,11 +53,11 @@ void Telemeter::sendFlightData(
     yaw, pitch, roll
   );
 
-  reservePacket(packet.data.data(), packet.data.size());
+  stackPacket(packet.data.data(), packet.data.size());
 }
 
 
-void Telemeter::sendConfig(
+void Telemeter::stackConfig(
   float separationAltitude,
   float basePressure,
   float burnTime,
@@ -75,12 +75,12 @@ void Telemeter::sendConfig(
     landingTime
   );
 
-  reservePacket(packet.data.data(), packet.data.size());
+  stackPacket(packet.data.data(), packet.data.size());
 }
 
-void Telemeter::sendEvent(
-  float flightTime,
-  String event
+void Telemeter::stackEvent(
+  String event,
+  float flightTime
 ) {
   const auto& packet = MsgPacketizer::encode(
     eventLabel,
@@ -91,5 +91,5 @@ void Telemeter::sendEvent(
 
   _event_count++;
 
-  reservePacket(packet.data.data(), packet.data.size());
+  stackPacket(packet.data.data(), packet.data.size());
 }

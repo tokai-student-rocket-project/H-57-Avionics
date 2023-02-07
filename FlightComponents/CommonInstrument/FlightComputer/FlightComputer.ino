@@ -106,7 +106,7 @@ void setup() {
   // LoRa 40ch
   LoRa.begin(923.8E6);
 
-  downlinkEvent("INITIALIZE");
+  device::_telemeter.stackEvent("INITIALIZE", flightTime());
 
   device::_altimeter.initialize();
   device::_imu.initialize();
@@ -117,7 +117,7 @@ void setup() {
 
   MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
-  downlinkEvent("START");
+  device::_telemeter.stackEvent("START", flightTime());
 }
 
 
@@ -138,14 +138,15 @@ void mainRoutine() {
   }
 
   if (canReset()) {
-    downlinkEvent("RESET");
+    device::_telemeter.stackEvent("RESET", flightTime());
+
     reset();
     device::_logger.initialize();
     changeFlightMode(FlightMode::STANDBY);
   }
 
   if (canSeparateForce()) {
-    downlinkEvent("FORCE-SEPARATE");
+    device::_telemeter.stackEvent("FORCE-SEPARATE", flightTime());
     separate();
     internal::_isForceSeparated = true;
     changeFlightMode(FlightMode::PARACHUTE);
@@ -154,12 +155,39 @@ void mainRoutine() {
 
 
 void downlinkRoutine() {
-  downlinkStatus();
-  downlinkFlightData();
-  downlinkConfig();
+  device::_telemeter.stackStatus(
+    static_cast<uint8_t>(internal::_flightMode),
+    device::_flightPin.isOpen(),
+    device::_shiranui3.isOn(),
+    device::_buzzer.isOn(),
+    flightData::_voltage33,
+    flightData::_voltage5,
+    flightData::_voltage12
+  );
+
+  if (isFlying()) {
+    device::_telemeter.stackFlightData(
+      flightTime(),
+      flightData::_altitude_m,
+      flightData::_acceleration_x_g + flightData::_acceleration_y_g + flightData::_acceleration_z_g,
+      flightData::_yaw,
+      flightData::_pitch,
+      flightData::_roll
+    );
+  }
+  else {
+    device::_telemeter.stackConfig(
+      config::separation_altitude_m,
+      device::_altimeter.getReferencePressure() / 100.0,
+      config::burn_time_ms / 1000.0,
+      config::separation_protection_time_ms / 1000.0,
+      config::force_separation_time_ms / 1000.0,
+      config::landing_time_ms / 1000.0
+    );
+  }
 
   device::_commandIndicator.on();
-  device::_telemeter.sendDownlink();
+  device::_telemeter.sendStackedData();
   device::_commandIndicator.off();
 }
 
@@ -237,59 +265,6 @@ void writeLog() {
   );
 }
 
-
-/// @brief イベントをダウンリンクで送信する
-/// @param event イベント
-void downlinkEvent(String event) {
-  device::_telemeter.sendEvent(
-    flightTime(),
-    event
-  );
-}
-
-
-/// @brief ステータスをダウンリンクで送信する
-void downlinkStatus() {
-  device::_telemeter.sendStatus(
-    static_cast<uint8_t>(internal::_flightMode),
-    device::_flightPin.isOpen(),
-    device::_shiranui3.isOn(),
-    device::_buzzer.isOn(),
-    flightData::_voltage33,
-    flightData::_voltage5,
-    flightData::_voltage12
-  );
-}
-
-
-/// @brief フライトデータをダウンリンクで送信する
-void downlinkFlightData() {
-  if (!isFlying()) return;
-
-  device::_telemeter.sendFlightData(
-    flightTime(),
-    flightData::_altitude_m,
-    flightData::_acceleration_x_g + flightData::_acceleration_y_g + flightData::_acceleration_z_g,
-    flightData::_yaw,
-    flightData::_pitch,
-    flightData::_roll
-  );
-}
-
-
-/// @brief コンフィグをダウンリンクで送信する
-void downlinkConfig() {
-  if (isFlying()) return;
-
-  device::_telemeter.sendConfig(
-    config::separation_altitude_m,
-    device::_altimeter.getReferencePressure() / 100.0,
-    config::burn_time_ms / 1000.0,
-    config::separation_protection_time_ms / 1000.0,
-    config::force_separation_time_ms / 1000.0,
-    config::landing_time_ms / 1000.0
-  );
-}
 
 /// @brief 飛行時間を返す。飛行中でなければ -1.0 を返す
 /// @return 飛行時間 [s]
@@ -385,27 +360,27 @@ void updateFlightMode() {
       // フライトピンのチャタリング対策で10回連続を取るため、0.1secのタイムラグが出る。
       internal::_launchTime_ms = millis() - 100;
       changeFlightMode(FlightMode::THRUST);
-      downlinkEvent("LAUNCH");
+      device::_telemeter.stackEvent("LAUNCH", flightTime());
     };
     break;
 
   case FlightMode::THRUST:
     if (isBurnout()) {
-      downlinkEvent("BURNOUT");
+      device::_telemeter.stackEvent("BURNOUT", flightTime());
       changeFlightMode(FlightMode::CLIMB);
     }
     break;
 
   case FlightMode::CLIMB:
     if (device::_altimeter.isDescending()) {
-      downlinkEvent("APOGEE");
+      device::_telemeter.stackEvent("APOGEE", flightTime());
       changeFlightMode(FlightMode::DESCENT);
     }
     break;
 
   case FlightMode::DESCENT:
     if (canSeparate()) {
-      downlinkEvent("SEPARATE");
+      device::_telemeter.stackEvent("SEPARATE", flightTime());
       separate();
       changeFlightMode(FlightMode::PARACHUTE);
     }
@@ -413,7 +388,7 @@ void updateFlightMode() {
 
   case FlightMode::PARACHUTE:
     if (isLanded()) {
-      downlinkEvent("LAND");
+      device::_telemeter.stackEvent("LAND", flightTime());
       changeFlightMode(FlightMode::LAND);
     }
   }
@@ -442,7 +417,7 @@ void executeCommand(uint8_t command, float payload) {
 
   device::_commandIndicator.on();
 
-  downlinkEvent("CONFIG-UPDATE");
+  device::_telemeter.stackEvent("CONFIG-UPDATE", flightTime());
 
   switch (command)
   {
