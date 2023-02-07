@@ -48,7 +48,7 @@ public:
   );
 
   void stackEvent(
-    String event,
+    uint8_t event,
     float flightTime
   );
 };

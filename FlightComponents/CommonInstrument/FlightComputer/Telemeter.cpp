@@ -79,7 +79,7 @@ void Telemeter::stackConfig(
 }
 
 void Telemeter::stackEvent(
-  String event,
+  uint8_t event,
   float flightTime
 ) {
   const auto& packet = MsgPacketizer::encode(

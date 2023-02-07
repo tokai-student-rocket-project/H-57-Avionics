@@ -21,9 +21,23 @@ const Progress = () => {
   useEffect(() => {
     window.electronAPI.eventRecieved((_, id, flightTime, event) => {
       if (id === latestEvent?.id) return;
-      setLatestEvent({ id, flightTime, event });
 
-      if (event === 'RESET') {
+      const eventText = [
+        'INITIALIZE',
+        'START',
+        'LAUNCH',
+        'BURNOUT',
+        'APOGEE',
+        'SEPARATE',
+        'FORCE_SEPARATE',
+        'LAND',
+        'RESET',
+        'CONFIG_UPDATE',
+      ][Number(event)];
+
+      setLatestEvent({ id, flightTime, event: eventText });
+
+      if (eventText === 'RESET') {
         setStepProgress(0);
         setLaunchTime(undefined);
         setBurnoutTime(undefined);
@@ -31,23 +45,23 @@ const Progress = () => {
         setSeparationTime(undefined);
         setLandTime(undefined);
       }
-      if (event === 'LAUNCH') {
+      if (eventText === 'LAUNCH') {
         setStepProgress(1);
         setLaunchTime(flightTime);
       }
-      if (event === 'BURNOUT') {
+      if (eventText === 'BURNOUT') {
         setStepProgress(2);
         setBurnoutTime(flightTime);
       }
-      if (event === 'APOGEE') {
+      if (eventText === 'APOGEE') {
         setStepProgress(3);
         setApogeeTime(flightTime);
       }
-      if (event === 'SEPARATE' || event === 'FORCE-SEPARATE') {
+      if (eventText === 'SEPARATE' || eventText === 'FORCE-SEPARATE') {
         setStepProgress(4);
         setSeparationTime(flightTime);
       }
-      if (event === 'LAND') {
+      if (eventText === 'LAND') {
         setStepProgress(5);
         setLandTime(flightTime);
       }
@@ -55,7 +69,7 @@ const Progress = () => {
       notificationApi.open({
         message: `${
           flightTime < 0 ? '' : `[T+${flightTime.toFixed(2)}]`
-        } ${event}`,
+        } ${eventText}`,
         placement: 'bottomLeft',
       });
     });

@@ -20,6 +20,20 @@ enum class FlightMode {
 };
 
 
+enum class Event {
+  INITIALIZE,
+  START,
+  LAUNCH,
+  BURNOUT,
+  APOGEE,
+  SEPARATE,
+  FORCE_SEPARATE,
+  LAND,
+  RESET,
+  CONFIG_UPDATE
+};
+
+
 namespace device {
   // 気圧, 気温, 湿度センサ
   Altimeter _altimeter;
@@ -106,7 +120,7 @@ void setup() {
   // LoRa 40ch
   LoRa.begin(923.8E6);
 
-  device::_telemeter.stackEvent("INITIALIZE", flightTime());
+  device::_telemeter.stackEvent(static_cast<uint8_t>(Event::INITIALIZE), flightTime());
 
   device::_altimeter.initialize();
   device::_imu.initialize();
@@ -117,7 +131,7 @@ void setup() {
 
   MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
-  device::_telemeter.stackEvent("START", flightTime());
+  device::_telemeter.stackEvent(static_cast<uint8_t>(Event::START), flightTime());
 }
 
 
@@ -138,7 +152,7 @@ void mainRoutine() {
   }
 
   if (canReset()) {
-    device::_telemeter.stackEvent("RESET", flightTime());
+    device::_telemeter.stackEvent(static_cast<uint8_t>(Event::RESET), flightTime());
 
     reset();
     device::_logger.initialize();
@@ -146,7 +160,7 @@ void mainRoutine() {
   }
 
   if (canSeparateForce()) {
-    device::_telemeter.stackEvent("FORCE-SEPARATE", flightTime());
+    device::_telemeter.stackEvent(static_cast<uint8_t>(Event::FORCE_SEPARATE), flightTime());
     separate();
     internal::_isForceSeparated = true;
     changeFlightMode(FlightMode::PARACHUTE);
@@ -360,27 +374,27 @@ void updateFlightMode() {
       // フライトピンのチャタリング対策で10回連続を取るため、0.1secのタイムラグが出る。
       internal::_launchTime_ms = millis() - 100;
       changeFlightMode(FlightMode::THRUST);
-      device::_telemeter.stackEvent("LAUNCH", flightTime());
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::LAUNCH), flightTime());
     };
     break;
 
   case FlightMode::THRUST:
     if (isBurnout()) {
-      device::_telemeter.stackEvent("BURNOUT", flightTime());
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::BURNOUT), flightTime());
       changeFlightMode(FlightMode::CLIMB);
     }
     break;
 
   case FlightMode::CLIMB:
     if (device::_altimeter.isDescending()) {
-      device::_telemeter.stackEvent("APOGEE", flightTime());
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::APOGEE), flightTime());
       changeFlightMode(FlightMode::DESCENT);
     }
     break;
 
   case FlightMode::DESCENT:
     if (canSeparate()) {
-      device::_telemeter.stackEvent("SEPARATE", flightTime());
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::SEPARATE), flightTime());
       separate();
       changeFlightMode(FlightMode::PARACHUTE);
     }
@@ -388,7 +402,7 @@ void updateFlightMode() {
 
   case FlightMode::PARACHUTE:
     if (isLanded()) {
-      device::_telemeter.stackEvent("LAND", flightTime());
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::LAND), flightTime());
       changeFlightMode(FlightMode::LAND);
     }
   }
@@ -417,7 +431,7 @@ void executeCommand(uint8_t command, float payload) {
 
   device::_commandIndicator.on();
 
-  device::_telemeter.stackEvent("CONFIG-UPDATE", flightTime());
+  device::_telemeter.stackEvent(static_cast<uint8_t>(Event::CONFIG_UPDATE), flightTime());
 
   switch (command)
   {
