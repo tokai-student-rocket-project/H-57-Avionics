@@ -117,8 +117,6 @@ void setup() {
 
   MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
-  reset();
-
   downlinkEvent("START");
 }
 
@@ -189,7 +187,7 @@ void updateFlightData() {
     &flightData::_pitch,
     &flightData::_roll);
 
-  // 測定電圧 = ADC出力値 / 分解能 * 最大電圧 * 電圧係数
+  // 測定電圧 = ADC出力値 / 精度 * 最大電圧 * 電圧係数
   // 電圧係数 = 基準電圧 / 2.4
   flightData::_voltage33 = analogRead(A6) / 1024.0 * 3.3 * 1.37;
   flightData::_voltage5 = analogRead(A5) / 1024.0 * 3.3 * 2.08;
