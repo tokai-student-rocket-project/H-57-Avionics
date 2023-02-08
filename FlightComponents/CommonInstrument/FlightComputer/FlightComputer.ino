@@ -128,6 +128,8 @@ void setup() {
   Tasks.add(mainRoutine)->startIntervalMsec(10);
   Tasks.add(downlinkRoutine)->startIntervalMsec(500);
   Tasks.add("TurnOffShiranuiTask", turnOffShiranuiTask);
+  Tasks.add(buzzerOnTask)->startIntervalMsec(1000);
+  Tasks.add("BuzzerOffTask", buzzerOffTask);
 
   MsgPacketizer::subscribe(LoRa, 0xF3, [](uint8_t command, float payload) {executeCommand(command, payload);});
 
@@ -209,6 +211,17 @@ void downlinkRoutine() {
 void turnOffShiranuiTask() {
   device::_shiranui3.off();
   device::_buzzer.on();
+}
+
+void buzzerOnTask() {
+  if (!isFlying() || internal::_flightMode == FlightMode::PARACHUTE) return;
+
+  device::_buzzer.on();
+  Tasks["BuzzerOffTask"]->startOnceAfterMsec(200);
+}
+
+void buzzerOffTask() {
+  device::_buzzer.off();
 }
 
 
