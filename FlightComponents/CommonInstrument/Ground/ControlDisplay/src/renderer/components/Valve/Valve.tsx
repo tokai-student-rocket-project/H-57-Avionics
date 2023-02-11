@@ -21,7 +21,7 @@ const getValve = (
     return mcsi;
   }
 
-  if (mainServoDegrees === 140.0) {
+  if (mainServoDegrees === 37.0) {
     if (supplyServoDegrees === 0.0) return moso;
     if (supplyServoDegrees === 60.0) return mosc;
     return mosi;
@@ -43,7 +43,7 @@ const Valve = () => {
   useEffect(() => {
     if (mainServoDegrees === 0 && supplyServoDegrees === 0) {
       setServoPosition('WAITING');
-    } else if (mainServoDegrees === 140 && supplyServoDegrees === 60) {
+    } else if (mainServoDegrees === 37 && supplyServoDegrees === 60) {
       setServoPosition('LAUNCH');
     } else {
       setServoPosition('INVALID');
