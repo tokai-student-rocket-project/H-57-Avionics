@@ -56,7 +56,7 @@ const MapView = () => {
     >
       <TileLayer
         attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
-        url={`${window.location.origin}/map/tile/{z}/{x}/{y}.jpg`}
+        url={`${window.location.origin}/map/tile/{z}/{x}/{y}.png`}
       />
       <Marker position={center} />
       <ChangeCenter center={center} />

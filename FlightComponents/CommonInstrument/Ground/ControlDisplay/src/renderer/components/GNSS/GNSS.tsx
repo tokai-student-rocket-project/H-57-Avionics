@@ -4,11 +4,13 @@ import { FaSatellite } from 'react-icons/fa';
 import { emphasisMidium } from '../../utilities/colors';
 
 const DegToDms = (degrees: number): string => {
-  const minits = (degrees - Math.floor(degrees)) * 60;
-  const seconds = (minits - Math.floor(minits)) * 60;
-  return `${Math.floor(degrees)}° ${Math.floor(seconds)}' ${
-    Math.floor(seconds * 100) / 100
-  }" `;
+  const minutesSeconds =
+    // eslint-disable-next-line prefer-template
+    parseFloat('0.' + degrees.toString().split('.')[1]) * 60;
+  return `${Math.trunc(degrees)}°${Math.trunc(minutesSeconds)}'${
+    // eslint-disable-next-line prefer-template
+    (parseFloat('0.' + minutesSeconds.toString().split('.')[1]) * 60).toFixed(2)
+  }"`;
 };
 
 const GNSS = () => {
