@@ -61,7 +61,7 @@ void setup()
 void loop()
 {
     // WaitingポジションかつLaunch信号がHIGHならLCountを加算する。それ以外ならLCountを0にリセットする
-    //if (Position == 1 && digitalRead(2) == LOW) //NANO?
+    //if (Position == 1 && digitalRead(2) == LOW) //NANO
     if (Position == 1 && digitalRead(3) == LOW) //UNO
     {
         LCount++;
@@ -82,7 +82,7 @@ void loop()
     }
 
     // 以下、WaitingとLaunchが逆になったバージョン
-    //if (Position == 2 && digitalRead(3) == LOW) //NANO?
+    //if (Position == 2 && digitalRead(3) == LOW) //NANO
     if (Position == 2 && digitalRead(2) == LOW) //UNO
     {
         WCount++;
@@ -120,11 +120,11 @@ void loop()
 }
 void L_Position()
 {
-    Supplyservo.write(80, 90, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
+    Supplyservo.write(80, 60, true); // SupplyServo CLOSE //0がMAX Speed Fill弁が閉まる時間:???s
     //FILLバルブ：80度で閉
-    delay(200);
+    //delay(200);
     // 2023/1/21 フローテック -=> Sweagelock にバルブ変更
-    Mainservo.write(57, 90, true); // UNO //NANO
+    Mainservo.write(57, 50, true); // UNO //NANO
 
     // digitalWrite(LED_BUILTIN, HIGH);
     digitalWrite(5, HIGH); //NANO
