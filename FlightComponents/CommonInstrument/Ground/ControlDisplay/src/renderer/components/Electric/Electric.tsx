@@ -112,7 +112,7 @@ const Electric = () => {
           marginTop: '8px',
         }}
       >
-        <div style={{ color: emphasisMidium }}>回路電圧</div>
+        <div style={{ color: emphasisMidium }}>回路</div>
         <div />
         <div
           style={{
@@ -127,7 +127,7 @@ const Electric = () => {
           <span style={{ fontSize: '1.125em', marginLeft: '4px' }}>V</span>
           <span style={{ marginLeft: '4px' }}>/ 3.3V</span>
         </div>
-        <div style={{ color: emphasisMidium }}>供給電圧 1</div>
+        <div style={{ color: emphasisMidium }}>供給1</div>
         <div />
         <div
           style={{
@@ -142,7 +142,7 @@ const Electric = () => {
           <span style={{ fontSize: '1.125em', marginLeft: '4px' }}>V</span>
           <span style={{ marginLeft: '4px' }}>/ 5V</span>
         </div>
-        <div style={{ color: emphasisMidium }}>供給電圧 2</div>
+        <div style={{ color: emphasisMidium }}>供給2</div>
         <div />
         <div
           style={{

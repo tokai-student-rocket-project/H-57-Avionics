@@ -63,15 +63,15 @@ namespace config {
   float separation_altitude_m = config::DEFAULT_SEPARATION_ALTITUDE_m;
 
   // 想定燃焼時間 [ms]
-  constexpr uint32_t DEFAULT_BURN_TIME_ms = 1350;
+  constexpr uint32_t DEFAULT_BURN_TIME_ms = 1400;
   uint32_t burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 7787;
+  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 6487;
   uint32_t separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 11787;
+  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 10487;
   uint32_t force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 
   // 想定着地時間 [ms]
