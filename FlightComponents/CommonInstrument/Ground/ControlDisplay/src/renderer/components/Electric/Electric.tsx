@@ -104,11 +104,17 @@ const Electric = () => {
         {getBatteryLevel(voltage12) < 60 && <div>バルブシステム動作不可</div>}
         {getBatteryLevel(voltage12) < 55 && <div>不知火動作不可</div>}
       </div>
-      <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
-          ロジック
-        </span>
-        <span
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr auto auto',
+          alignItems: 'end',
+          marginTop: '8px',
+        }}
+      >
+        <div style={{ color: emphasisMidium }}>回路</div>
+        <div />
+        <div
           style={{
             fontSize: '1.25em',
             color: getV33Color(voltage33),
@@ -116,22 +122,14 @@ const Electric = () => {
           }}
         >
           {voltage33}
-        </span>
-        <span
-          style={{
-            fontSize: '1.25em',
-            color: emphasisMidium,
-            marginLeft: '8px',
-          }}
-        >
-          V
-        </span>
-      </div>
-      <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
-          5V供給
-        </span>
-        <span
+        </div>
+        <div style={{ color: emphasisMidium }}>
+          <span style={{ fontSize: '1.125em', marginLeft: '4px' }}>V</span>
+          <span style={{ marginLeft: '4px' }}>/ 3.3V</span>
+        </div>
+        <div style={{ color: emphasisMidium }}>供給1</div>
+        <div />
+        <div
           style={{
             fontSize: '1.25em',
             color: getV5Color(voltage5),
@@ -139,22 +137,14 @@ const Electric = () => {
           }}
         >
           {voltage5}
-        </span>
-        <span
-          style={{
-            fontSize: '1.25em',
-            color: emphasisMidium,
-            marginLeft: '8px',
-          }}
-        >
-          V
-        </span>
-      </div>
-      <div style={{ display: 'flex', marginTop: '8px' }}>
-        <span style={{ color: emphasisMidium, margin: 'auto auto auto 0' }}>
-          12V供給
-        </span>
-        <span
+        </div>
+        <div style={{ color: emphasisMidium }}>
+          <span style={{ fontSize: '1.125em', marginLeft: '4px' }}>V</span>
+          <span style={{ marginLeft: '4px' }}>/ 5V</span>
+        </div>
+        <div style={{ color: emphasisMidium }}>供給2</div>
+        <div />
+        <div
           style={{
             fontSize: '1.25em',
             color: getV12Color(voltage12),
@@ -162,16 +152,11 @@ const Electric = () => {
           }}
         >
           {voltage12}
-        </span>
-        <span
-          style={{
-            fontSize: '1.25em',
-            color: emphasisMidium,
-            marginLeft: '8px',
-          }}
-        >
-          V
-        </span>
+        </div>
+        <div style={{ color: emphasisMidium }}>
+          <span style={{ fontSize: '1.125em', marginLeft: '4px' }}>V</span>
+          <span style={{ marginLeft: '4px' }}>/ 12V</span>
+        </div>
       </div>
     </Card>
   );

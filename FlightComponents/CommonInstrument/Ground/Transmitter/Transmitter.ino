@@ -87,7 +87,7 @@ void setup() {
     [](
       uint32_t id,
       float flightTime,
-      String event
+      uint8_t event
       )
     {
       downlinkPacket["id"] = id;

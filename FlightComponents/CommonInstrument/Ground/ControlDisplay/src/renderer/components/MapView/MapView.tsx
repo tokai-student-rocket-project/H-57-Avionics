@@ -74,7 +74,7 @@ const MapView = () => {
       >
         <Tooltip>Launcher</Tooltip>
       </Circle>
-      <Polygon
+      {/* <Polygon
         pathOptions={{ color: '#46c46d' }}
         positions={[
           [42.517662551560605, 143.4408444423992],
@@ -119,7 +119,7 @@ const MapView = () => {
         ]}
       >
         <Tooltip>Hard</Tooltip>
-      </Polygon>
+      </Polygon> */}
     </MapContainer>
   );
 };

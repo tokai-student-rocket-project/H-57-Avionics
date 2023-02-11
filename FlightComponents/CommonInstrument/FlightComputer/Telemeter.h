@@ -9,17 +9,17 @@ private:
   uint8_t configLabel = 0x03;
   uint8_t eventLabel = 0x04;
 
-  uint8_t _buffer[256];
-  uint32_t _offset;
+  uint8_t _stack[256];
+  uint32_t _stackOffset;
 
   uint32_t _event_count;
 
-  void reservePacket(const uint8_t* data, const size_t size);
+  void stackPacket(const uint8_t* data, const size_t size);
 
 public:
-  void sendDownlink();
+  void sendStackedData();
 
-  void sendStatus(
+  void stackStatus(
     uint8_t flightMode,
     bool flightPinState,
     bool shiranui3State,
@@ -29,7 +29,7 @@ public:
     float v12State
   );
 
-  void sendFlightData(
+  void stackFlightData(
     float flightTime,
     float altitude,
     float acceleration,
@@ -38,7 +38,7 @@ public:
     float roll
   );
 
-  void sendConfig(
+  void stackConfig(
     float separationAltitude,
     float basePressure,
     float burnTime,
@@ -47,9 +47,9 @@ public:
     float landingTime
   );
 
-  void sendEvent(
-    float flightTime,
-    String event
+  void stackEvent(
+    uint8_t event,
+    float flightTime
   );
 };
 
