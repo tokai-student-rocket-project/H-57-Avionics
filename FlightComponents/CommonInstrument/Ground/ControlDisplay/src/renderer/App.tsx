@@ -15,6 +15,7 @@ import MapView from './components/MapView';
 import Electric from './components/Electric';
 import Mission from './components/Mission';
 import Progress from './components/Progress';
+import Emergency from './components/Emergency';
 
 const { Header, Content } = Layout;
 
@@ -133,6 +134,7 @@ const App = () => {
                     <AltitudeIndicator />
                     <div>
                       <GNSS />
+                      <Emergency />
                     </div>
                   </div>
                 </div>

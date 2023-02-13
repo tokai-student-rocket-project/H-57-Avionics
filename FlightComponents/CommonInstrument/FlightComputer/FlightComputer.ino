@@ -30,7 +30,8 @@ enum class Event {
   FORCE_SEPARATE,
   LAND,
   RESET,
-  CONFIG_UPDATE
+  CONFIG_UPDATE,
+  EMERGENCY_SEPARATE
 };
 
 
@@ -443,8 +444,9 @@ void changeFlightMode(FlightMode nextMode) {
 /// @param command 0x01:基準気圧
 /// @param command 0x02:想定燃焼時間
 /// @param command 0x03:分離保護時間
-/// @param command 0x04 強制分離時間
+/// @param command 0x04:強制分離時間
 /// @param command 0x05:想定着地時間
+/// @param command 0xFF:緊急分離
 /// @param payload 
 void executeCommand(uint8_t command, float payload) {
   if (isFlying()) return;
@@ -473,6 +475,11 @@ void executeCommand(uint8_t command, float payload) {
   case 0x05: // 想定着地時間
     config::landing_time_ms = payload ? payload * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
     break;
+  case 0xFF: // 緊急分離
+    device::_telemeter.stackEvent(static_cast<uint8_t>(Event::EMERGENCY_SEPARATE), flightTime());
+    separate();
+    internal::_isForceSeparated = true;
+    changeFlightMode(FlightMode::PARACHUTE);
   default:
     break;
   }

@@ -33,6 +33,7 @@ const Progress = () => {
         'LAND',
         'RESET',
         'CONFIG_UPDATE',
+        'EMERGENCY_SEPARATE',
       ][Number(event)];
 
       setLatestEvent({ id, flightTime, event: eventText });
@@ -57,7 +58,11 @@ const Progress = () => {
         setStepProgress(3);
         setApogeeTime(flightTime);
       }
-      if (eventText === 'SEPARATE' || eventText === 'FORCE-SEPARATE') {
+      if (
+        eventText === 'SEPARATE' ||
+        eventText === 'FORCE-SEPARATE' ||
+        eventText === 'EMERGENCY_SEPARATE'
+      ) {
         setStepProgress(4);
         setSeparationTime(flightTime);
       }

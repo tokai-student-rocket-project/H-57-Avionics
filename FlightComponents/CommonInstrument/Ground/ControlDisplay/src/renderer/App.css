@@ -65,6 +65,15 @@ body {
   border: 0 !important;
 }
 
+.ant-btn-dangerous {
+  background-color: transparent;
+  border: 0 !important;
+}
+
+.ant-switch-checked {
+  background-color: #FF1744 !important;
+}
+
 .ant-divider {
   color: #F7F7F7 !important;
   border-color: #999999 !important;
