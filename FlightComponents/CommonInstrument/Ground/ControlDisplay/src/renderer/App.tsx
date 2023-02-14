@@ -32,6 +32,21 @@ const App = () => {
   useEffect(() => {
     window.electronAPI.eventRecieved((_, id, flightTime, event) => {
       if (id === latestEvent?.id) return;
+
+      const eventText = [
+        'INITIALIZE',
+        'START',
+        'LAUNCH',
+        'BURNOUT',
+        'APOGEE',
+        'SEPARATE',
+        'FORCE-SEPARATE',
+        'LAND',
+        'RESET',
+        'CONFIG-UPDATE',
+        'EMERGENCY-SEPARATE',
+      ][Number(event)];
+
       if (
         event === 'LAUNCH' ||
         event === 'BURNOUT' ||
@@ -42,11 +57,12 @@ const App = () => {
       )
         return;
 
-      setLatestEvent({ id, flightTime, event });
+      setLatestEvent({ id, flightTime, event: eventText });
+
       notificationApi.open({
         message: `${
           flightTime < 0 ? '' : `[T+${flightTime.toFixed(2)}]`
-        } ${event}`,
+        } ${eventText}`,
         placement: 'bottomLeft',
       });
     });
