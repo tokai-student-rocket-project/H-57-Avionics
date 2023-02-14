@@ -1,12 +1,11 @@
 import { Card, Button, Switch } from 'antd';
 import { useState } from 'react';
-import { emphasisMidium, red } from '../../utilities/colors';
+import { emphasisMidium } from '../../utilities/colors';
 
 const Emergency = () => {
   const [canExecute, setCanExecute] = useState<boolean>(false);
 
   const emergencySeparate = () => {
-    console.log('エマセパ');
     window.electronAPI.sendConfig('es', '0');
   };
 

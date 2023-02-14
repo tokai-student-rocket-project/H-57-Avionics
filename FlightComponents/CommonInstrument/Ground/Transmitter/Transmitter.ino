@@ -126,7 +126,7 @@ void loop() {
     // 想定着地時間
     if (upPacket["l"] == "l") sendCommand(0x05, payload);
     // 緊急分離
-    if (upPacket["es"] == "es") sendCommand(0xFF, payload);
+    if (upPacket["l"] == "es") sendCommand(0xFF, payload);
 
     upPacket.clear();
   }

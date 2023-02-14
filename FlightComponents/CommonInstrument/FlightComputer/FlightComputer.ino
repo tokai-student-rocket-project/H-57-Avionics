@@ -449,8 +449,6 @@ void changeFlightMode(FlightMode nextMode) {
 /// @param command 0xFF:緊急分離
 /// @param payload 
 void executeCommand(uint8_t command, float payload) {
-  if (isFlying()) return;
-
   device::_commandIndicator.on();
 
   device::_telemeter.stackEvent(static_cast<uint8_t>(Event::CONFIG_UPDATE), flightTime());
