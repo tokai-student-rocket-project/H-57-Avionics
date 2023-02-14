@@ -103,5 +103,38 @@
 - [ ] :point_left:イグナイター用の予備クランプ
   - 過去に破損した例あり
 - [ ] :point_left:丸形圧着端子【特に指定なし】(在庫)
+---
+
+**追加物品**
+
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
+- [ ] :point_left:
 
 ---
+
+- [ ] 1回目 堤
+- [ ] 2回目 岩井
+- [ ] 3回目 内田
+
+![確認](https://i.pinimg.com/236x/58/37/20/583720088beb6cd904f5ae1cd72f853d.jpg)
