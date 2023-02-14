@@ -136,7 +136,7 @@ const Config = () => {
         <Row style={{ marginTop: '12px' }}>
           <Col span={12}>
             <Statistic
-              title="想定燃焼時間"
+              title="想定モータ動作時間"
               suffix="sec"
               valueStyle={{ color: 'white' }}
               value={burnTime}
