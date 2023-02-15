@@ -127,7 +127,7 @@
 
 - [ ] :point_left:モニター　(×4)
 - [ ] :point_left:HDMIケーブル　(×4)
-- [ ] :point_left:
+- [ ] :point_left:外部給電用ラックセット
 - [ ] :point_left:
 - [ ] :point_left:
 - [ ] :point_left:
