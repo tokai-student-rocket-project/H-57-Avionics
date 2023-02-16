@@ -135,7 +135,7 @@
   - [ ] テーブルクロス　520g　(×3)
   - [ ] 予備部品　25g
   - [ ] ラッカースプレー　650g　(×5)
-- [ ] :point_left:ジュラルミンケース
+- [ ] :point_left:**_E2ジュラルミンケース_**
 - [ ] :point_left:はんだごて台　(×2)
 - [ ] :point_left:ドリル刃セット　
 - [ ] :point_left:LANケーブル圧着工具　(×2)
@@ -144,10 +144,10 @@
 - [ ] :point_left:六角レンチ
 - [ ] :point_left:プラスドライバー　(×4)
 - [ ] :point_left:TOUGHPAD一式【Panasonic】
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
+- [ ] :point_left:ケーブルまとめる奴　310g
+- [ ] :point_left:エレキねじBOX　2820g
+- [ ] :point_left:**_E3 部品BOX_**　
+- [ ] :point_left:**_E4 ジュラルミンケース_**
 - [ ] :point_left:
 - [ ] :point_left:
 - [ ] :point_left:
