@@ -128,14 +128,15 @@
 - [ ] :point_left:モニター　(×4)
 - [ ] :point_left:HDMIケーブル　(×4)
 - [ ] :point_left:外部給電用ラックセット
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
-- [ ] :point_left:
+- [ ] :point_left:ジュラルミンケース
+- [ ] :point_left:はんだごて台　(×2)
+- [ ] :point_left:ドリル刃セット　
+- [ ] :point_left:LANケーブル圧着工具　(×2)
+- [ ] :point_left:LANケーブル被膜むき器
+- [ ] :point_left:はさみ
+- [ ] :point_left:六角レンチ
+- [ ] :point_left:プラスドライバー　(×4)
+- [ ] :point_left:TOUGHPAD一式【Panasonic】
 - [ ] :point_left:
 - [ ] :point_left:
 - [ ] :point_left:
