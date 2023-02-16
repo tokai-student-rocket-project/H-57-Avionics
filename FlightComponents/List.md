@@ -135,7 +135,7 @@
   - [ ] テーブルクロス　520g　(×3)
   - [ ] 予備部品　25g
   - [ ] ラッカースプレー　650g　(×5)
-- [ ] :point_left:<span style="color: red; ">E2</span>ジュラルミンケース
+- [ ] :point_left:ジュラルミンケース
 - [ ] :point_left:はんだごて台　(×2)
 - [ ] :point_left:ドリル刃セット　
 - [ ] :point_left:LANケーブル圧着工具　(×2)
