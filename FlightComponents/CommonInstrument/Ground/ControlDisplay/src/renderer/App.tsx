@@ -26,52 +26,6 @@ type EventItem = {
 };
 
 const App = () => {
-  const [notificationApi, contextHolder] = notification.useNotification();
-  const [latestEvent, setLatestEvent] = useState<EventItem>();
-
-  useEffect(() => {
-    window.electronAPI.eventRecieved((_, id, flightTime, event) => {
-      if (id === latestEvent?.id) return;
-
-      const eventText = [
-        'INITIALIZE',
-        'START',
-        'LAUNCH',
-        'BURNOUT',
-        'APOGEE',
-        'SEPARATE',
-        'FORCE-SEPARATE',
-        'LAND',
-        'RESET',
-        'CONFIG-UPDATE',
-        'EMERGENCY-SEPARATE',
-      ][Number(event)];
-
-      if (
-        event === 'LAUNCH' ||
-        event === 'BURNOUT' ||
-        event === 'APOGEE' ||
-        event === 'SEPARATE' ||
-        event === 'FORCE-SEPARATE' ||
-        event === 'LAND'
-      )
-        return;
-
-      setLatestEvent({ id, flightTime, event: eventText });
-
-      notificationApi.open({
-        message: `${
-          flightTime < 0 ? '' : `[T+${flightTime.toFixed(2)}]`
-        } ${eventText}`,
-        placement: 'bottomLeft',
-      });
-    });
-
-    return () => {
-      window.electronAPI.remove('event-recieved');
-    };
-  }, [latestEvent?.id, notificationApi]);
-
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
       <MapView />
@@ -83,7 +37,6 @@ const App = () => {
           zIndex: '999',
         }}
       >
-        {contextHolder}
         <Layout
           style={{
             backgroundColor: 'transparent',
