@@ -46,7 +46,7 @@
    - [ ] :octocat:デジタルマルチメーター ＜435ℊ＞
    - [ ] コネクタボックス1　<195ℊ>　（コンタクタ）【ヒロセ電機】(在庫) [MiSUMi](https://jp.misumi-ec.com/vona2/detail/222000425951/?HissuCode=DF1B-R24&PNSearch=DF1B-R24&KWSearch=DF1B-R24&searchFlow=results2products&list=PageSearchResult)
    - [ ] コネクタボックス2　<800ℊ>　（コンタクタ）【ヒロセ電機】(在庫) [MiSUMi](https://jp.misumi-ec.com/vona2/detail/222000425951/?HissuCode=DF1B-R24&PNSearch=DF1B-R24&KWSearch=DF1B-R24&searchFlow=results2products&list=PageSearchResult)
-   - [ ] SONYカメラ　<980ℊ>
+   - [ ] :octocat:SONYカメラ　<980ℊ>
    - [ ] プロジェクター　一式　<2965ℊ>
    - [ ] :octocat:マルチメーター　<305ℊ>
    - [ ] 青ケース　<1465ℊ>
@@ -98,8 +98,8 @@
   - [ ] :point_left:マスキングテープ【指定なし】(x3)
   - [ ] :+1:はんだ【指定なし】(在庫)　<合計：>
     - [ ] 糸はんだ　<105ℊ>
-    - [ ] 鉛入りはんだ（所持していれば）　<320ℊ>
-
+    - [ ] 鉛入りはんだ　<320ℊ>
+        - 所持していれば
 
 
 <br><br>
@@ -143,10 +143,6 @@
     - [ ] ブレッドボード【指定なし】(x3)
     - [ ] Arduino UNO【Arduino】(x2)
     - [ ] ジャンパ線【指定なし】(在庫)
-  
-  - [ ] :point_left:圧着端子セット（コンタクタ）【ヒロセ電機】(在庫) [MiSUMi](https://jp.misumi-ec.com/vona2/detail/222000425951/?HissuCode=DF1B-R24&PNSearch=DF1B-R24&KWSearch=DF1B-R24&searchFlow=results2products&list=PageSearchResult)
-
-  - [ ] :point_left:基板対コネクタセット【ヒロセ電機】(在庫)
 
   - [ ] :point_left:ポリアミド線【指定なし】(在庫)
 
