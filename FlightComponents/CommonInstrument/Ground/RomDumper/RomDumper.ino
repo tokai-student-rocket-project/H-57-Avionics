@@ -15,10 +15,11 @@ void setup() {
     [](
       float flightTime,
       uint8_t flightMode,
-      uint8_t  StateShiranui3,
-      uint8_t  StateBuzzer,
+      uint8_t  stateShiranui3,
+      uint8_t  stateBuzzer,
+      float pressure,
+      float temperature,
       float altitude,
-      float speed,
       uint16_t descentCount,
       float accelerationX,
       float accelerationY,
@@ -28,38 +29,47 @@ void setup() {
       float gyroZ,
       float yaw,
       float pitch,
-      float roll
+      float roll,
+      float voltage33,
+      float voltage5,
+      float voltage12
       ) {
 
         Serial.print(flightTime); Serial.print(",");
-  Serial.print(flightMode); Serial.print(",");
-  Serial.print(StateShiranui3); Serial.print(",");
-  Serial.print(StateBuzzer); Serial.print(",");
-  Serial.print(altitude); Serial.print(",");
-  Serial.print(speed); Serial.print(",");
-  Serial.print(descentCount); Serial.print(",");
-  Serial.print(accelerationX); Serial.print(",");
-  Serial.print(accelerationY); Serial.print(",");
-  Serial.print(accelerationZ); Serial.print(",");
-  Serial.print(gyroX); Serial.print(",");
-  Serial.print(gyroY); Serial.print(",");
-  Serial.print(gyroZ); Serial.print(",");
-  Serial.print(yaw); Serial.print(",");
-  Serial.print(pitch); Serial.print(",");
-  Serial.print(roll);
-  Serial.println("");
+        Serial.print(flightMode); Serial.print(",");
+        Serial.print(stateShiranui3); Serial.print(",");
+        Serial.print(stateBuzzer); Serial.print(",");
+        Serial.print(pressure); Serial.print(",");
+        Serial.print(temperature); Serial.print(",");
+        Serial.print(altitude); Serial.print(",");
+        Serial.print(descentCount); Serial.print(",");
+        Serial.print(accelerationX); Serial.print(",");
+        Serial.print(accelerationY); Serial.print(",");
+        Serial.print(accelerationZ); Serial.print(",");
+        Serial.print(gyroX); Serial.print(",");
+        Serial.print(gyroY); Serial.print(",");
+        Serial.print(gyroZ); Serial.print(",");
+        Serial.print(yaw); Serial.print(",");
+        Serial.print(pitch); Serial.print(",");
+        Serial.print(roll); Serial.print(",");
+        Serial.print(voltage33); Serial.print(",");
+        Serial.print(voltage5); Serial.print(",");
+        Serial.print(voltage12);
+        Serial.println("");
     }
   );
 }
 
 
-constexpr size_t PACKET_SIZE = 63;
+constexpr size_t PACKET_SIZE = 88;
 constexpr size_t PAGE_SIZE = 128;
 int32_t address = 0;
-uint8_t packet[63];
+uint8_t packet[88];
 
 
 void loop() {
+  Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
+
   if (address < eeprom1025.maxLongAddress()) {
 
     eeprom1025.read(address, packet, PACKET_SIZE);
