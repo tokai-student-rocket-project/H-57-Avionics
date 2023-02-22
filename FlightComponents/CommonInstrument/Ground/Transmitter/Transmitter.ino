@@ -27,14 +27,14 @@ void setup() {
       )
     {
       downlinkPacket["m"] = String(flightMode);
-  downlinkPacket["f"] = flightPinState ? "1" : "0";
-  downlinkPacket["s3"] = shiranui3State ? "1" : "0";
-  downlinkPacket["b"] = buzzerState ? "1" : "0";
-  downlinkPacket["v33"] = String(v33State, 1);
-  downlinkPacket["v5"] = String(v5State, 1);
-  downlinkPacket["v12"] = String(v12State, 1);
-  downlinkPacket["rssi"] = String(LoRa.packetRssi());
-  sendDownlinkPacket();
+      downlinkPacket["f"] = flightPinState ? "1" : "0";
+      downlinkPacket["s3"] = shiranui3State ? "1" : "0";
+      downlinkPacket["b"] = buzzerState ? "1" : "0";
+      downlinkPacket["v33"] = String(v33State, 1);
+      downlinkPacket["v5"] = String(v5State, 1);
+      downlinkPacket["v12"] = String(v12State, 1);
+      downlinkPacket["rssi"] = String(LoRa.packetRssi());
+      sendDownlinkPacket();
     }
   );
 
@@ -50,13 +50,13 @@ void setup() {
       )
     {
       downlinkPacket["ft"] = String(flightTime, 2);
-  downlinkPacket["alt"] = String(altitude, 1);
-  downlinkPacket["ac"] = String(acceleration, 2);
-  downlinkPacket["y"] = String(yaw, 2);
-  downlinkPacket["p"] = String(pitch, 2);
-  downlinkPacket["r"] = String(roll, 2);
-  downlinkPacket["rssi"] = String(LoRa.packetRssi());
-  sendDownlinkPacket();
+      downlinkPacket["alt"] = String(altitude, 1);
+      downlinkPacket["ac"] = String(acceleration, 2);
+      downlinkPacket["y"] = String(yaw, 2);
+      downlinkPacket["p"] = String(pitch, 2);
+      downlinkPacket["r"] = String(roll, 2);
+      downlinkPacket["rssi"] = String(LoRa.packetRssi());
+      sendDownlinkPacket();
     }
   );
 
@@ -72,13 +72,13 @@ void setup() {
       )
     {
       downlinkPacket["a"] = String(separationAltitude, 1);
-  downlinkPacket["p"] = String(basePressure, 1);
-  downlinkPacket["bt"] = String(burnTime, 2);
-  downlinkPacket["sp"] = String(separationProtectionTime, 2);
-  downlinkPacket["fs"] = String(forceSeparationTime, 2);
-  downlinkPacket["l"] = String(landingTime, 2);
-  downlinkPacket["rssi"] = String(LoRa.packetRssi());
-  sendDownlinkPacket();
+      downlinkPacket["p"] = String(basePressure, 1);
+      downlinkPacket["bt"] = String(burnTime, 2);
+      downlinkPacket["sp"] = String(separationProtectionTime, 2);
+      downlinkPacket["fs"] = String(forceSeparationTime, 2);
+      downlinkPacket["l"] = String(landingTime, 2);
+      downlinkPacket["rssi"] = String(LoRa.packetRssi());
+      sendDownlinkPacket();
     }
   );
 
@@ -91,9 +91,9 @@ void setup() {
       )
     {
       downlinkPacket["id"] = id;
-  downlinkPacket["eft"] = flightTime;
-  downlinkPacket["e"] = event;
-  sendDownlinkPacket();
+      downlinkPacket["eft"] = flightTime;
+      downlinkPacket["e"] = event;
+      sendDownlinkPacket();
     }
   );
 }

@@ -147,26 +147,26 @@ void Logger::dumpLog() {
       float voltage12
       ) {
         Serial.print(flightTime); Serial.print(",");
-  Serial.print(flightMode); Serial.print(",");
-  Serial.print(stateShiranui3); Serial.print(",");
-  Serial.print(stateBuzzer); Serial.print(",");
-  Serial.print(pressure); Serial.print(",");
-  Serial.print(temperature); Serial.print(",");
-  Serial.print(altitude); Serial.print(",");
-  Serial.print(descentCount); Serial.print(",");
-  Serial.print(accelerationX); Serial.print(",");
-  Serial.print(accelerationY); Serial.print(",");
-  Serial.print(accelerationZ); Serial.print(",");
-  Serial.print(gyroX); Serial.print(",");
-  Serial.print(gyroY); Serial.print(",");
-  Serial.print(gyroZ); Serial.print(",");
-  Serial.print(yaw); Serial.print(",");
-  Serial.print(pitch); Serial.print(",");
-  Serial.print(roll); Serial.print(",");
-  Serial.print(voltage33); Serial.print(",");
-  Serial.print(voltage5); Serial.print(",");
-  Serial.print(voltage12);
-  Serial.println("");
+        Serial.print(flightMode); Serial.print(",");
+        Serial.print(stateShiranui3); Serial.print(",");
+        Serial.print(stateBuzzer); Serial.print(",");
+        Serial.print(pressure); Serial.print(",");
+        Serial.print(temperature); Serial.print(",");
+        Serial.print(altitude); Serial.print(",");
+        Serial.print(descentCount); Serial.print(",");
+        Serial.print(accelerationX); Serial.print(",");
+        Serial.print(accelerationY); Serial.print(",");
+        Serial.print(accelerationZ); Serial.print(",");
+        Serial.print(gyroX); Serial.print(",");
+        Serial.print(gyroY); Serial.print(",");
+        Serial.print(gyroZ); Serial.print(",");
+        Serial.print(yaw); Serial.print(",");
+        Serial.print(pitch); Serial.print(",");
+        Serial.print(roll); Serial.print(",");
+        Serial.print(voltage33); Serial.print(",");
+        Serial.print(voltage5); Serial.print(",");
+        Serial.print(voltage12);
+        Serial.println("");
     }
   );
 
