@@ -214,6 +214,8 @@ const Config = () => {
         >
           {stones.map((stone, index) => (
             <div
+              // eslint-disable-next-line react/no-array-index-key
+              key={index}
               style={{
                 background: stone === 0 ? background16dp : background04dp,
                 border: stone === 0 ? `1px solid ${emphasisMidium}` : 'none',
