@@ -13,6 +13,8 @@ private:
   uint16_t _closeCount;
   bool _isOpen;
 
+  bool _initialState;
+
 
 public:
   /// @brief コンストラクタ
@@ -24,6 +26,9 @@ public:
 
   /// @brief チャタリング対策済みの現在の状態を返す
   bool isOpen();
+
+  /// @brief 初期化時から開になっていたかを返す
+  bool isOpenWhenInitializing();
 
   /// @brief チャタリング対策をしていない現在の状態を返す
   bool isOpenActually();

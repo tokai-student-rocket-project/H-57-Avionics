@@ -7,6 +7,8 @@
 PullupPin::PullupPin(uint8_t pinNumber) {
   _pinNumber = pinNumber;
   pinMode(pinNumber, INPUT_PULLUP);
+
+  _initialState = isOpenActually();
 }
 
 
@@ -35,6 +37,13 @@ void PullupPin::update() {
 bool PullupPin::isOpen() {
   return _isOpen;
 }
+
+
+/// @brief 初期化時から開になっていたかを返す
+bool PullupPin::isOpenWhenInitializing() {
+  return _initialState;
+}
+
 
 /// @brief チャタリング対策をしていない現在の状態を返す
 bool PullupPin::isOpenActually() {
