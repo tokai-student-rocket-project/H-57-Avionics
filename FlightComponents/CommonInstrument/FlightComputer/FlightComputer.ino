@@ -118,6 +118,11 @@ void setup() {
     device::_logger.dumpLog();
   }
 
+  // フライトピンが開放された状態で起動した時は離床判定しない
+  if (!device::_flightPin.isOpenActually()) {
+    while (true);
+  }
+
   // LoRa 40ch
   LoRa.begin(923.8E6);
 
@@ -391,8 +396,7 @@ void reset() {
 void updateFlightMode() {
   switch (internal::_flightMode) {
   case FlightMode::STANDBY:
-    // フライトピンが開放された状態で起動した時は離床判定しない
-    if (!device::_flightPin.isOpenWhenInitializing && device::_flightPin.isOpen()) {
+    if (device::_flightPin.isOpen()) {
       // フライトピンのチャタリング対策で10回連続を取るため、0.1secのタイムラグが出る。
       internal::_launchTime_ms = millis() - 100;
       changeFlightMode(FlightMode::THRUST);
