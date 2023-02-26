@@ -46,4 +46,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.send('set-store', property, val);
     },
   },
+
+  logging: {
+    logUpdated: (callback: () => void) =>
+      ipcRenderer.on('log-updated', callback),
+    start(outputFile: string) {
+      ipcRenderer.send('start-logging', outputFile);
+    },
+    stop() {
+      ipcRenderer.send('stop-logging');
+    },
+  },
 });

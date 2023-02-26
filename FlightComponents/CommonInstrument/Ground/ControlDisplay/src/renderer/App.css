@@ -42,7 +42,6 @@ body {
   background-color: transparent !important;
   border: 1px solid #999999 !important;
   border-radius: 0 !important;
-  border-left: none !important;
 }
 
 .ant-input-group-addon {
@@ -58,6 +57,10 @@ body {
   background-color: transparent;
   width: 100%;
   border-radius: 0 !important;
+}
+
+.ant-btn:hover, .ant-btn:focus {
+  background: transparent;
 }
 
 .ant-btn-primary {

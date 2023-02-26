@@ -1,6 +1,5 @@
 import 'antd/dist/antd.css';
-import { Col, Layout, Row, notification } from 'antd';
-import { useState, useEffect } from 'react';
+import { Col, Layout, Row } from 'antd';
 import Status from './components/Status';
 import './App.css';
 import Config from './components/Config/Config';
@@ -16,14 +15,10 @@ import Electric from './components/Electric';
 import Mission from './components/Mission';
 import Progress from './components/Progress';
 import Emergency from './components/Emergency';
+import DataLogging from './components/DataLogging';
+import Log from './components/Log';
 
-const { Header, Content } = Layout;
-
-type EventItem = {
-  id: number;
-  flightTime: number;
-  event: string;
-};
+const { Header, Content, Footer } = Layout;
 
 const App = () => {
   return (
@@ -92,6 +87,7 @@ const App = () => {
                 >
                   <Progress />
                   <div />
+                  <GNSS />
                   <div
                     style={{
                       display: 'flex',
@@ -100,10 +96,12 @@ const App = () => {
                       alignItems: 'flex-end',
                     }}
                   >
-                    <AltitudeIndicator />
                     <div>
-                      <GNSS />
+                      <AltitudeIndicator />
+                    </div>
+                    <div>
                       <Emergency />
+                      <DataLogging />
                     </div>
                   </div>
                 </div>
@@ -124,6 +122,16 @@ const App = () => {
               </Col>
             </Row>
           </Content>
+
+          <Footer
+            style={{
+              backgroundColor: 'transparent',
+              padding: '0',
+              height: 'auto',
+            }}
+          >
+            <Log />
+          </Footer>
         </Layout>
       </div>
     </div>

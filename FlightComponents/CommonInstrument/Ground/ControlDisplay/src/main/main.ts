@@ -1,6 +1,7 @@
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 import path from 'path';
+import * as fs from 'fs';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
@@ -17,6 +18,22 @@ class AppUpdater {
   }
 }
 
+let doLogging = false;
+let outputStream: fs.WriteStream;
+
+ipcMain.on('start-logging', async (_, outputFile) => {
+  doLogging = true;
+  outputStream = outputFile;
+
+  outputStream.end();
+  outputStream = fs.createWriteStream(outputFile, { flags: 'a' });
+});
+
+ipcMain.on('stop-logging', async () => {
+  doLogging = false;
+  outputStream.end();
+});
+
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.handle('get-serialports', async () => {
@@ -27,7 +44,7 @@ const store = new Store();
 ipcMain.on('get-store', async (event, val) => {
   event.returnValue = store.get(val);
 });
-ipcMain.on('set-store', async (event, key, val) => {
+ipcMain.on('set-store', async (_, key, val) => {
   store.set(key, val);
 });
 
@@ -40,7 +57,14 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
   serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    console.log(data);
+    if (doLogging) {
+      console.log(`${data} > ${outputStream.path}`);
+      outputStream?.write(data);
+
+      store.set('latest-log', data);
+      mainWindow?.webContents.send('log-updated');
+    }
+
     try {
       const dataObject = JSON.parse(data);
 
@@ -111,7 +135,14 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
   });
   const parser = serialportTelemeter.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    console.log(data);
+    if (doLogging) {
+      console.log(`${data} > ${outputStream.path}`);
+      outputStream?.write(data);
+
+      store.set('latest-log', data);
+      mainWindow?.webContents.send('log-updated');
+    }
+
     try {
       const dataObject = JSON.parse(data);
 

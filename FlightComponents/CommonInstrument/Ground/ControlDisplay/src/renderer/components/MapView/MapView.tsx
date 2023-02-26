@@ -52,7 +52,7 @@ const MapView = () => {
       zoomControl={false}
       center={center}
       zoom={16}
-      style={{ position: 'fixed' }}
+      style={{ position: 'fixed', height: 'calc(100vh - 32px)' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'

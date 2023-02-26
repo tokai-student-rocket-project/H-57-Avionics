@@ -185,7 +185,7 @@ const Config = () => {
           <Input
             onChange={(event) => setValue(event.target.value)}
             addonAfter={units[selectedLabel]}
-            style={{ height: '32px' }}
+            style={{ height: '32px', marginLeft: '-1px' }}
           />
           <Button type="primary" style={{ width: '64px' }} onClick={sendConfig}>
             送信

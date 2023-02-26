@@ -30,6 +30,12 @@ declare global {
         get: (key: string) => any;
         set: (key: string, val: any) => void;
       };
+
+      logging: {
+        logUpdated(callback: () => void): void;
+        start: (outputFile: string) => void;
+        stop: () => void;
+      };
     };
   }
 }
