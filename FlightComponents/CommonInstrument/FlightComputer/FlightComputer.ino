@@ -119,7 +119,7 @@ void setup() {
   }
 
   // フライトピンが開放された状態で起動した時は離床判定しない
-  if (!device::_flightPin.isOpenActually()) {
+  if (device::_flightPin.isOpenActually()) {
     while (true);
   }
 
