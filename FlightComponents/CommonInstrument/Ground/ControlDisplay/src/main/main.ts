@@ -60,10 +60,9 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
     if (doLogging) {
       console.log(`${data} > ${outputStream.path}`);
       outputStream?.write(data);
-
-      store.set('latest-log', data);
-      mainWindow?.webContents.send('log-updated');
     }
+    store.set('latest-log', data);
+    mainWindow?.webContents.send('log-updated');
 
     try {
       const dataObject = JSON.parse(data);
@@ -138,10 +137,9 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
     if (doLogging) {
       console.log(`${data} > ${outputStream.path}`);
       outputStream?.write(data);
-
-      store.set('latest-log', data);
-      mainWindow?.webContents.send('log-updated');
     }
+    store.set('latest-log', data);
+    mainWindow?.webContents.send('log-updated');
 
     try {
       const dataObject = JSON.parse(data);

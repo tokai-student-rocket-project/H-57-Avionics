@@ -87,7 +87,7 @@ const App = () => {
                 >
                   <Progress />
                   <div />
-                  <GNSS />
+                  {/* <GNSS /> */}
                   <div
                     style={{
                       display: 'flex',
@@ -100,8 +100,9 @@ const App = () => {
                       <AltitudeIndicator />
                     </div>
                     <div>
+                      <GNSS />
                       <Emergency />
-                      <DataLogging />
+                      {/* <DataLogging /> */}
                     </div>
                   </div>
                 </div>
