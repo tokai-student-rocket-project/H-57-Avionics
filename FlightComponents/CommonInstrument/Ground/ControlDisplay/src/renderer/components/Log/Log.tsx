@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { emphasisHigh } from '../../utilities/colors';
 
 const Log = () => {
-  const [latestLog, setLatestLog] = useState<string>('latest');
+  const [latestLog, setLatestLog] = useState<string>();
 
   useEffect(() => {
     window.electronAPI.logging.logUpdated(() => {
