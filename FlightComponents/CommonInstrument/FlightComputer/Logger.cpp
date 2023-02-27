@@ -82,30 +82,30 @@ void Logger::writeSD(
   float voltage12
 ) {
   if (_packetCount == 0) {
-    Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
+    Serial1.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
   }
 
-  Serial.print(flightTime); Serial.print(",");
-  Serial.print(flightMode); Serial.print(",");
-  Serial.print(stateShiranui3); Serial.print(",");
-  Serial.print(stateBuzzer); Serial.print(",");
-  Serial.print(pressure); Serial.print(",");
-  Serial.print(temperature); Serial.print(",");
-  Serial.print(altitude); Serial.print(",");
-  Serial.print(descentCount); Serial.print(",");
-  Serial.print(accelerationX); Serial.print(",");
-  Serial.print(accelerationY); Serial.print(",");
-  Serial.print(accelerationZ); Serial.print(",");
-  Serial.print(gyroX); Serial.print(",");
-  Serial.print(gyroY); Serial.print(",");
-  Serial.print(gyroZ); Serial.print(",");
-  Serial.print(yaw); Serial.print(",");
-  Serial.print(pitch); Serial.print(",");
-  Serial.print(roll); Serial.print(",");
-  Serial.print(voltage33); Serial.print(",");
-  Serial.print(voltage5); Serial.print(",");
-  Serial.print(voltage12);
-  Serial.println("");
+  Serial1.print(flightTime); Serial1.print(",");
+  Serial1.print(flightMode); Serial1.print(",");
+  Serial1.print(stateShiranui3); Serial1.print(",");
+  Serial1.print(stateBuzzer); Serial1.print(",");
+  Serial1.print(pressure); Serial1.print(",");
+  Serial1.print(temperature); Serial1.print(",");
+  Serial1.print(altitude); Serial1.print(",");
+  Serial1.print(descentCount); Serial1.print(",");
+  Serial1.print(accelerationX); Serial1.print(",");
+  Serial1.print(accelerationY); Serial1.print(",");
+  Serial1.print(accelerationZ); Serial1.print(",");
+  Serial1.print(gyroX); Serial1.print(",");
+  Serial1.print(gyroY); Serial1.print(",");
+  Serial1.print(gyroZ); Serial1.print(",");
+  Serial1.print(yaw); Serial1.print(",");
+  Serial1.print(pitch); Serial1.print(",");
+  Serial1.print(roll); Serial1.print(",");
+  Serial1.print(voltage33); Serial1.print(",");
+  Serial1.print(voltage5); Serial1.print(",");
+  Serial1.print(voltage12);
+  Serial1.println("");
 }
 
 

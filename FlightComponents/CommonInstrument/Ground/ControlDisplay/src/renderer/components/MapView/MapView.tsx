@@ -51,7 +51,7 @@ const MapView = () => {
     <MapContainer
       zoomControl={false}
       center={center}
-      zoom={16}
+      zoom={15}
       style={{ position: 'fixed', height: 'calc(100vh - 32px)' }}
     >
       <TileLayer
