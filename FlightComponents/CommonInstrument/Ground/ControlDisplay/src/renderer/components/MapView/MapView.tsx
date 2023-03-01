@@ -5,7 +5,6 @@ import {
   Marker,
   Circle,
   Tooltip,
-  Polygon,
   useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -30,9 +29,7 @@ const ChangeCenter = (props: ChangeCenterProps) => {
 };
 
 const MapView = () => {
-  const [center, setCenter] = useState<L.LatLngExpression>([
-    42.514179, 143.439731,
-  ]);
+  const [center, setCenter] = useState<L.LatLngExpression>([0, 0]);
 
   useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
@@ -51,7 +48,7 @@ const MapView = () => {
     <MapContainer
       zoomControl={false}
       center={center}
-      zoom={15}
+      zoom={16}
       style={{ position: 'fixed', height: 'calc(100vh - 32px)' }}
     >
       <TileLayer
@@ -62,15 +59,15 @@ const MapView = () => {
       <ChangeCenter center={center} />
       <Circle
         pathOptions={{ color: '#ed4245' }}
-        center={[42.514179, 143.439731]}
+        center={[42.51435555, 143.43985]}
         radius={1000}
       >
         <Tooltip>Safety Zone</Tooltip>
       </Circle>
       <Circle
         pathOptions={{ color: '#5865f2' }}
-        center={[42.514179, 143.439731]}
-        radius={50}
+        center={[42.51435555, 143.43985]}
+        radius={100}
       >
         <Tooltip>Launcher</Tooltip>
       </Circle>
