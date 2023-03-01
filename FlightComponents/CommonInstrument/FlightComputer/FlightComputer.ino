@@ -16,7 +16,8 @@ enum class FlightMode {
   CLIMB,
   DESCENT,
   PARACHUTE,
-  LAND
+  LAND,
+  SHUTDOWN
 };
 
 
@@ -31,7 +32,8 @@ enum class Event {
   LAND,
   RESET,
   CONFIG_UPDATE,
-  EMERGENCY_SEPARATE
+  EMERGENCY_SEPARATE,
+  SHUTDOWN
 };
 
 
@@ -78,6 +80,10 @@ namespace config {
   // 想定着地時間 [ms]
   constexpr uint32_t DEFAULT_LANDING_TIME_ms = 44000;
   uint32_t landing_time_ms = DEFAULT_LANDING_TIME_ms;
+
+  // 動作終了時間[ms]
+  constexpr uint32_t SHUTDOWN_MARGIN_ms = 5000;
+  uint32_t shutdown_time_ms = landing_time_ms + SHUTDOWN_MARGIN_ms;
 }
 
 namespace internal {
@@ -319,7 +325,7 @@ bool isApogeeSeparation() {
 /// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY
-    && internal::_flightMode != FlightMode::LAND;
+    && internal::_flightMode != FlightMode::SHUTDOWN;
 }
 
 
@@ -345,6 +351,13 @@ bool isLanded() {
 bool canReset() {
   return internal::_flightMode != FlightMode::STANDBY
     && !device::_flightPin.isOpen();
+}
+
+
+/// @brief shutdownできるかを返す
+bool canShutdown() {
+  return internal::_flightMode == FlightMode::LAND
+    && millis() > internal::_launchTime_ms + config::shutdown_time_ms;
 }
 
 
@@ -431,6 +444,12 @@ void updateFlightMode() {
       device::_telemeter.stackEvent(static_cast<uint8_t>(Event::LAND), flightTime());
       changeFlightMode(FlightMode::LAND);
     }
+
+  case FlightMode::LAND:
+    if (canShutdown()) {
+      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::SHUTDOWN), flightTime());
+      changeFlightMode(FlightMode::SHUTDOWN);
+    }
   }
 }
 
@@ -477,6 +496,7 @@ void executeCommand(uint8_t command, float payload) {
     break;
   case 0x05: // 想定着地時間
     config::landing_time_ms = payload ? payload * 1000.0 : config::DEFAULT_LANDING_TIME_ms;
+    config::shutdown_time_ms = config::landing_time_ms + config::SHUTDOWN_MARGIN_ms;
     break;
   case 0xFF: // 緊急分離
     device::_telemeter.stackEvent(static_cast<uint8_t>(Event::EMERGENCY_SEPARATE), flightTime());
