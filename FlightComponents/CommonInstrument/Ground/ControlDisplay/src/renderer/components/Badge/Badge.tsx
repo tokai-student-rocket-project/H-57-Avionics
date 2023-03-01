@@ -21,6 +21,12 @@ const Badge = () => {
       setFlightTime(window.electronAPI.store.get('flight-time'));
     });
 
+    return () => {
+      window.electronAPI.remove('status-recieved');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
         ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE', 'LAND'][
@@ -30,7 +36,6 @@ const Badge = () => {
     });
 
     return () => {
-      window.electronAPI.remove('flight-data-recieved');
       window.electronAPI.remove('status-recieved');
     };
   }, []);

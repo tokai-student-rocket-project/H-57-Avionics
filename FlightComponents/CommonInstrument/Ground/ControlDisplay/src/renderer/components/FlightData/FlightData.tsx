@@ -17,6 +17,7 @@ const getColor = (mode: string, isAccent: boolean) => {
 
 const FlightData = () => {
   const [altitude, setAltitude] = useState<number>(0);
+  const [flightTime, setFlightTime] = useState<number>(0);
   const [acceleration, setAcceleration] = useState<number>(0);
 
   const [flightMode, setFlightMode] = useState<string>('');
@@ -27,29 +28,29 @@ const FlightData = () => {
 
   useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
-      const storeAltitude = Number(window.electronAPI.store.get('altitude'));
-      const storeFlightTime = Number(
-        window.electronAPI.store.get('flight-time')
-      );
-
-      setAltitude(storeAltitude);
+      setAltitude(Number(window.electronAPI.store.get('altitude')));
       setAcceleration(
         Number(window.electronAPI.store.get('acceleration')) * 9.80665
       );
-
-      const altitudeDiffence = storeAltitude - lastAltitude;
-      const timeDirrence = storeFlightTime - lastFlightTime;
-
-      setClimbRate(altitudeDiffence / timeDirrence);
-
-      setLastAltitude(storeAltitude);
-      setLastFlightTime(storeFlightTime);
+      setFlightTime(Number(window.electronAPI.store.get('flight-time')));
     });
 
     return () => {
       window.electronAPI.remove('flight-data-recieved');
     };
-  }, [lastAltitude, lastFlightTime]);
+  }, []);
+
+  useEffect(() => {
+    const altitudeDiffence = altitude - lastAltitude;
+    const timeDirrence = flightTime - lastFlightTime;
+
+    console.log(altitudeDiffence);
+
+    setClimbRate(altitudeDiffence / timeDirrence);
+
+    setLastAltitude(altitude);
+    setLastFlightTime(flightTime);
+  }, [altitude, flightTime]);
 
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {

@@ -24,38 +24,66 @@ const BlinkIndicator = () => {
       blink(setConfigUpState);
     });
 
+    return () => {
+      window.electronAPI.remove('config-sended');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
       blink(setFlightDataDownState);
     });
 
+    return () => {
+      window.electronAPI.remove('flight-data-recieved');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.configRecieved(() => {
       blink(setConfigDownState);
     });
 
+    return () => {
+      window.electronAPI.remove('config-recieved');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.statusRecieved(() => {
       blink(setStatusDownState);
     });
 
+    return () => {
+      window.electronAPI.remove('status-recieved');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
       blink(setGnssDownState);
     });
+    return () => {
+      window.electronAPI.remove('gnss-recieved');
+    };
+  }, []);
 
+  useEffect(() => {
     window.electronAPI.valveRecieved(() => {
       blink(setValveDownState);
     });
 
+    return () => {
+      window.electronAPI.remove('valve-recieved');
+    };
+  }, []);
+
+  useEffect(() => {
     window.electronAPI.eventRecieved(() => {
       blink(setEventDownState);
     });
 
     return () => {
-      window.electronAPI.remove('config-sended');
-      window.electronAPI.remove('flight-data-recieved');
-      window.electronAPI.remove('config-recieved');
-      window.electronAPI.remove('status-recieved');
-      window.electronAPI.remove('rssi-recieved');
-      window.electronAPI.remove('gnss-recieved');
-      window.electronAPI.remove('valve-recieved');
       window.electronAPI.remove('event-recieved');
     };
   }, []);
