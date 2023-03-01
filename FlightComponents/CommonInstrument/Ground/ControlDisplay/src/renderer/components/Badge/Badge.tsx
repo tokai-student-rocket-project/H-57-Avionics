@@ -22,7 +22,7 @@ const Badge = () => {
     });
 
     return () => {
-      window.electronAPI.remove('status-recieved');
+      window.electronAPI.remove('flight-data-recieved');
     };
   }, []);
 
