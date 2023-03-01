@@ -6,7 +6,6 @@ import {
   red,
   orange,
   emphasisHigh,
-  emphasisMidium,
   emphasisDisabled,
 } from '../../utilities/colors';
 import SerialportSelector from './components/SerialportSelector';
@@ -14,7 +13,7 @@ import BlinkIndicator from './components/BlinkIndicator';
 
 const rssiToColor = (rssi: number): string => {
   if (rssi === -999) return emphasisDisabled;
-  if (rssi < -100) return red;
+  if (rssi < -120) return red;
   if (rssi < -70) return orange;
   return green;
 };
@@ -58,6 +57,15 @@ const Telecom = () => {
               color={rssiToColor(rssi)}
             />
           </Tooltip>
+          <span
+            style={{
+              color: rssiToColor(rssi),
+              fontSize: '0.85em',
+              marginLeft: '4px',
+            }}
+          >
+            {rssi}
+          </span>
         </div>
       }
     >
