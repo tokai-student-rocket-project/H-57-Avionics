@@ -6,7 +6,7 @@ import Config from './components/Config/Config';
 import FlightData from './components/FlightData';
 import Badge from './components/Badge';
 import FlightMode from './components/FlightMode';
-import Telecom from './components/Telecom';
+import Communication from './components/Communication';
 import GNSS from './components/GNSS';
 import Valve from './components/Valve';
 import AltitudeIndicator from './components/AltitudeIndicator';
@@ -67,7 +67,7 @@ const App = () => {
               <Col span={7}>
                 <Row>
                   <Col span={24}>
-                    <Telecom />
+                    <Communication />
                   </Col>
                 </Row>
                 <Row>

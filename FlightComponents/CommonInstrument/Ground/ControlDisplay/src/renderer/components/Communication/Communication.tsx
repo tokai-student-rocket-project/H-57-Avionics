@@ -18,7 +18,7 @@ const rssiToColor = (rssi: number): string => {
   return green;
 };
 
-const Telecom = () => {
+const Communication = () => {
   const [rssi, setRssi] = useState<number>(-999);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const Telecom = () => {
 
   return (
     <Card
-      title="TELECOM"
+      title="COMMUNICATION"
       bordered={false}
       extra={
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -74,4 +74,4 @@ const Telecom = () => {
   );
 };
 
-export default Telecom;
+export default Communication;

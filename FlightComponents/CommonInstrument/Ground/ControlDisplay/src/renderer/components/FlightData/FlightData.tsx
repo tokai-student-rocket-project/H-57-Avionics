@@ -2,11 +2,6 @@ import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
 import { accent, green, orange } from '../../utilities/colors';
 
-type AltitudeData = {
-  altitude: number;
-  flightTime: number;
-};
-
 const getColor = (mode: string, isAccent: boolean) => {
   if (mode === 'STANDBY') return orange;
   if (mode === 'PARASHUTE') return green;
@@ -41,16 +36,16 @@ const FlightData = () => {
   }, []);
 
   useEffect(() => {
-    const altitudeDiffence = altitude - lastAltitude;
-    const timeDirrence = flightTime - lastFlightTime;
+    const altitudeDifference = altitude - lastAltitude;
+    const timeDifference = flightTime - lastFlightTime;
 
-    console.log(altitudeDiffence);
+    if (timeDifference === 0) return;
 
-    setClimbRate(altitudeDiffence / timeDirrence);
+    setClimbRate(altitudeDifference / timeDifference);
 
     setLastAltitude(altitude);
     setLastFlightTime(flightTime);
-  }, [altitude, flightTime]);
+  }, [altitude]);
 
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {
