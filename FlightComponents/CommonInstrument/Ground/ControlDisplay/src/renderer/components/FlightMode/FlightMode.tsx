@@ -12,7 +12,7 @@ const getColor = (mode: string, isAccent: boolean) => {
 };
 
 const FlightMode = () => {
-  const [flightMode, setFlightMode] = useState<string>('EXPERIMENT');
+  const [flightMode, setFlightMode] = useState<string>('\u200b');
   const [now, setNow] = useState<string>();
 
   useEffect(() => {
