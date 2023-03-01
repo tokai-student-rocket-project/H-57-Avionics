@@ -2,6 +2,11 @@ import { Col, Row, Statistic } from 'antd';
 import { useState, useEffect } from 'react';
 import { accent, green, orange } from '../../utilities/colors';
 
+type AltitudeData = {
+  altitude: number;
+  flightTime: number;
+};
+
 const getColor = (mode: string, isAccent: boolean) => {
   if (mode === 'STANDBY') return orange;
   if (mode === 'PARASHUTE') return green;
@@ -11,19 +16,42 @@ const getColor = (mode: string, isAccent: boolean) => {
 };
 
 const FlightData = () => {
-  const [altitude, setAltitude] = useState<number>();
-  const [acceleration, setAcceleration] = useState<number>();
+  const [altitude, setAltitude] = useState<number>(0);
+  const [acceleration, setAcceleration] = useState<number>(0);
 
   const [flightMode, setFlightMode] = useState<string>('');
 
+  const [lastAltitude, setLastAltitude] = useState<number>(0);
+  const [lastFlightTime, setLastFlightTime] = useState<number>(0);
+  const [climbRate, setClimbRate] = useState<number>();
+
   useEffect(() => {
     window.electronAPI.flightDataRecieved(() => {
-      setAltitude(Number(window.electronAPI.store.get('altitude')));
+      const storeAltitude = Number(window.electronAPI.store.get('altitude'));
+      const storeFlightTime = Number(
+        window.electronAPI.store.get('flight-time')
+      );
+
+      setAltitude(storeAltitude);
       setAcceleration(
         Number(window.electronAPI.store.get('acceleration')) * 9.80665
       );
+
+      const altitudeDiffence = storeAltitude - lastAltitude;
+      const timeDirrence = storeFlightTime - lastFlightTime;
+
+      setClimbRate(altitudeDiffence / timeDirrence);
+
+      setLastAltitude(storeAltitude);
+      setLastFlightTime(storeFlightTime);
     });
 
+    return () => {
+      window.electronAPI.remove('flight-data-recieved');
+    };
+  }, [lastAltitude, lastFlightTime]);
+
+  useEffect(() => {
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
         ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE', 'LAND'][
@@ -33,7 +61,6 @@ const FlightData = () => {
     });
 
     return () => {
-      window.electronAPI.remove('flight-data-recieved');
       window.electronAPI.remove('status-recieved');
     };
   }, []);
@@ -42,7 +69,7 @@ const FlightData = () => {
     <div
       style={{
         backgroundColor: 'rgb(17, 17, 17, 0.85)',
-        padding: '16px 128px 16px 64px',
+        padding: '16px 64px 16px 32px',
         borderBottomColor: getColor(flightMode, true),
         clipPath: 'polygon(0% 100%, 0% 0%, 88% 0%, 100% 100%)',
         borderTopWidth: '0px',
@@ -54,7 +81,7 @@ const FlightData = () => {
       }}
     >
       <Row gutter={16}>
-        <Col span={12}>
+        <Col span={8}>
           <Statistic
             valueStyle={{ color: 'white' }}
             title="Altitude"
@@ -62,7 +89,15 @@ const FlightData = () => {
             suffix="m"
           />
         </Col>
-        <Col span={12}>
+        <Col span={8}>
+          <Statistic
+            valueStyle={{ color: 'white' }}
+            title="Climb Rate"
+            value={climbRate?.toFixed(2)}
+            suffix="m/s"
+          />
+        </Col>
+        <Col span={8}>
           <Statistic
             valueStyle={{ color: 'white' }}
             title="Acceleration"
