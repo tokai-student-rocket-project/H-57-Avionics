@@ -57,12 +57,11 @@ ipcMain.on('open-serialport', (_, serialportPath: string) => {
   serialport = new SerialPort({ path: serialportPath, baudRate: 115200 });
   const parser = serialport.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    if (doLogging) {
-      console.log(`${data} > ${outputStream.path}`);
-      outputStream?.write(data);
-    }
     store.set('latest-log', data);
     mainWindow?.webContents.send('log-updated');
+
+    console.log(data);
+    if (doLogging) outputStream?.write(data);
 
     try {
       const dataObject = JSON.parse(data);
@@ -134,12 +133,11 @@ ipcMain.on('open-serialport-telemeter', (_, serialportPath: string) => {
   });
   const parser = serialportTelemeter.pipe(new ReadlineParser());
   parser.on('data', (data) => {
-    if (doLogging) {
-      console.log(`${data} > ${outputStream.path}`);
-      outputStream?.write(data);
-    }
     store.set('latest-log', data);
     mainWindow?.webContents.send('log-updated');
+
+    console.log(data);
+    if (doLogging) outputStream?.write(data);
 
     try {
       const dataObject = JSON.parse(data);
