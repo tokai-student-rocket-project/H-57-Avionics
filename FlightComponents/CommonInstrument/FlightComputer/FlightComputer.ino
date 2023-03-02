@@ -70,15 +70,15 @@ namespace config {
   uint32_t burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 8925;
+  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 6987;
   uint32_t separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 13030;
+  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 12142;
   uint32_t force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 
   // 想定着地時間 [ms]
-  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 44000;
+  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 39642;
   uint32_t landing_time_ms = DEFAULT_LANDING_TIME_ms;
 
   // 動作終了時間[ms]
