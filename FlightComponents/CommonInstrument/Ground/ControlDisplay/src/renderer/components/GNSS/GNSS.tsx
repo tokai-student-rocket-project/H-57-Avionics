@@ -14,20 +14,20 @@ const DegToDms = (degrees: number): string => {
 };
 
 const GNSS = () => {
-  const [latitude, setLatitude] = useState<number>(42.514179);
-  const [longitude, setLongitude] = useState<number>(143.439731);
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
 
   const [sattelites, setSattelites] = useState<number>(0);
-  const [epocTime, setEpocTime] = useState<string>();
+  const [epochTime, setEpochTime] = useState<string>('');
 
   useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
       setLatitude(Number(window.electronAPI.store.get('latitude')));
       setLongitude(Number(window.electronAPI.store.get('longitude')));
       setSattelites(Number(window.electronAPI.store.get('satellites')));
-      setEpocTime(
+      setEpochTime(
         new Date(
-          Number(window.electronAPI.store.get('epocTime')) * 1000
+          Number(window.electronAPI.store.get('epochTime')) * 1000
         ).toLocaleTimeString()
       );
 
@@ -80,14 +80,14 @@ const GNSS = () => {
                 Math.sign(longitude) === -1 ? 'W' : 'E'
               }`}
             </div>
-            {epocTime !== undefined && (
+            {epochTime !== undefined && (
               <div
                 style={{
                   fontSize: '0.8em',
                   color: emphasisMidium,
-                  marginLeft: '8px',
+                  marginLeft: '4px',
                 }}
-              >{`${epocTime} 更新`}</div>
+              >{`${epochTime} 更新`}</div>
             )}
           </div>
         </div>

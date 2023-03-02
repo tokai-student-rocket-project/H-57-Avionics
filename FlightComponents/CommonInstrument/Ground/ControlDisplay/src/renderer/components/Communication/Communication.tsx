@@ -49,14 +49,11 @@ const Communication = () => {
               color={emphasisHigh}
             />
           </Popover>
-          <Tooltip placement="bottom" title={rssi}>
-            <FaRss
-              style={{ marginLeft: '16px' }}
-              size={16}
-              cursor="pointer"
-              color={rssiToColor(rssi)}
-            />
-          </Tooltip>
+          <FaRss
+            style={{ marginLeft: '16px' }}
+            size={16}
+            color={rssiToColor(rssi)}
+          />
           <span
             style={{
               color: rssiToColor(rssi),
