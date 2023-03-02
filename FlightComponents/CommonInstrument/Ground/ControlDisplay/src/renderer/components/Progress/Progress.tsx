@@ -122,7 +122,7 @@ const Progress = () => {
           },
           {
             title: 'SDWN',
-            description: landTime ? `${shutdownTime?.toFixed(1)} sec` : '',
+            description: shutdownTime ? `${shutdownTime?.toFixed(1)} sec` : '',
           },
         ]}
       />

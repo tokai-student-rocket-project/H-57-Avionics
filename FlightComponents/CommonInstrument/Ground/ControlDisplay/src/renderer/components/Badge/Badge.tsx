@@ -77,7 +77,7 @@ const Badge = () => {
         }}
       >
         <Title style={{ color: 'white', marginBottom: '0' }} level={3}>
-          {`T + ${flightTime}`}
+          {`X + ${flightTime}`}
         </Title>
       </div>
     </div>
