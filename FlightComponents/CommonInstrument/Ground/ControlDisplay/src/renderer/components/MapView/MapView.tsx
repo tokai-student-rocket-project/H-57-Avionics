@@ -73,14 +73,14 @@ const MapView = () => {
       </Circle>
       <Circle
         pathOptions={{ color: '#FF1744' }}
-        center={[42.51948694, 143.4417017]}
+        center={[42.51941941, 143.44171185]}
         radius={10}
       >
         <Tooltip>Hard</Tooltip>
       </Circle>
       <Circle
         pathOptions={{ color: '#00E676' }}
-        center={[42.51656312, 143.4412823]}
+        center={[42.51620541, 143.44130452]}
         radius={10}
       >
         <Tooltip>Soft</Tooltip>

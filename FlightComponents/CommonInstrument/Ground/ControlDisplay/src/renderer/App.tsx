@@ -101,7 +101,7 @@ const App = () => {
                     </div>
                     <div>
                       <GNSS />
-                      <Emergency />
+                      {/* <Emergency /> */}
                       {/* <DataLogging /> */}
                     </div>
                   </div>

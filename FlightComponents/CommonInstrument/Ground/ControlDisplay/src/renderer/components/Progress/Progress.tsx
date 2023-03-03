@@ -17,7 +17,6 @@ const Progress = () => {
   const [apogeeTime, setApogeeTime] = useState<number>();
   const [separationTime, setSeparationTime] = useState<number>();
   const [landTime, setLandTime] = useState<number>();
-  const [shutdownTime, setShutdownTime] = useState<number>();
 
   useEffect(() => {
     window.electronAPI.eventRecieved((_, id, flightTime, event) => {
@@ -35,7 +34,6 @@ const Progress = () => {
         'RESET',
         'CONFIG-UPDATE',
         'EMERGENCY-SEPARATE',
-        'SHUTDOWN',
       ][Number(event)];
 
       setLatestEvent({ id, flightTime, event: eventText });
@@ -47,7 +45,6 @@ const Progress = () => {
         setApogeeTime(undefined);
         setSeparationTime(undefined);
         setLandTime(undefined);
-        setShutdownTime(undefined);
       }
       if (eventText === 'LAUNCH') {
         setStepProgress(1);
@@ -72,10 +69,6 @@ const Progress = () => {
       if (eventText === 'LAND') {
         setStepProgress(5);
         setLandTime(flightTime);
-      }
-      if (eventText === 'SHUTDOWN') {
-        setStepProgress(6);
-        setShutdownTime(flightTime);
       }
 
       notificationApi.open({
@@ -119,10 +112,6 @@ const Progress = () => {
           {
             title: 'LAND',
             description: landTime ? `${landTime?.toFixed(1)} sec` : '',
-          },
-          {
-            title: 'SDWN',
-            description: shutdownTime ? `${shutdownTime?.toFixed(1)} sec` : '',
           },
         ]}
       />

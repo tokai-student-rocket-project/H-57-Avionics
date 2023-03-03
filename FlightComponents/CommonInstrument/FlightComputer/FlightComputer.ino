@@ -16,8 +16,7 @@ enum class FlightMode {
   CLIMB,
   DESCENT,
   PARACHUTE,
-  LAND,
-  SHUTDOWN
+  LAND
 };
 
 
@@ -32,8 +31,7 @@ enum class Event {
   LAND,
   RESET,
   CONFIG_UPDATE,
-  EMERGENCY_SEPARATE,
-  SHUTDOWN
+  EMERGENCY_SEPARATE
 };
 
 
@@ -58,6 +56,7 @@ namespace device {
 
   OutputPin _shiranui3(1);
   OutputPin _buzzer(0);
+
 }
 
 namespace config {
@@ -70,15 +69,15 @@ namespace config {
   uint32_t burn_time_ms = config::DEFAULT_BURN_TIME_ms;
 
   // 分離保護時間 [ms]
-  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 6987;
+  constexpr uint32_t DEFAULT_SEPARATION_PROTECTION_TIME_ms = 8238;
   uint32_t separation_protection_time_ms = config::DEFAULT_SEPARATION_PROTECTION_TIME_ms;
 
   // 強制分離時間 [ms]
-  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 12142;
+  constexpr uint32_t DEFAULT_FORCE_SEPARATION_TIME_ms = 9949;
   uint32_t force_separation_time_ms = config::DEFAULT_FORCE_SEPARATION_TIME_ms;
 
   // 想定着地時間 [ms]
-  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 39642;
+  constexpr uint32_t DEFAULT_LANDING_TIME_ms = 38649;
   uint32_t landing_time_ms = DEFAULT_LANDING_TIME_ms;
 
   // 動作終了時間[ms]
@@ -274,6 +273,8 @@ void updateIndicators() {
 void writeLog() {
   if (!isFlying()) return;
 
+  isFlying() && millis() > internal::_launchTime_ms + config::shutdown_time_ms;
+
   // 8番ピンが短絡されていたら書き込みを行わない
   // EEPROM書き込み回数の温存用
   if (!device::_noLogModePin.isOpenActually()) {
@@ -325,7 +326,7 @@ bool isApogeeSeparation() {
 /// @return True: 飛行中, False: 飛行中でない
 bool isFlying() {
   return internal::_flightMode != FlightMode::STANDBY
-    && internal::_flightMode != FlightMode::SHUTDOWN;
+    && internal::_flightMode != FlightMode::LAND;
 }
 
 
@@ -351,13 +352,6 @@ bool isLanded() {
 bool canReset() {
   return internal::_flightMode != FlightMode::STANDBY
     && !device::_flightPin.isOpen();
-}
-
-
-/// @brief shutdownできるかを返す
-bool canShutdown() {
-  return internal::_flightMode == FlightMode::LAND
-    && millis() > internal::_launchTime_ms + config::shutdown_time_ms;
 }
 
 
@@ -443,12 +437,6 @@ void updateFlightMode() {
     if (isLanded()) {
       device::_telemeter.stackEvent(static_cast<uint8_t>(Event::LAND), flightTime());
       changeFlightMode(FlightMode::LAND);
-    }
-
-  case FlightMode::LAND:
-    if (canShutdown()) {
-      device::_telemeter.stackEvent(static_cast<uint8_t>(Event::SHUTDOWN), flightTime());
-      changeFlightMode(FlightMode::SHUTDOWN);
     }
   }
 }

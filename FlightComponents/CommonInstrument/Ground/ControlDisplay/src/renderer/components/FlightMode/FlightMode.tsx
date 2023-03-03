@@ -18,15 +18,9 @@ const FlightMode = () => {
   useEffect(() => {
     window.electronAPI.statusRecieved(() => {
       setFlightMode(
-        [
-          'STANDBY',
-          'THRUST',
-          'CLIMB',
-          'DESCENT',
-          'PARASHUTE',
-          'LAND',
-          'SHUTDOWN',
-        ][Number(window.electronAPI.store.get('flight-mode'))]
+        ['STANDBY', 'THRUST', 'CLIMB', 'DESCENT', 'PARASHUTE', 'LAND'][
+          Number(window.electronAPI.store.get('flight-mode'))
+        ]
       );
     });
 
