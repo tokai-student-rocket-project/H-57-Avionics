@@ -33,6 +33,9 @@ const MapView = () => {
 
   useEffect(() => {
     window.electronAPI.gnssRecieved(() => {
+      if (Number(window.electronAPI.store.get('latitude')) === NaN) return;
+      if (Number(window.electronAPI.store.get('longitude')) === NaN) return;
+
       setCenter([
         Number(window.electronAPI.store.get('latitude')),
         Number(window.electronAPI.store.get('longitude')),
@@ -73,14 +76,14 @@ const MapView = () => {
       </Circle>
       <Circle
         pathOptions={{ color: '#FF1744' }}
-        center={[42.51941941, 143.44171185]}
+        center={[42.51940917, 143.4417391]}
         radius={10}
       >
         <Tooltip>Hard</Tooltip>
       </Circle>
       <Circle
         pathOptions={{ color: '#00E676' }}
-        center={[42.51620541, 143.44130452]}
+        center={[42.51633086, 143.44108353]}
         radius={10}
       >
         <Tooltip>Soft</Tooltip>
