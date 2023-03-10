@@ -51,7 +51,7 @@ $$ P = 97279.27\text{[Pa] (測定値)} \\ P_{0} = 102340\text{[Pa] (海面気圧
 
 詳細は[こちら | VerticalVelocity.csv](./Analysis/VerticalVelocity.csv)
 
-![verticalVelocity](./Images/verticalVelocity.png)
+![verticalVelocity](./Images/VerticalVelocity.png)
 
 ### オープニングショック
 
