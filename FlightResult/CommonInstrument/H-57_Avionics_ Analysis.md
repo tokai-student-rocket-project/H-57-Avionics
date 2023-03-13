@@ -1,6 +1,6 @@
 # H-57 搭載計器 解析資料
 
-![Banner](./Images/Banner.jpeg)
+![Banner](./Images/Banner.png)
 
 ## フライトデータ
 
