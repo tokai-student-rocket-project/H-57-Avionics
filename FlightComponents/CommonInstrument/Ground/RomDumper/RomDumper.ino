@@ -11,6 +11,8 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
 
+  Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
+
   MsgPacketizer::subscribe_manual(0x12,
     [](
       float flightTime,
@@ -64,16 +66,23 @@ void setup() {
 constexpr size_t PACKET_SIZE = 88;
 constexpr size_t PAGE_SIZE = 128;
 int32_t address = 0;
-uint8_t packet[88];
-
+uint8_t page[PAGE_SIZE];
 
 void loop() {
-  Serial.println("flightTime,flightMode,stateShiranui3,stateBuzzer,pressure,temperature,altitude,descentCount,accelerationX,accelerationY,accelerationZ,gyroX,gyroY,gyroZ,yaw,pitch,roll,voltage33,voltage5,voltage12");
-
   if (address < eeprom1025.maxLongAddress()) {
 
-    eeprom1025.read(address, packet, PACKET_SIZE);
-    MsgPacketizer::feed(packet, PACKET_SIZE);
+    eeprom1025.read(address, page, PAGE_SIZE);
+    // MsgPacketizer::feed(page, PAGE_SIZE);
+
+    for (size_t offset; offset < PAGE_SIZE; offset++) {
+      Serial.print(page[offset], HEX);
+
+      if (page[offset] == 0x00) break;
+
+      Serial.print(" ");
+    }
+
+    Serial.println();
 
     address += PAGE_SIZE;
   }
