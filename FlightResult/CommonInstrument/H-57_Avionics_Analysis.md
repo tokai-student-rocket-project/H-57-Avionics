@@ -4,8 +4,6 @@
 
 ---
 
-![QR](./qrcode_github.com.png)
-
 PDF版の資料はマークダウンファイルから自動生成したものです。改ページが不適切だったり、リンクに飛べなかったり、GIFを再生できなかったりと足りない情報が多々あります。Githubに完全な資料があるのでそちらを参照してください。
 
 計測制御班では次期もソースコードや技術資料、工程管理などをGithubで行います。
@@ -19,6 +17,7 @@ __TSRP__
 
 __H-57搭載計器解析資料__
 <https://github.com/tokai-student-rocket-project/H-57-Avionics/blob/main/FlightResult/CommonInstrument/H-57_Avionics_Analysis.md>
+![QR](./qrcode_github.com.png)
 
 __H-57搭載計器レポジトリ__
 <https://github.com/tokai-student-rocket-project/H-57-Avionics>
