@@ -17,13 +17,14 @@ __TSRP__
 
 __H-57搭載計器解析資料__
 <https://github.com/tokai-student-rocket-project/H-57-Avionics/blob/main/FlightResult/CommonInstrument/H-57_Avionics_Analysis.md>
-![QR](./qrcode_github.com.png)
 
 __H-57搭載計器レポジトリ__
 <https://github.com/tokai-student-rocket-project/H-57-Avionics>
 
 __次期搭載計器レポジトリ__
 <https://github.com/tokai-student-rocket-project/H-58-Avionics>
+
+![QR](./qrcode_github.com.png)
 
 ---
 
