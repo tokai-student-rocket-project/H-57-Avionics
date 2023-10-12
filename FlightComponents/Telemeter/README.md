@@ -136,7 +136,7 @@
       - スピード:0.22[s/60°]
       - 可動範囲:300[deg]
 - ソフトウェア
-  - [VerSpeedServo](https://github.com/netlabtoolkit/VarSpeedServo)
+  - [VarSpeedServo](https://github.com/netlabtoolkit/VarSpeedServo)
     - アクチュエータの角度、速度を制御します。
   - [ArduinoJson.h](https://github.com/bblanchon/ArduinoJson)
       - [公式HP](https://arduinojson.org/)
